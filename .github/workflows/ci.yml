@@ -1,0 +1,80 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+
+    services:
+      mariadb:
+        image: mariadb:11.8
+        env:
+          MARIADB_ROOT_PASSWORD: ''
+          MARIADB_ALLOW_EMPTY_ROOT_PASSWORD: 'yes'
+          MARIADB_DATABASE: reservas_testing
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+    env:
+      DB_CONNECTION: mysql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_DATABASE: reservas_testing
+      DB_USERNAME: root
+      DB_PASSWORD: ''
+
+    steps:
+      - name: Clonar repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, intl, pdo_mysql, bcmath, gd, zip
+          coverage: none
+
+      - name: Configurar Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Instalar dependencias de Composer
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Instalar dependencias de npm
+        run: npm ci
+
+      - name: Copiar archivo de entorno
+        run: cp .env.example .env
+
+      - name: Generar llave de la aplicacion
+        run: php artisan key:generate
+
+      - name: Ejecutar migraciones
+        run: php artisan migrate --force
+
+      - name: Revisar formato con Pint
+        run: ./vendor/bin/pint --test
+
+      - name: Analisis estatico con Larastan
+        run: ./vendor/bin/phpstan analyse --memory-limit=1G
+
+      - name: Revisar lint de ESLint
+        run: npm run lint
+
+      - name: Compilar assets de produccion
+        run: npm run build
+
+      - name: Ejecutar pruebas con Pest
+        run: php artisan test
