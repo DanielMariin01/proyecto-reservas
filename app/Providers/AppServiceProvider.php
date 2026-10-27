@@ -4,11 +4,17 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Models\CategoriaServicio;
 use App\Models\Negocio;
 use App\Models\PagoSuscripcion;
+use App\Models\Profesional;
+use App\Models\Servicio;
 use App\Models\Usuario;
+use App\Policies\PoliticaCategoriaServicio;
 use App\Policies\PoliticaNegocio;
 use App\Policies\PoliticaPagoSuscripcion;
+use App\Policies\PoliticaProfesional;
+use App\Policies\PoliticaServicio;
 use App\Policies\PoliticaUsuario;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
@@ -31,5 +37,8 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Negocio::class, PoliticaNegocio::class);
         Gate::policy(Usuario::class, PoliticaUsuario::class);
         Gate::policy(PagoSuscripcion::class, PoliticaPagoSuscripcion::class);
+        Gate::policy(CategoriaServicio::class, PoliticaCategoriaServicio::class);
+        Gate::policy(Servicio::class, PoliticaServicio::class);
+        Gate::policy(Profesional::class, PoliticaProfesional::class);
     }
 }

@@ -28,7 +28,10 @@ Crea en tu servidor MariaDB una base de datos `reservas` (y opcionalmente `reser
 
 ```bash
 php artisan migrate --seed
+php artisan storage:link
 ```
+
+`php artisan migrate --seed` crea, además del super admin, dos negocios de prueba (Barber Japo y Spa Luna) con su propio dueño; ver [`database/seeders/NegociosDemoSeeder.php`](database/seeders/NegociosDemoSeeder.php) para las credenciales (contraseña fija `password`, solo para desarrollo local). `storage:link` crea el symlink público para las fotos de servicios y profesionales (ver "Archivos" en Decisiones técnicas).
 
 ## Comandos de desarrollo
 
@@ -58,7 +61,8 @@ Un GitHub Action (`.github/workflows/ci.yml`) corre estos mismos pasos en cada p
 - **Paneles Filament**: `admin` (`App\Providers\Filament\AdminPanelProvider`) es el panel del super administrador, con acceso a todos los negocios. `app` (`App\Providers\Filament\AppPanelProvider`) es el panel de cada negocio, con tenancy por `Negocio` (se agrega en la tarea T2).
 - **Página pública y flujo de reserva**: construidos en React + TypeScript (`resources/js`), compilados con Vite y montados sobre una vista Blade mínima (`resources/views/app.blade.php`). La página nunca calcula horas ni guarda citas: solo consume la API pública en `/api/publico/{slug}/...` (se agrega en la tarea T6).
 - **Lógica de dominio**: vive en servicios (`ServicioDisponibilidad`, `ServicioReservas`) y acciones (`CrearReserva`, `CancelarCita`), nunca en controladores ni recursos de Filament.
-- **Multi-negocio**: toda tabla de negocio lleva `negocio_id` con scope global obligatorio; un negocio suspendido o cancelado no permite el acceso de sus usuarios ni recibe reservas nuevas.
+- **Multi-negocio**: toda tabla de negocio lleva `negocio_id` con scope global obligatorio (trait `PerteneceANegocio` + `Scopes\ScopeNegocio`, aplicado sobre el tenant activo de Filament); un negocio suspendido o cancelado no permite el acceso de sus usuarios ni recibe reservas nuevas.
+- **Archivos**: las fotos de servicios y profesionales se guardan en el disco `public` (`storage/app/public`, enlazado con `php artisan storage:link`), porque son imágenes que la página pública debe poder cargar directamente. El disco por defecto (`local`, privado) queda libre para archivos que no deban ser accesibles por URL.
 - **Diseño**: un único juego de tokens de color, tipografía (Asap), sombras y radios, definido en `.claude/skills/diseno-reservas/SKILL.md` y expuesto como utilidades de Tailwind (`bg-primario`, `text-tinta`, `rounded-tarjeta`, `rounded-boton`, `shadow-tarjeta`) y como colores del tema de Filament.
 
 ## Decisiones técnicas (ADR resumido)
@@ -81,8 +85,8 @@ Un GitHub Action (`.github/workflows/ci.yml`) corre estos mismos pasos en cada p
 ## Plan de construcción (MVP)
 
 - [x] T1. Proyecto base: Filament 5, React con Vite, Pest, Pint, Larastan, GitHub Actions, README.
-- [ ] T2. Multi-negocio, roles, suscripción del negocio y suplantación del super admin.
-- [ ] T3. Catálogo: categorías, servicios, empleados.
+- [x] T2. Multi-negocio, roles, suscripción del negocio y suplantación del super admin.
+- [x] T3. Catálogo: categorías, servicios, empleados.
 - [ ] T4. Disponibilidad: horarios, bloqueos, festivos y `ServicioDisponibilidad`.
 - [ ] T5. Reservas: `ServicioReservas`, estados, concurrencia, agenda en Filament.
 - [ ] T6. API pública y flujo de reserva en React.
