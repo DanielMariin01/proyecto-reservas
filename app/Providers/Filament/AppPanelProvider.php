@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Providers\Filament;
 
+use App\Http\Middleware\EstablecerNegocioActualComoEquipoDePermisos;
+use App\Http\Middleware\VerificarNegocioOperativo;
+use App\Models\Negocio;
 use Filament\FontProviders\GoogleFontProvider;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -13,8 +16,10 @@ use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Filament\View\PanelsRenderHook;
 use Filament\Widgets\AccountWidget;
 use Filament\Widgets\FilamentInfoWidget;
+use Illuminate\Contracts\View\View;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
@@ -30,12 +35,17 @@ class AppPanelProvider extends PanelProvider
             ->id('app')
             ->path('app')
             ->viteTheme('resources/css/filament/app/theme.css')
-            ->login()
+            ->authGuard('web')
             ->font('Asap', provider: GoogleFontProvider::class)
             ->colors([
                 'primary' => Color::hex('#673DE6'),
                 'success' => Color::hex('#7454E9'),
             ])
+            ->tenant(Negocio::class, slugAttribute: 'slug')
+            ->renderHook(
+                PanelsRenderHook::BODY_START,
+                fn (): View => view('filament.suplantacion-banner'),
+            )
             ->discoverResources(in: app_path('Filament/App/Resources'), for: 'App\Filament\App\Resources')
             ->discoverPages(in: app_path('Filament/App/Pages'), for: 'App\Filament\App\Pages')
             ->pages([
@@ -59,6 +69,10 @@ class AppPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-            ]);
+            ])
+            ->tenantMiddleware([
+                EstablecerNegocioActualComoEquipoDePermisos::class,
+                VerificarNegocioOperativo::class,
+            ], isPersistent: true);
     }
 }

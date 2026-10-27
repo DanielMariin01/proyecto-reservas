@@ -2,14 +2,20 @@
 
 declare(strict_types=1);
 
-test('el panel de super admin responde en /admin/login', function (): void {
+test('/admin/login redirige a la unica pantalla de acceso', function (): void {
     $respuesta = $this->get('/admin/login');
 
-    $respuesta->assertStatus(200);
+    $respuesta->assertRedirect('/ingresar');
 });
 
-test('el panel del negocio responde en /app/login', function (): void {
+test('/app/login redirige a la unica pantalla de acceso', function (): void {
     $respuesta = $this->get('/app/login');
 
-    $respuesta->assertStatus(200);
+    $respuesta->assertRedirect('/ingresar');
+});
+
+test('un invitado que visita /admin termina en la pantalla de acceso', function (): void {
+    $respuesta = $this->get('/admin');
+
+    $respuesta->assertRedirect('/ingresar');
 });

@@ -6,3 +6,5 @@ parameters:
         - app
 
     level: 8
+
+    parseModelCastsMethod: true
