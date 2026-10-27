@@ -20,5 +20,7 @@ final class DatabaseSeeder extends Seeder
             'nombre' => 'Super Admin',
             'email' => 'superadmin@reservas.test',
         ]);
+
+        $this->call(NegociosDemoSeeder::class);
     }
 }
