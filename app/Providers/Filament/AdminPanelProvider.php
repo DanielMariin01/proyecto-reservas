@@ -31,7 +31,7 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->viteTheme('resources/css/filament/admin/theme.css')
-            ->login()
+            ->authGuard('web')
             ->font('Asap', provider: GoogleFontProvider::class)
             ->colors([
                 'primary' => Color::hex('#673DE6'),
