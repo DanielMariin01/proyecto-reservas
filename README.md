@@ -1,66 +1,91 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Sistema de Reservas para Barberías, Spas y Salones
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+SaaS multi-negocio de reservas, cursos y tienda para negocios de belleza en Colombia. Un solo dominio: cada negocio tiene su página pública en `/{slug}` y su panel en `/app/{slug}`. El super admin controla todos los negocios desde `/admin`.
 
-## About Laravel
+Los requerimientos completos están en [`docs/requerimientos.md`](docs/requerimientos.md) y las reglas de diseño visual en [`.claude/skills/diseno-reservas/SKILL.md`](.claude/skills/diseno-reservas/SKILL.md).
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Stack
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- **Laravel 12**, PHP **8.2** en local (XAMPP) y **8.3** en producción.
+- **Filament 5** con dos paneles: `admin` (super admin, en `/admin`) y `app` (negocio, en `/app`).
+- **React + TypeScript + Vite + Tailwind** para la página pública y el flujo de reserva.
+- **MariaDB** (11.8 en producción).
+- Colas con driver `database` y scheduler por cron (hosting compartido, sin procesos permanentes).
+- Pruebas con **Pest**, formato con **Pint**, análisis estático con **Larastan** (nivel 8), lint de frontend con **ESLint**.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Instalación
 
-## Learning Laravel
+Requisitos: PHP 8.2 con las extensiones `intl`, `mbstring`, `pdo_mysql`; Composer 2; Node 20+; MariaDB o MySQL corriendo localmente (por ejemplo, con XAMPP).
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+```bash
+composer install
+npm install
+cp .env.example .env
+php artisan key:generate
+```
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+Crea en tu servidor MariaDB una base de datos `reservas` (y opcionalmente `reservas_testing` para las pruebas, que es la que usa `phpunit.xml`) y ajusta `DB_DATABASE`, `DB_USERNAME` y `DB_PASSWORD` en `.env` si no usas los valores por defecto de XAMPP.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+```bash
+php artisan migrate --seed
+```
 
-## Laravel Sponsors
+## Comandos de desarrollo
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+```bash
+php artisan serve          # backend
+npm run dev                # frontend con Vite (recarga en caliente)
+php artisan queue:work     # colas en local
+php artisan schedule:work  # scheduler en local
+```
 
-### Premium Partners
+## Calidad de código
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+Antes de abrir un pull request, estos comandos deben pasar en verde:
 
-## Contributing
+```bash
+php artisan test            # pruebas Pest (usa la base reservas_testing, ver phpunit.xml)
+./vendor/bin/pint           # formato de PHP
+./vendor/bin/phpstan analyse  # análisis estático, nivel 8
+npm run lint                 # ESLint sobre resources/js
+npm run build                # compilación de producción de Vite
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Un GitHub Action (`.github/workflows/ci.yml`) corre estos mismos pasos en cada push y pull request, levantando un servicio de MariaDB para las pruebas.
 
-## Code of Conduct
+## Arquitectura
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+- **Paneles Filament**: `admin` (`App\Providers\Filament\AdminPanelProvider`) es el panel del super administrador, con acceso a todos los negocios. `app` (`App\Providers\Filament\AppPanelProvider`) es el panel de cada negocio, con tenancy por `Negocio` (se agrega en la tarea T2).
+- **Página pública y flujo de reserva**: construidos en React + TypeScript (`resources/js`), compilados con Vite y montados sobre una vista Blade mínima (`resources/views/app.blade.php`). La página nunca calcula horas ni guarda citas: solo consume la API pública en `/api/publico/{slug}/...` (se agrega en la tarea T6).
+- **Lógica de dominio**: vive en servicios (`ServicioDisponibilidad`, `ServicioReservas`) y acciones (`CrearReserva`, `CancelarCita`), nunca en controladores ni recursos de Filament.
+- **Multi-negocio**: toda tabla de negocio lleva `negocio_id` con scope global obligatorio; un negocio suspendido o cancelado no permite el acceso de sus usuarios ni recibe reservas nuevas.
+- **Diseño**: un único juego de tokens de color, tipografía (Asap), sombras y radios, definido en `.claude/skills/diseno-reservas/SKILL.md` y expuesto como utilidades de Tailwind (`bg-primario`, `text-tinta`, `rounded-tarjeta`, `rounded-boton`, `shadow-tarjeta`) y como colores del tema de Filament.
 
-## Security Vulnerabilities
+## Decisiones técnicas (ADR resumido)
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+| Decisión | Motivo |
+| --- | --- |
+| Laravel 12 sobre PHP 8.2 (local) / 8.3 (hosting) | Compatible con el hosting compartido actual; recibe parches de seguridad hasta feb 2027. Se migra a Laravel 13 antes de esa fecha. |
+| Filament 5 | Requiere la extensión `intl` de PHP (se habilitó en `php.ini` de XAMPP); compatible con Laravel 12 y PHP 8.2+. |
+| MariaDB en vez de PostgreSQL | Es lo disponible en el hosting compartido. Las citas superpuestas se evitan con transacción y bloqueo de fila del empleado, no con una restricción de exclusión (MariaDB no la soporta). |
+| Pruebas Pest contra MariaDB, no SQLite | El motor de reservas depende del bloqueo de fila de MariaDB; una base en memoria con SQLite no reproduce ese comportamiento de forma confiable. |
+| React + TypeScript + Vite (sin SSR en el MVP) | La página pública consume solo la API pública; el SEO básico se resuelve con metadatos en el HTML servido por Blade. |
+| Colas con driver `database` y cron | El hosting compartido no permite procesos permanentes (sin `queue:work` ni `schedule:work` persistentes). |
 
-## License
+## Guía rápida
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+- **Super admin** entra en `/admin`, ve y modifica cualquier negocio, y puede suplantar a un negocio para ver su panel tal como lo ve su dueño.
+- **Dueño, recepción y profesional** de un negocio entran en `/app`, cada uno con los permisos de su rol.
+- **Cliente final** reserva desde la página pública en `/{slug}`, sin crear cuenta.
+
+## Plan de construcción (MVP)
+
+- [x] T1. Proyecto base: Filament 5, React con Vite, Pest, Pint, Larastan, GitHub Actions, README.
+- [ ] T2. Multi-negocio, roles, suscripción del negocio y suplantación del super admin.
+- [ ] T3. Catálogo: categorías, servicios, empleados.
+- [ ] T4. Disponibilidad: horarios, bloqueos, festivos y `ServicioDisponibilidad`.
+- [ ] T5. Reservas: `ServicioReservas`, estados, concurrencia, agenda en Filament.
+- [ ] T6. API pública y flujo de reserva en React.
+- [ ] T7. Notificaciones por correo y colas.
+- [ ] T8. Página pública por bloques, pagos manuales, tablero del dueño y despliegue.
+- [ ] T9. Observabilidad.
