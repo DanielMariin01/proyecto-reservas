@@ -73,6 +73,9 @@ jobs:
       - name: Revisar lint de ESLint
         run: npm run lint
 
+      - name: Revisar tipos de TypeScript
+        run: npm run typecheck
+
       - name: Compilar assets de produccion
         run: npm run build
 

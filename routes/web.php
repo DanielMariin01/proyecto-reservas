@@ -3,9 +3,11 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\ElegirNegocioController;
+use App\Http\Controllers\PaginaNegocioController;
 use App\Http\Controllers\RestablecimientoContrasenaController;
 use App\Http\Controllers\SesionController;
 use App\Http\Controllers\SuplantacionController;
+use App\Http\Middleware\VerificarNegocioAceptaReservas;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -28,3 +30,10 @@ Route::middleware('auth')->group(function (): void {
     Route::get('/elegir-negocio/{negocio}', [ElegirNegocioController::class, 'elegir'])->name('elegir-negocio.entrar');
     Route::get('/suplantacion/salir', [SuplantacionController::class, 'salir'])->name('suplantacion.salir');
 });
+
+// RF-DOM-01: la página pública de cada negocio. Debe quedar al final del
+// archivo: es un comodín de un solo segmento que, si se registrara antes,
+// atraparía rutas como /ingresar o /elegir-negocio.
+Route::get('/{negocio:slug}', [PaginaNegocioController::class, 'mostrar'])
+    ->middleware(VerificarNegocioAceptaReservas::class)
+    ->name('pagina-negocio');
