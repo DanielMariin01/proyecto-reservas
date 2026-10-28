@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type { ReactElement } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { crearReserva, esErrorDeReservaPublica, obtenerDiasConDisponibilidad, obtenerHorasDisponibles, obtenerProfesionales } from './api/clientePublico';
+import ConfirmarResumen from './ConfirmarResumen';
 import DatosYConfirmacion from './DatosYConfirmacion';
 import PantallaExito from './PantallaExito';
 import SeleccionarProfesional from './SeleccionarProfesional';
@@ -16,7 +17,7 @@ interface PropiedadesFlujoReserva {
     onCerrar: () => void;
 }
 
-type Paso = 'profesional' | 'ventana' | 'datos' | 'exito';
+type Paso = 'profesional' | 'ventana' | 'datos' | 'confirmar' | 'exito';
 
 const CUALQUIERA_DISPONIBLE = 'Cualquiera disponible';
 
@@ -28,6 +29,7 @@ export default function FlujoReserva({ slug, direccion, servicio, profesionalIni
     const [mes, setMes] = useState(hoy.getMonth() + 1);
     const [diaSeleccionado, setDiaSeleccionado] = useState<string | null>(null);
     const [horaSeleccionada, setHoraSeleccionada] = useState<HoraDisponible | null>(null);
+    const [datosDelCliente, setDatosDelCliente] = useState<DatosDelCliente | null>(null);
     const [citaCreada, setCitaCreada] = useState<CitaCreada | null>(null);
 
     useEffect(() => {
@@ -61,9 +63,9 @@ export default function FlujoReserva({ slug, direccion, servicio, profesionalIni
     });
 
     const mutacionReserva = useMutation({
-        mutationFn: (datosDelCliente: DatosDelCliente) => {
-            if (!horaSeleccionada) {
-                throw new Error('No hay hora elegida.');
+        mutationFn: () => {
+            if (!horaSeleccionada || !datosDelCliente) {
+                throw new Error('Faltan datos para reservar.');
             }
 
             return crearReserva(slug, servicio.id, horaSeleccionada.profesionalId, horaSeleccionada.inicio, datosDelCliente);
@@ -92,6 +94,13 @@ export default function FlujoReserva({ slug, direccion, servicio, profesionalIni
 
     const proximoDiaDisponible =
         (diasQuery.data ?? []).find((dia) => diaSeleccionado !== null && dia > diaSeleccionado) ?? null;
+
+    const errorDeReserva =
+        mutacionReserva.error && esErrorDeReservaPublica(mutacionReserva.error)
+            ? mutacionReserva.error.message
+            : mutacionReserva.error
+              ? 'Algo falló. Inténtalo de nuevo.'
+              : null;
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-tinta/60 p-4">
@@ -139,16 +148,25 @@ export default function FlujoReserva({ slug, direccion, servicio, profesionalIni
                     nombreProfesional={nombrePorId(horaSeleccionada.profesionalId)}
                     direccion={direccion}
                     fechaHoraVisible={`${horaSeleccionada.fechaVisible}, ${horaSeleccionada.horaVisible} – ${horaSeleccionada.horaFinVisible}`}
-                    enviando={mutacionReserva.isPending}
-                    error={
-                        mutacionReserva.error && esErrorDeReservaPublica(mutacionReserva.error)
-                            ? mutacionReserva.error.message
-                            : mutacionReserva.error
-                              ? 'Algo falló. Inténtalo de nuevo.'
-                              : null
-                    }
-                    onConfirmar={(datos) => mutacionReserva.mutate(datos)}
+                    valoresIniciales={datosDelCliente}
+                    onContinuar={(datos) => {
+                        setDatosDelCliente(datos);
+                        setPaso('confirmar');
+                    }}
                     onVolver={() => setPaso('ventana')}
+                />
+            )}
+
+            {paso === 'confirmar' && horaSeleccionada && datosDelCliente && (
+                <ConfirmarResumen
+                    nombreProfesional={nombrePorId(horaSeleccionada.profesionalId)}
+                    horaVisible={horaSeleccionada.horaVisible}
+                    nombreServicio={servicio.nombre}
+                    precio={servicio.precio}
+                    enviando={mutacionReserva.isPending}
+                    error={errorDeReserva}
+                    onConfirmar={() => mutacionReserva.mutate()}
+                    onVolver={() => setPaso('datos')}
                 />
             )}
 
