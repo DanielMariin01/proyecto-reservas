@@ -8,6 +8,8 @@ use App\Filament\App\Resources\Profesionales\Pages\CreateProfesional;
 use App\Filament\App\Resources\Profesionales\Pages\EditProfesional;
 use App\Filament\App\Resources\Profesionales\Pages\ListProfesionales;
 use App\Filament\App\Resources\Profesionales\Pages\ViewProfesional;
+use App\Filament\App\Resources\Profesionales\RelationManagers\BloqueosRelationManager;
+use App\Filament\App\Resources\Profesionales\RelationManagers\HorariosTrabajoRelationManager;
 use App\Filament\App\Resources\Profesionales\RelationManagers\ServiciosRelationManager;
 use App\Filament\App\Resources\Profesionales\Schemas\ProfesionalForm;
 use App\Filament\App\Resources\Profesionales\Schemas\ProfesionalInfolist;
@@ -51,6 +53,8 @@ class ProfesionalResource extends Resource
     {
         return [
             ServiciosRelationManager::class,
+            HorariosTrabajoRelationManager::class,
+            BloqueosRelationManager::class,
         ];
     }
 
