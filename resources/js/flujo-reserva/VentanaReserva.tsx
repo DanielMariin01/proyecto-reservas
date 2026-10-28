@@ -3,15 +3,13 @@ import type { ReactElement } from 'react';
 import Boton from '@/componentes/Boton';
 import LineaDetalle from '@/componentes/LineaDetalle';
 import SelectorDeHora from '@/componentes/SelectorDeHora';
-import type { HoraDisponible, Profesional, Servicio } from '@/tipos';
+import type { HoraDisponible, Servicio } from '@/tipos';
 import CalendarioMes from './CalendarioMes';
 
 interface PropiedadesVentanaReserva {
     servicio: Servicio;
     direccion: string | null;
-    profesionales: Profesional[];
-    profesionalId: number | null;
-    onElegirProfesional: (id: number | null) => void;
+    nombreProfesional: string;
     anio: number;
     mes: number;
     onCambiarMes: (delta: number) => void;
@@ -31,9 +29,7 @@ interface PropiedadesVentanaReserva {
 export default function VentanaReserva({
     servicio,
     direccion,
-    profesionales,
-    profesionalId,
-    onElegirProfesional,
+    nombreProfesional,
     anio,
     mes,
     onCambiarMes,
@@ -64,23 +60,7 @@ export default function VentanaReserva({
                 <h2 className="text-xl font-semibold text-tinta">{servicio.nombre}</h2>
                 <div className="mt-3 space-y-2">
                     <LineaDetalle icono={Clock} texto={`${servicio.duracionMinutos} min`} />
-                    {profesionales.length > 0 && (
-                        <>
-                            <LineaDetalle icono={User} texto="Empleado" />
-                            <select
-                                value={profesionalId ?? ''}
-                                onChange={(evento) => onElegirProfesional(evento.target.value ? Number(evento.target.value) : null)}
-                                className="h-11 w-full rounded-boton border border-gris-claro px-2 text-sm text-tinta"
-                            >
-                                <option value="">Cualquiera disponible</option>
-                                {profesionales.map((profesional) => (
-                                    <option key={profesional.id} value={profesional.id}>
-                                        {profesional.nombre}
-                                    </option>
-                                ))}
-                            </select>
-                        </>
-                    )}
+                    <LineaDetalle icono={User} texto={nombreProfesional} />
                     {direccion && <LineaDetalle icono={Building2} texto={direccion} />}
                 </div>
                 <p className="mt-3 text-lg font-bold text-tinta">${servicio.precio.toLocaleString('es-CO')}</p>

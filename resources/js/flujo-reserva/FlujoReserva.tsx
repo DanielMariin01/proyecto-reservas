@@ -4,6 +4,7 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { crearReserva, esErrorDeReservaPublica, obtenerDiasConDisponibilidad, obtenerHorasDisponibles, obtenerProfesionales } from './api/clientePublico';
 import DatosYConfirmacion from './DatosYConfirmacion';
 import PantallaExito from './PantallaExito';
+import SeleccionarProfesional from './SeleccionarProfesional';
 import VentanaReserva from './VentanaReserva';
 import type { CitaCreada, DatosDelCliente, HoraDisponible, Servicio } from '@/tipos';
 
@@ -15,11 +16,13 @@ interface PropiedadesFlujoReserva {
     onCerrar: () => void;
 }
 
-type Paso = 'ventana' | 'datos' | 'exito';
+type Paso = 'profesional' | 'ventana' | 'datos' | 'exito';
+
+const CUALQUIERA_DISPONIBLE = 'Cualquiera disponible';
 
 export default function FlujoReserva({ slug, direccion, servicio, profesionalInicial, onCerrar }: PropiedadesFlujoReserva): ReactElement {
     const hoy = useMemo(() => new Date(), []);
-    const [paso, setPaso] = useState<Paso>('ventana');
+    const [paso, setPaso] = useState<Paso>(profesionalInicial != null ? 'ventana' : 'profesional');
     const [profesionalId, setProfesionalId] = useState<number | null>(profesionalInicial ?? null);
     const [anio, setAnio] = useState(hoy.getFullYear());
     const [mes, setMes] = useState(hoy.getMonth() + 1);
@@ -44,10 +47,24 @@ export default function FlujoReserva({ slug, direccion, servicio, profesionalIni
         queryFn: () => obtenerProfesionales(slug, servicio.id),
     });
 
+    // Si solo hay un profesional (o ninguno) no hay nada que elegir: se salta
+    // directo al calendario, en vez de mostrar una pantalla de un solo botón.
+    useEffect(() => {
+        if (paso !== 'profesional' || !profesionalesQuery.data) {
+            return;
+        }
+
+        if (profesionalesQuery.data.length <= 1) {
+            setProfesionalId(profesionalesQuery.data[0]?.id ?? null);
+            setPaso('ventana');
+        }
+    }, [paso, profesionalesQuery.data]);
+
     const mesTexto = `${anio}-${String(mes).padStart(2, '0')}`;
     const diasQuery = useQuery({
         queryKey: ['dias', slug, servicio.id, profesionalId, mesTexto],
         queryFn: () => obtenerDiasConDisponibilidad(slug, servicio.id, profesionalId, mesTexto),
+        enabled: paso !== 'profesional',
     });
 
     const horasQuery = useQuery({
@@ -78,25 +95,37 @@ export default function FlujoReserva({ slug, direccion, servicio, profesionalIni
         setHoraSeleccionada(null);
     }
 
+    function nombrePorId(id: number | null): string {
+        if (id === null) {
+            return CUALQUIERA_DISPONIBLE;
+        }
+
+        return profesionalesQuery.data?.find((p) => p.id === id)?.nombre ?? CUALQUIERA_DISPONIBLE;
+    }
+
     const proximoDiaDisponible =
         (diasQuery.data ?? []).find((dia) => diaSeleccionado !== null && dia > diaSeleccionado) ?? null;
 
-    const nombreProfesional = horaSeleccionada
-        ? profesionalesQuery.data?.find((p) => p.id === horaSeleccionada.profesionalId)?.nombre ?? 'Cualquiera disponible'
-        : 'Cualquiera disponible';
-
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-tinta/60 p-4">
+            {paso === 'profesional' && (
+                <SeleccionarProfesional
+                    servicio={servicio}
+                    profesionales={profesionalesQuery.data ?? []}
+                    cargando={profesionalesQuery.isLoading}
+                    onElegir={(id) => {
+                        setProfesionalId(id);
+                        setPaso('ventana');
+                    }}
+                    onCerrar={onCerrar}
+                />
+            )}
+
             {paso === 'ventana' && (
                 <VentanaReserva
                     servicio={servicio}
                     direccion={direccion}
-                    profesionales={profesionalesQuery.data ?? []}
-                    profesionalId={profesionalId}
-                    onElegirProfesional={(id) => {
-                        setProfesionalId(id);
-                        setHoraSeleccionada(null);
-                    }}
+                    nombreProfesional={nombrePorId(profesionalId)}
                     anio={anio}
                     mes={mes}
                     onCambiarMes={cambiarMes}
@@ -120,7 +149,7 @@ export default function FlujoReserva({ slug, direccion, servicio, profesionalIni
             {paso === 'datos' && horaSeleccionada && (
                 <DatosYConfirmacion
                     servicio={servicio}
-                    nombreProfesional={nombreProfesional}
+                    nombreProfesional={nombrePorId(horaSeleccionada.profesionalId)}
                     direccion={direccion}
                     fechaHoraVisible={horaSeleccionada.horaVisible}
                     enviando={mutacionReserva.isPending}

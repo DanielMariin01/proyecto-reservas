@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { FormEvent, ReactElement } from 'react';
+import type { FormEvent, ReactElement, ReactNode } from 'react';
 import { Building2, Calendar, User } from 'lucide-react';
 import Boton from '@/componentes/Boton';
 import CampoTelefono from '@/componentes/CampoTelefono';
@@ -39,9 +39,46 @@ export default function DatosYConfirmacion({
         onConfirmar({ correo, nombre, celular, nota, autorizacionDatos });
     }
 
+    const contenidoDelResumen: ReactNode = (
+        <>
+            <div className="flex items-center gap-3">
+                {servicio.foto && <img src={servicio.foto} alt="" className="h-16 w-16 rounded-boton object-cover" />}
+                <div>
+                    <p className="font-semibold text-tinta">{servicio.nombre}</p>
+                    <p className="text-sm text-texto-suave">${servicio.precio.toLocaleString('es-CO')}</p>
+                </div>
+            </div>
+
+            <div className="mt-4 space-y-2">
+                <LineaDetalle icono={Calendar} texto={fechaHoraVisible} />
+                <LineaDetalle icono={User} texto={nombreProfesional} />
+                {direccion && <LineaDetalle icono={Building2} texto={direccion} />}
+            </div>
+
+            <hr className="my-4 border-gris-claro" />
+
+            <div className="flex items-center justify-between text-sm text-tinta">
+                <span>Subtotal</span>
+                <span>${servicio.precio.toLocaleString('es-CO')}</span>
+            </div>
+            <div className="mt-1 flex items-center justify-between text-lg font-bold text-tinta">
+                <span>Total</span>
+                <span>${servicio.precio.toLocaleString('es-CO')}</span>
+            </div>
+        </>
+    );
+
     return (
-        <div className="grid w-full max-w-4xl gap-0 overflow-hidden rounded-tarjeta bg-blanco sm:grid-cols-[55%_45%]">
-            <form onSubmit={manejarEnvio} className="space-y-6 p-6">
+        <div className="grid max-h-[90vh] w-full max-w-4xl gap-0 overflow-y-auto rounded-tarjeta bg-blanco sm:grid-cols-[55%_45%]">
+            {/* Celular: resumen arriba, plegable (skill sección 4). En escritorio este bloque no se muestra: el resumen completo va en la columna derecha. */}
+            <details className="border-b border-gris-claro bg-fondo-panel p-4 sm:hidden">
+                <summary className="cursor-pointer text-sm font-semibold text-tinta">
+                    Ver resumen · ${servicio.precio.toLocaleString('es-CO')}
+                </summary>
+                <div className="mt-4">{contenidoDelResumen}</div>
+            </details>
+
+            <form onSubmit={manejarEnvio} className="order-2 space-y-6 p-4 sm:order-1 sm:p-6">
                 <button type="button" onClick={onVolver} className="text-sm text-primario">
                     ← Volver
                 </button>
@@ -89,31 +126,9 @@ export default function DatosYConfirmacion({
                 </Boton>
             </form>
 
-            <div className="border-t border-gris-claro bg-fondo-panel p-6 sm:border-l sm:border-t-0">
-                <div className="flex items-center gap-3">
-                    {servicio.foto && <img src={servicio.foto} alt="" className="h-16 w-16 rounded-boton object-cover" />}
-                    <div>
-                        <p className="font-semibold text-tinta">{servicio.nombre}</p>
-                        <p className="text-sm text-texto-suave">${servicio.precio.toLocaleString('es-CO')}</p>
-                    </div>
-                </div>
-
-                <div className="mt-4 space-y-2">
-                    <LineaDetalle icono={Calendar} texto={fechaHoraVisible} />
-                    <LineaDetalle icono={User} texto={nombreProfesional} />
-                    {direccion && <LineaDetalle icono={Building2} texto={direccion} />}
-                </div>
-
-                <hr className="my-4 border-gris-claro" />
-
-                <div className="flex items-center justify-between text-sm text-tinta">
-                    <span>Subtotal</span>
-                    <span>${servicio.precio.toLocaleString('es-CO')}</span>
-                </div>
-                <div className="mt-1 flex items-center justify-between text-lg font-bold text-tinta">
-                    <span>Total</span>
-                    <span>${servicio.precio.toLocaleString('es-CO')}</span>
-                </div>
+            {/* Escritorio: columna derecha con el resumen siempre visible. */}
+            <div className="order-1 hidden border-t border-gris-claro bg-fondo-panel p-6 sm:order-2 sm:block sm:border-l sm:border-t-0">
+                {contenidoDelResumen}
             </div>
         </div>
     );
