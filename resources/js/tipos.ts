@@ -21,7 +21,10 @@ export interface Profesional {
 export interface HoraDisponible {
     profesionalId: number;
     inicio: string;
+    fin: string;
+    fechaVisible: string;
     horaVisible: string;
+    horaFinVisible: string;
 }
 
 export interface CitaCreada {

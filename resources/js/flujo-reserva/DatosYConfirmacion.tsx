@@ -69,7 +69,7 @@ export default function DatosYConfirmacion({
     );
 
     return (
-        <div className="grid max-h-[90vh] w-full max-w-4xl gap-0 overflow-y-auto rounded-tarjeta bg-blanco sm:grid-cols-[55%_45%]">
+        <div className="scroll-primario grid max-h-[90vh] w-full max-w-4xl gap-0 overflow-y-auto rounded-tarjeta bg-blanco sm:grid-cols-[55%_45%]">
             {/* Celular: resumen arriba, plegable (skill sección 4). En escritorio este bloque no se muestra: el resumen completo va en la columna derecha. */}
             <details className="border-b border-gris-claro bg-fondo-panel p-4 sm:hidden">
                 <summary className="cursor-pointer text-sm font-semibold text-tinta">

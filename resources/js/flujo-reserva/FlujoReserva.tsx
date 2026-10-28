@@ -138,7 +138,7 @@ export default function FlujoReserva({ slug, direccion, servicio, profesionalIni
                     servicio={servicio}
                     nombreProfesional={nombrePorId(horaSeleccionada.profesionalId)}
                     direccion={direccion}
-                    fechaHoraVisible={horaSeleccionada.horaVisible}
+                    fechaHoraVisible={`${horaSeleccionada.fechaVisible}, ${horaSeleccionada.horaVisible} – ${horaSeleccionada.horaFinVisible}`}
                     enviando={mutacionReserva.isPending}
                     error={
                         mutacionReserva.error && esErrorDeReservaPublica(mutacionReserva.error)

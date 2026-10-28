@@ -46,7 +46,7 @@ export default function VentanaReserva({
     onCerrar,
 }: PropiedadesVentanaReserva): ReactElement {
     return (
-        <div className="relative flex max-h-[90vh] w-full max-w-4xl flex-col overflow-y-auto rounded-tarjeta bg-blanco sm:flex-row">
+        <div className="scroll-primario relative flex max-h-[90vh] w-full max-w-4xl flex-col overflow-y-auto rounded-tarjeta bg-blanco sm:flex-row">
             <button
                 type="button"
                 onClick={onCerrar}

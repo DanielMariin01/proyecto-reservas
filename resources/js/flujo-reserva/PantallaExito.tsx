@@ -46,13 +46,13 @@ export default function PantallaExito({ cita, onCerrar }: PropiedadesPantallaExi
         : null;
 
     return (
-        <div className="w-full max-w-md text-center">
+        <Tarjeta className="scroll-primario max-h-[90vh] w-full max-w-md overflow-y-auto text-center">
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-secundario text-blanco">
                 <CheckCircle2 size={32} />
             </div>
             <h2 className="text-xl font-semibold text-tinta">¡Tu cita quedó reservada!</h2>
 
-            <Tarjeta className="mt-4 text-left">
+            <div className="mt-4 rounded-tarjeta bg-fondo-panel p-4 text-left">
                 <p className="font-semibold text-tinta">{cita.servicio}</p>
                 <p className="text-sm text-texto-suave">con {cita.profesional}</p>
                 <p className="mt-2 text-sm text-tinta">
@@ -60,7 +60,7 @@ export default function PantallaExito({ cita, onCerrar }: PropiedadesPantallaExi
                 </p>
                 {cita.direccion && <p className="text-sm text-texto-suave">{cita.direccion}</p>}
                 <p className="mt-2 text-lg font-bold text-tinta">${cita.precio.toLocaleString('es-CO')}</p>
-            </Tarjeta>
+            </div>
 
             <div className="mt-4 flex flex-col gap-2">
                 <Boton variante="contorno" onClick={() => descargarIcs(cita)}>
@@ -95,6 +95,6 @@ export default function PantallaExito({ cita, onCerrar }: PropiedadesPantallaExi
             <Boton variante="texto" className="mt-2" onClick={onCerrar}>
                 Cerrar
             </Boton>
-        </div>
+        </Tarjeta>
     );
 }

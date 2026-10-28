@@ -19,7 +19,7 @@ export default function SeleccionarProfesional({
     onCerrar,
 }: PropiedadesSeleccionarProfesional): ReactElement {
     return (
-        <div className="relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-tarjeta bg-blanco p-6">
+        <div className="scroll-primario relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-tarjeta bg-blanco p-6">
             <button
                 type="button"
                 onClick={onCerrar}

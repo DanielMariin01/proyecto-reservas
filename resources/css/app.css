@@ -12,3 +12,22 @@ body {
     font-family: var(--font-sans);
     color: var(--color-tinta);
 }
+
+/* Scrollbar del flujo de reserva en los tokens del proyecto (sección 1 de la skill diseno-reservas), no un gris suelto del navegador. */
+.scroll-primario {
+    scrollbar-color: var(--color-primario) var(--color-gris-claro);
+}
+
+.scroll-primario::-webkit-scrollbar {
+    width: 8px;
+}
+
+.scroll-primario::-webkit-scrollbar-track {
+    background: var(--color-gris-claro);
+    border-radius: var(--radius-boton);
+}
+
+.scroll-primario::-webkit-scrollbar-thumb {
+    background: var(--color-primario);
+    border-radius: var(--radius-boton);
+}
