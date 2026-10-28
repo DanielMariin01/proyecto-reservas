@@ -10,6 +10,7 @@ export default defineConfig({
                 'resources/css/app.css',
                 'resources/js/main.tsx',
                 'resources/js/pagina-negocio.tsx',
+                'resources/js/gestionar-cita.tsx',
                 'resources/css/filament/admin/theme.css',
                 'resources/css/filament/app/theme.css',
             ],

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\ElegirNegocioController;
+use App\Http\Controllers\GestionarCitaVistaController;
 use App\Http\Controllers\PaginaNegocioController;
 use App\Http\Controllers\RestablecimientoContrasenaController;
 use App\Http\Controllers\SesionController;
@@ -30,6 +31,11 @@ Route::middleware('auth')->group(function (): void {
     Route::get('/elegir-negocio/{negocio}', [ElegirNegocioController::class, 'elegir'])->name('elegir-negocio.entrar');
     Route::get('/suplantacion/salir', [SuplantacionController::class, 'salir'])->name('suplantacion.salir');
 });
+
+// CU-02: la pantalla que abre el enlace del correo para ver, cancelar o
+// reprogramar una cita. Va antes del comodín de un solo segmento de abajo.
+Route::get('/{negocio:slug}/reservas/{token}', [GestionarCitaVistaController::class, 'mostrar'])
+    ->name('gestionar-cita');
 
 // RF-DOM-01: la página pública de cada negocio. Debe quedar al final del
 // archivo: es un comodín de un solo segmento que, si se registrara antes,
