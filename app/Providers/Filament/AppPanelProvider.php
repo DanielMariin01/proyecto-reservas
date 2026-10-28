@@ -44,7 +44,7 @@ class AppPanelProvider extends PanelProvider
             ->tenant(Negocio::class, slugAttribute: 'slug')
             ->renderHook(
                 PanelsRenderHook::BODY_START,
-                fn (): View => view('filament.suplantacion-banner'),
+                fn (): View => view('filament.app.suplantacion-banner'),
             )
             ->discoverResources(in: app_path('Filament/App/Resources'), for: 'App\Filament\App\Resources')
             ->discoverPages(in: app_path('Filament/App/Pages'), for: 'App\Filament\App\Pages')

@@ -1,31 +1,12 @@
 @import url('https://fonts.googleapis.com/css2?family=Asap:wght@400;500;600;700&display=swap');
 @import 'tailwindcss';
+@import './tokens.css';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 @source "../**/*.blade.php";
 @source "../**/*.tsx";
 @source "../**/*.ts";
-
-@theme {
-    --font-sans: 'Asap', sans-serif;
-
-    --color-primario: #673DE6;
-    --color-secundario: #7454E9;
-    --color-acento: #587EAC;
-    --color-celeste: #E1EEFF;
-    --color-gris-claro: #EAEAEA;
-    --color-texto: #898989;
-    --color-texto-suave: #7A7A7A;
-    --color-tinta: #3E4043;
-    --color-blanco: #FFFFFF;
-    --color-fondo-panel: #F6F8FC;
-
-    --radius-tarjeta: 16px;
-    --radius-boton: 8px;
-
-    --shadow-tarjeta: 0 4px 24px rgba(91, 107, 177, 0.12);
-}
 
 body {
     font-family: var(--font-sans);
