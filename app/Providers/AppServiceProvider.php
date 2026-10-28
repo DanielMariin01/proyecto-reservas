@@ -9,12 +9,14 @@ use App\Disponibilidad\ReglaAvisoMinimo;
 use App\Disponibilidad\ReglaCabeEnBloque;
 use App\Disponibilidad\ReglaVentanaMaxima;
 use App\Models\CategoriaServicio;
+use App\Models\Cita;
 use App\Models\Negocio;
 use App\Models\PagoSuscripcion;
 use App\Models\Profesional;
 use App\Models\Servicio;
 use App\Models\Usuario;
 use App\Policies\PoliticaCategoriaServicio;
+use App\Policies\PoliticaCita;
 use App\Policies\PoliticaNegocio;
 use App\Policies\PoliticaPagoSuscripcion;
 use App\Policies\PoliticaProfesional;
@@ -48,5 +50,6 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(CategoriaServicio::class, PoliticaCategoriaServicio::class);
         Gate::policy(Servicio::class, PoliticaServicio::class);
         Gate::policy(Profesional::class, PoliticaProfesional::class);
+        Gate::policy(Cita::class, PoliticaCita::class);
     }
 }

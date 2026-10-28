@@ -54,6 +54,11 @@ final class Negocio extends Model implements HasName
         'margen_antes_minutos',
         'margen_despues_minutos',
         'intervalo_franjas_minutos',
+        'horas_minimas_cancelacion',
+        'horas_minimas_reprogramacion',
+        'maximo_reprogramaciones',
+        'confirmacion_manual',
+        'minutos_tolerancia_inasistencia',
     ];
 
     /**
@@ -69,6 +74,7 @@ final class Negocio extends Model implements HasName
             'vencido_desde' => 'datetime',
             'suspendido_desde' => 'datetime',
             'cancelado_desde' => 'datetime',
+            'confirmacion_manual' => 'boolean',
         ];
     }
 

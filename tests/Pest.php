@@ -17,6 +17,14 @@ uses(TestCase::class, RefreshDatabase::class)
     ->in('Feature');
 
 /**
+ * Sin RefreshDatabase: la prueba de concurrencia real lanza procesos de
+ * PHP aparte que necesitan ver los datos de la preparación con su propia
+ * conexión a la base de datos, y la envoltura transaccional de
+ * RefreshDatabase los ocultaría (nunca se hace commit).
+ */
+uses(TestCase::class)->in('Concurrencia');
+
+/**
  * Crea un negocio y un usuario con el rol dado, sin pasar por CrearNegocio
  * (evita enviar correos de restablecimiento en pruebas que no son sobre eso).
  */

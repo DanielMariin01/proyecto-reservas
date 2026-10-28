@@ -40,6 +40,7 @@ class AppPanelProvider extends PanelProvider
             ->colors([
                 'primary' => Color::hex('#673DE6'),
                 'success' => Color::hex('#7454E9'),
+                'warning' => Color::hex('#587EAC'),
             ])
             ->tenant(Negocio::class, slugAttribute: 'slug')
             ->renderHook(
