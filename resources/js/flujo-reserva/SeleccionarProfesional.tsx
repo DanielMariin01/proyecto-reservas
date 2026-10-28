@@ -42,14 +42,16 @@ export default function SeleccionarProfesional({
 
             {!cargando && (
                 <div className="grid gap-4 sm:grid-cols-3">
-                    <button type="button" onClick={() => onElegir(null)} className="text-left">
-                        <Tarjeta className="flex h-full flex-col items-center gap-2 text-center hover:shadow-none">
-                            <span className="flex h-20 w-20 items-center justify-center rounded-full bg-fondo-panel text-texto-suave">
-                                <Users size={32} strokeWidth={1.75} />
-                            </span>
-                            <span className="font-semibold text-tinta">Cualquiera disponible</span>
-                        </Tarjeta>
-                    </button>
+                    {profesionales.length > 1 && (
+                        <button type="button" onClick={() => onElegir(null)} className="text-left">
+                            <Tarjeta className="flex h-full flex-col items-center gap-2 text-center hover:shadow-none">
+                                <span className="flex h-20 w-20 items-center justify-center rounded-full bg-fondo-panel text-texto-suave">
+                                    <Users size={32} strokeWidth={1.75} />
+                                </span>
+                                <span className="font-semibold text-tinta">Cualquiera disponible</span>
+                            </Tarjeta>
+                        </button>
+                    )}
 
                     {profesionales.map((profesional) => (
                         <button type="button" key={profesional.id} onClick={() => onElegir(profesional.id)} className="text-left">

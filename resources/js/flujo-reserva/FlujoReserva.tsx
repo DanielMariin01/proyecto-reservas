@@ -47,19 +47,6 @@ export default function FlujoReserva({ slug, direccion, servicio, profesionalIni
         queryFn: () => obtenerProfesionales(slug, servicio.id),
     });
 
-    // Si solo hay un profesional (o ninguno) no hay nada que elegir: se salta
-    // directo al calendario, en vez de mostrar una pantalla de un solo botón.
-    useEffect(() => {
-        if (paso !== 'profesional' || !profesionalesQuery.data) {
-            return;
-        }
-
-        if (profesionalesQuery.data.length <= 1) {
-            setProfesionalId(profesionalesQuery.data[0]?.id ?? null);
-            setPaso('ventana');
-        }
-    }, [paso, profesionalesQuery.data]);
-
     const mesTexto = `${anio}-${String(mes).padStart(2, '0')}`;
     const diasQuery = useQuery({
         queryKey: ['dias', slug, servicio.id, profesionalId, mesTexto],
