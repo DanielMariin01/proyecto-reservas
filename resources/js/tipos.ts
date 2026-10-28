@@ -48,6 +48,25 @@ export interface ErrorReserva {
     horasCercanas: string[];
 }
 
+export interface CitaPorToken {
+    servicioId: number;
+    profesionalId: number;
+    servicio: string;
+    profesional: string;
+    inicio: string;
+    fin: string;
+    fechaVisible: string;
+    horaVisible: string;
+    precio: number;
+    estado: string;
+    direccion: string | null;
+    whatsapp: string | null;
+    nombreNegocio: string;
+    enlaceActivo: boolean;
+    puedeCancelar: boolean;
+    puedeReprogramar: boolean;
+}
+
 export interface DatosDelCliente {
     nombre: string;
     celular: string;

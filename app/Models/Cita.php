@@ -40,6 +40,7 @@ final class Cita extends Model
         'motivo_cancelacion',
         'token_cancelacion',
         'veces_reprogramada',
+        'recordatorio_enviado_en',
     ];
 
     /**
@@ -52,6 +53,7 @@ final class Cita extends Model
             'fin' => 'immutable_datetime',
             'estado' => EstadoCitaValor::class,
             'origen' => OrigenCita::class,
+            'recordatorio_enviado_en' => 'immutable_datetime',
         ];
     }
 

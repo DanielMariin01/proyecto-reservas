@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\Publico\DisponibilidadController;
+use App\Http\Controllers\Publico\GestionarCitaPorTokenController;
 use App\Http\Controllers\Publico\ProfesionalesController;
 use App\Http\Controllers\Publico\ReservasController;
 use App\Http\Controllers\Publico\ServiciosController;
@@ -27,4 +28,15 @@ Route::prefix('publico/{negocio:slug}')
         // RNF-04: límite de intentos más estricto en el endpoint de reserva.
         Route::post('/reservas', [ReservasController::class, 'store'])
             ->middleware('throttle:5,1');
+    });
+
+// CU-02: gestionar una cita ya existente desde el enlace del correo. Va
+// fuera del grupo anterior porque debe seguir funcionando aunque el
+// negocio quede suspendido mientras tanto (es una cita que ya existe, no
+// una reserva nueva).
+Route::prefix('publico/{negocio:slug}')
+    ->middleware('throttle:20,1')
+    ->group(function (): void {
+        Route::get('/reservas/{token}', [GestionarCitaPorTokenController::class, 'mostrar']);
+        Route::post('/reservas/{token}', [GestionarCitaPorTokenController::class, 'gestionar']);
     });
