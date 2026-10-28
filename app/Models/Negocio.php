@@ -49,6 +49,11 @@ final class Negocio extends Model implements HasName
         'vencido_desde',
         'suspendido_desde',
         'cancelado_desde',
+        'aviso_minimo_minutos',
+        'ventana_maxima_dias',
+        'margen_antes_minutos',
+        'margen_despues_minutos',
+        'intervalo_franjas_minutos',
     ];
 
     /**

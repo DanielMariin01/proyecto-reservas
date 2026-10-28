@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\DB;
@@ -64,6 +65,14 @@ final class Usuario extends Authenticatable implements FilamentUser, HasDefaultT
     public function getFilamentName(): string
     {
         return $this->nombre;
+    }
+
+    /**
+     * @return HasOne<Profesional, $this>
+     */
+    public function profesional(): HasOne
+    {
+        return $this->hasOne(Profesional::class);
     }
 
     public function canAccessPanel(Panel $panel): bool

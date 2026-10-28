@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Disponibilidad\CadenaReglasFranja;
+use App\Disponibilidad\ReglaAvisoMinimo;
+use App\Disponibilidad\ReglaCabeEnBloque;
+use App\Disponibilidad\ReglaVentanaMaxima;
 use App\Models\CategoriaServicio;
 use App\Models\Negocio;
 use App\Models\PagoSuscripcion;
@@ -26,7 +30,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->singleton(CadenaReglasFranja::class, fn (): CadenaReglasFranja => new CadenaReglasFranja([
+            new ReglaCabeEnBloque,
+            new ReglaAvisoMinimo,
+            new ReglaVentanaMaxima,
+        ]));
     }
 
     /**

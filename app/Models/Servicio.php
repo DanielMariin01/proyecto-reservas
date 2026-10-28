@@ -36,6 +36,7 @@ final class Servicio extends Model
         'margen_antes_minutos',
         'margen_despues_minutos',
         'intervalo_franjas_minutos',
+        'aviso_minimo_minutos',
         'visible',
         'orden',
     ];
@@ -67,5 +68,44 @@ final class Servicio extends Model
             ->using(ProfesionalServicio::class)
             ->withPivot(['precio', 'duracion_minutos'])
             ->withTimestamps();
+    }
+
+    /**
+     * RF-SER-03 / sección 5: el margen propio del servicio sobrescribe el
+     * del negocio.
+     */
+    public function margenAntesMinutos(): int
+    {
+        return $this->margen_antes_minutos ?? $this->negocioPropietario()->margen_antes_minutos;
+    }
+
+    public function margenDespuesMinutos(): int
+    {
+        return $this->margen_despues_minutos ?? $this->negocioPropietario()->margen_despues_minutos;
+    }
+
+    /**
+     * Sección 5: servicio -> negocio -> igual a la duración del servicio.
+     */
+    public function intervaloFranjasMinutos(): int
+    {
+        return $this->intervalo_franjas_minutos
+            ?? $this->negocioPropietario()->intervalo_franjas_minutos
+            ?? $this->duracion_minutos;
+    }
+
+    public function avisoMinimoMinutos(): int
+    {
+        return $this->aviso_minimo_minutos ?? $this->negocioPropietario()->aviso_minimo_minutos;
+    }
+
+    public function duracionTotalMinutos(): int
+    {
+        return $this->margenAntesMinutos() + $this->duracion_minutos + $this->margenDespuesMinutos();
+    }
+
+    private function negocioPropietario(): Negocio
+    {
+        return Negocio::findOrFail($this->negocio_id);
     }
 }
