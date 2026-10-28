@@ -70,9 +70,9 @@ Todas las pantallas se arman con estos componentes. Si falta uno, se crea aquí 
 | `Insignia` | Estados: confirmada (`--secundario`), pendiente (`--acento`), cancelada (gris), no asistió (gris oscuro). |
 | `SelectorDeHora` | Botón de ancho completo, alto 44 px, borde `--gris-claro`, radio 8 px, hora en negrita centrada. Seleccionado: fondo `--primario`, texto blanco. |
 | `CalendarioMes` | Ver sección 3. |
-| `LineaDetalle` | Ícono de Lucide de 18 px en `--texto-suave` + texto, para duración, fecha, empleado y dirección. |
+| `LineaDetalle` | Ícono de Lucide de 18 px en `--texto-suave` + texto, para duración, fecha, empleado, dirección, servicio y precio. |
 
-Íconos: solo **Lucide** (`lucide-react`), trazo 1,75, mismo tamaño en cada contexto. Reloj para duración, `calendar` para fecha, `user` para empleado, `building-2` para dirección, `x` para cerrar.
+Íconos: solo **Lucide** (`lucide-react`), trazo 1,75, mismo tamaño en cada contexto. `clock` para duración/hora, `calendar` para fecha, `user` para empleado, `building-2` para dirección, `scissors` para el servicio, `banknote` para el precio, `x` para cerrar.
 
 ## 3. Patrón: ventana de reserva
 

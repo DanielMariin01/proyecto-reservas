@@ -12,9 +12,8 @@ interface PropiedadesDatosYConfirmacion {
     nombreProfesional: string;
     direccion: string | null;
     fechaHoraVisible: string;
-    enviando: boolean;
-    error: string | null;
-    onConfirmar: (datos: DatosDelCliente) => void;
+    valoresIniciales: DatosDelCliente | null;
+    onContinuar: (datos: DatosDelCliente) => void;
     onVolver: () => void;
 }
 
@@ -23,20 +22,19 @@ export default function DatosYConfirmacion({
     nombreProfesional,
     direccion,
     fechaHoraVisible,
-    enviando,
-    error,
-    onConfirmar,
+    valoresIniciales,
+    onContinuar,
     onVolver,
 }: PropiedadesDatosYConfirmacion): ReactElement {
-    const [correo, setCorreo] = useState('');
-    const [nombre, setNombre] = useState('');
-    const [celular, setCelular] = useState('');
-    const [nota, setNota] = useState('');
-    const [autorizacionDatos, setAutorizacionDatos] = useState(false);
+    const [correo, setCorreo] = useState(valoresIniciales?.correo ?? '');
+    const [nombre, setNombre] = useState(valoresIniciales?.nombre ?? '');
+    const [celular, setCelular] = useState(valoresIniciales?.celular ?? '');
+    const [nota, setNota] = useState(valoresIniciales?.nota ?? '');
+    const [autorizacionDatos, setAutorizacionDatos] = useState(valoresIniciales?.autorizacionDatos ?? false);
 
     function manejarEnvio(evento: FormEvent<HTMLFormElement>): void {
         evento.preventDefault();
-        onConfirmar({ correo, nombre, celular, nota, autorizacionDatos });
+        onContinuar({ correo, nombre, celular, nota, autorizacionDatos });
     }
 
     const contenidoDelResumen: ReactNode = (
@@ -119,10 +117,8 @@ export default function DatosYConfirmacion({
                     <span>Autorizo el tratamiento de mis datos personales.</span>
                 </label>
 
-                {error && <p className="text-sm text-red-600">{error}</p>}
-
-                <Boton type="submit" className="w-full" disabled={enviando}>
-                    {enviando ? 'Confirmando...' : 'Confirmar reserva'}
+                <Boton type="submit" className="w-full">
+                    Continuar
                 </Boton>
             </form>
 
