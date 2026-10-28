@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Disponibilidad\BloqueLibre;
 use App\Disponibilidad\CadenaReglasFranja;
 use App\Disponibilidad\FabricaEstrategiaFranjas;
 use App\Disponibilidad\Franja;
 use App\Disponibilidad\HoraDisponible;
+use App\Disponibilidad\IntervalosOcupadosPorCitas;
 use App\Models\Profesional;
 use App\Models\Servicio;
 use Carbon\CarbonImmutable;
@@ -18,6 +20,7 @@ final class ServicioDisponibilidad
     public function __construct(
         private readonly FabricaEstrategiaFranjas $fabricaEstrategiaFranjas,
         private readonly CadenaReglasFranja $reglasFranja,
+        private readonly IntervalosOcupadosPorCitas $intervalosOcupadosPorCitas,
     ) {}
 
     /**
@@ -26,6 +29,10 @@ final class ServicioDisponibilidad
     public function obtenerFranjasDisponibles(Profesional $profesional, Servicio $servicio, CarbonImmutable $fecha): Collection
     {
         $bloquesLibres = $profesional->obtenerBloquesLibres($fecha);
+
+        foreach ($this->intervalosOcupadosPorCitas->paraProfesionalYFecha($profesional, $fecha) as $intervalo) {
+            $bloquesLibres = BloqueLibre::restar($bloquesLibres, $intervalo->inicio, $intervalo->fin);
+        }
 
         if ($bloquesLibres->isEmpty()) {
             return collect();

@@ -115,7 +115,7 @@ final class Profesional extends Model
                 $bloques = $this->bloquesDelHorarioSemanal($fechaLocal);
 
                 foreach ($this->bloqueosQueCruzan($fechaLocal, TipoBloqueo::Bloqueo) as $bloqueo) {
-                    $bloques = $this->restarIntervalo($bloques, $bloqueo->inicio, $bloqueo->fin);
+                    $bloques = BloqueLibre::restar($bloques, $bloqueo->inicio, $bloqueo->fin);
                 }
 
                 foreach ($this->bloqueosQueCruzan($fechaLocal, TipoBloqueo::Apertura) as $apertura) {
@@ -180,31 +180,6 @@ final class Profesional extends Model
             ->where('inicio', '<', $finDiaUtc)
             ->where('fin', '>', $inicioDiaUtc)
             ->get();
-    }
-
-    /**
-     * @param  Collection<int, BloqueLibre>  $bloques
-     * @return Collection<int, BloqueLibre>
-     */
-    private function restarIntervalo(Collection $bloques, CarbonImmutable $inicioBloqueo, CarbonImmutable $finBloqueo): Collection
-    {
-        return $bloques->flatMap(function (BloqueLibre $bloque) use ($inicioBloqueo, $finBloqueo): array {
-            if ($finBloqueo->lessThanOrEqualTo($bloque->inicio) || $inicioBloqueo->greaterThanOrEqualTo($bloque->fin)) {
-                return [$bloque];
-            }
-
-            $restante = [];
-
-            if ($inicioBloqueo->greaterThan($bloque->inicio)) {
-                $restante[] = new BloqueLibre($bloque->inicio, $inicioBloqueo);
-            }
-
-            if ($finBloqueo->lessThan($bloque->fin)) {
-                $restante[] = new BloqueLibre($finBloqueo, $bloque->fin);
-            }
-
-            return $restante;
-        });
     }
 
     /**

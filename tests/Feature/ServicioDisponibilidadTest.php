@@ -3,8 +3,11 @@
 declare(strict_types=1);
 
 use App\Enums\DiaSemana;
+use App\Enums\EstadoCitaValor;
 use App\Enums\TipoBloqueo;
 use App\Models\Bloqueo;
+use App\Models\Cita;
+use App\Models\Cliente;
 use App\Models\HorarioTrabajo;
 use App\Models\Negocio;
 use App\Models\Profesional;
@@ -381,4 +384,77 @@ test('la cache de bloques libres se invalida sola al agregar un bloqueo nuevo', 
     $segundaLectura = $servicioDisponibilidad->obtenerFranjasDisponibles($profesional, $servicio, $fecha);
 
     expect(horasVisibles($segundaLectura))->toBe(['11:00']);
+});
+
+test('una cita activa resta su franja ampliada con los margenes del servicio', function (): void {
+    ['negocio' => $negocio, 'fecha' => $fecha] = negocioYLunes();
+
+    $profesional = Profesional::factory()->create(['negocio_id' => $negocio->id]);
+    $servicioOcupante = Servicio::factory()->create([
+        'negocio_id' => $negocio->id,
+        'duracion_minutos' => 30,
+        'margen_antes_minutos' => 10,
+        'margen_despues_minutos' => 0,
+    ]);
+    $servicioConsultado = Servicio::factory()->create([
+        'negocio_id' => $negocio->id,
+        'duracion_minutos' => 30,
+        'intervalo_franjas_minutos' => 30,
+    ]);
+
+    HorarioTrabajo::factory()->create([
+        'negocio_id' => $negocio->id,
+        'profesional_id' => $profesional->id,
+        'dia_semana' => DiaSemana::from($fecha->dayOfWeek),
+        'hora_inicio' => '10:00:00',
+        'hora_fin' => '12:00:00',
+    ]);
+
+    // Cita visible 11:00-11:30, con 10 min de margen antes: ocupa 10:50-11:30
+    // de verdad, lo suficiente para tumbar la franja de las 10:30.
+    Cita::factory()->create([
+        'negocio_id' => $negocio->id,
+        'profesional_id' => $profesional->id,
+        'servicio_id' => $servicioOcupante->id,
+        'cliente_id' => Cliente::factory()->create(['negocio_id' => $negocio->id])->id,
+        'inicio' => $fecha->copy()->setTime(11, 0)->utc(),
+        'fin' => $fecha->copy()->setTime(11, 30)->utc(),
+        'estado' => EstadoCitaValor::Confirmada,
+    ]);
+
+    $horas = app(ServicioDisponibilidad::class)->obtenerFranjasDisponibles($profesional, $servicioConsultado, $fecha);
+
+    expect(horasVisibles($horas))->toBe(['10:00', '11:30']);
+});
+
+test('una cita cancelada no resta nada de la disponibilidad', function (): void {
+    ['negocio' => $negocio, 'fecha' => $fecha] = negocioYLunes();
+
+    $profesional = Profesional::factory()->create(['negocio_id' => $negocio->id]);
+    $servicio = Servicio::factory()->create([
+        'negocio_id' => $negocio->id,
+        'duracion_minutos' => 60,
+        'intervalo_franjas_minutos' => 60,
+    ]);
+
+    HorarioTrabajo::factory()->create([
+        'negocio_id' => $negocio->id,
+        'profesional_id' => $profesional->id,
+        'dia_semana' => DiaSemana::from($fecha->dayOfWeek),
+        'hora_inicio' => '10:00:00',
+        'hora_fin' => '12:00:00',
+    ]);
+
+    Cita::factory()->cancelada()->create([
+        'negocio_id' => $negocio->id,
+        'profesional_id' => $profesional->id,
+        'servicio_id' => $servicio->id,
+        'cliente_id' => Cliente::factory()->create(['negocio_id' => $negocio->id])->id,
+        'inicio' => $fecha->copy()->setTime(10, 0)->utc(),
+        'fin' => $fecha->copy()->setTime(11, 0)->utc(),
+    ]);
+
+    $horas = app(ServicioDisponibilidad::class)->obtenerFranjasDisponibles($profesional, $servicio, $fecha);
+
+    expect(horasVisibles($horas))->toBe(['10:00', '11:00']);
 });
