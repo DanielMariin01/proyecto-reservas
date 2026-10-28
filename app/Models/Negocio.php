@@ -120,6 +120,20 @@ final class Negocio extends Model implements HasName
         return $this->estado_suscripcion->permiteAccesoAlPanel();
     }
 
+    /**
+     * RF-SUS-04: un negocio suspendido o cancelado no recibe reservas
+     * nuevas, tampoco por API.
+     */
+    public function aceptaReservasPublicas(): bool
+    {
+        return $this->estado_suscripcion->permiteReservas();
+    }
+
+    public function getRouteKeyName(): string
+    {
+        return 'slug';
+    }
+
     public function fechaLimiteRetencionDeDatos(): ?Carbon
     {
         if ($this->cancelado_desde === null) {

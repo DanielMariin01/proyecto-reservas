@@ -62,6 +62,7 @@ Si una regla no está clara en el documento, **pregunta antes de inventarla**.
    ./vendor/bin/pint
    ./vendor/bin/phpstan analyse
    npm run lint
+   npm run typecheck
    npm run build
    ```
 5. Una rama y un pull request por tarea, con resumen de cambios y patrones usados.

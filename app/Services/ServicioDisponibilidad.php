@@ -10,6 +10,7 @@ use App\Disponibilidad\FabricaEstrategiaFranjas;
 use App\Disponibilidad\Franja;
 use App\Disponibilidad\HoraDisponible;
 use App\Disponibilidad\IntervalosOcupadosPorCitas;
+use App\Models\Negocio;
 use App\Models\Profesional;
 use App\Models\Servicio;
 use Carbon\CarbonImmutable;
@@ -62,5 +63,44 @@ final class ServicioDisponibilidad
             ->flatMap(fn (Profesional $profesional) => $this->obtenerFranjasDisponibles($profesional, $servicio, $fecha))
             ->sortBy(fn (HoraDisponible $hora): int => $hora->inicio->getTimestamp())
             ->values();
+    }
+
+    /**
+     * API pública GET /disponibilidad?mes=: qué días del mes tienen al
+     * menos una hora libre, para que el calendario deshabilite los demás.
+     * Reutiliza el mismo cálculo día por día, sin duplicar el algoritmo;
+     * no mira más allá de la ventana máxima del negocio.
+     *
+     * @return list<string>
+     */
+    public function obtenerDiasConDisponibilidadEnMes(
+        Negocio $negocio,
+        Servicio $servicio,
+        ?Profesional $profesional,
+        string $mesTexto,
+    ): array {
+        $primerDiaDelMes = CarbonImmutable::parse("{$mesTexto}-01", $negocio->zona_horaria)->startOfDay();
+        $hoy = CarbonImmutable::now($negocio->zona_horaria)->startOfDay();
+        $limite = $hoy->addDays($negocio->ventana_maxima_dias);
+
+        $profesionales = $profesional !== null
+            ? collect([$profesional])
+            : $servicio->profesionales()->where('activo', true)->get();
+
+        $dias = [];
+
+        for ($dia = $primerDiaDelMes; $dia->month === $primerDiaDelMes->month; $dia = $dia->addDay()) {
+            if ($dia->lessThan($hoy) || $dia->greaterThan($limite)) {
+                continue;
+            }
+
+            $tieneHoras = $this->obtenerFranjasParaCualquierProfesional($profesionales, $servicio, $dia)->isNotEmpty();
+
+            if ($tieneHoras) {
+                $dias[] = $dia->toDateString();
+            }
+        }
+
+        return $dias;
     }
 }
