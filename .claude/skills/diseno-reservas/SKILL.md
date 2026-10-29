@@ -71,14 +71,14 @@ El texto manuscrito/decorativo superpuesto sobre fotos (`textoManuscrito`) **no 
 
 ### Capa de legibilidad de `portada` (no es color libre)
 
-`portada` usa una foto de fondo a pantalla completa con una capa semitransparente encima para que el texto se lea — es legibilidad, no decoración, por eso es un `Select` de 2 opciones fijas (`App\Enums\CapaPortada`), no un `ColorPicker`:
+`portada` usa una foto de fondo a pantalla completa con un **degradado** encima (no una capa pareja en todo el ancho) para que el texto se lea donde está, sin tapar la foto donde no hay texto — es legibilidad, no decoración, por eso es un `Select` de 2 opciones fijas (`App\Enums\CapaPortada`), no un `ColorPicker`:
 
-| Opción | Capa | Texto | Uso |
+| Opción | Degradado (izquierda → derecha) | Texto | Uso |
 | --- | --- | --- | --- |
-| `oscura` (por defecto) | Negro ~35 % de opacidad | Blanco | Fotos claras |
-| `clara` | Blanco ~45 % de opacidad | `--tinta` | Fotos oscuras |
+| `oscura` (por defecto) | Negro ~35 % de opacidad del 0 % al 40 % del ancho, se desvanece a transparente hacia el 75 % | Blanco | Fotos claras |
+| `clara` | Blanco ~45 % de opacidad del 0 % al 40 % del ancho, se desvanece a transparente hacia el 75 % | `--tinta` | Fotos oscuras |
 
-No lleva el cálculo estricto de AA de las paletas de marca (una capa semitransparente sobre una foto variable no se puede verificar en el momento de guardar), pero ambas opacidades están pensadas para quedar razonablemente legibles a simple vista sobre casi cualquier foto. Si una foto puntual queda difícil de leer, el super admin cambia a la otra opción.
+Las opacidades pico (35 %/45 %) son las mismas que ya se verificaron con fotos reales del proyecto (contraste de 5,6 a 6,3:1 con el texto de cada opción) — el degradado solo acota esa opacidad al 0-40 % del ancho, donde vive el texto (anclado abajo a la izquierda), en vez de cubrir el 100 % de la foto. No lleva el cálculo estricto de AA de las paletas de marca (una capa sobre una foto variable no se puede verificar en el momento de guardar), es "razonablemente legible a simple vista". Si una foto puntual queda difícil de leer, el super admin cambia a la otra opción.
 
 ## 2. Componentes base
 
@@ -182,12 +182,12 @@ Igual de detallado que la ventana de reserva (sección 3), porque esta plantilla
 - **Celular**: el texto, el botón y la "x" se envuelven (`flex-wrap`) en vez de recortarse.
 
 **`encabezado`**
-- Color libre. Logo (o nombre del negocio si no hay logo) a la izquierda; enlaces de navegación al centro; ícono `log-in` a la derecha, enlaza directo a `/ingresar` (sin verificar si ya hay sesión activa — simple a propósito, no es el flujo de autenticación completo). Sin botón "Reservar" ni ícono de búsqueda.
+- Color libre. Logo (o nombre del negocio si no hay logo) a la izquierda; enlaces de navegación al centro; ícono `user-circle` a la derecha, enlaza directo a `/ingresar` (sin verificar si ya hay sesión activa — simple a propósito, no es el flujo de autenticación completo). Sin botón "Reservar" ni ícono de búsqueda.
 - No es `sticky`: el super admin lo puede reordenar como cualquier bloque, así que fijarlo rompería si no queda de primero.
 - **Celular**: los enlaces de navegación se **ocultan por completo** (sin menú hamburguesa en este alcance) — quedan logo e ícono de iniciar sesión.
 
 **`portada`**
-- Foto de fondo a pantalla completa (mínimo 80 % del alto de la ventana), con la capa de legibilidad de la sección 1 encima. Contenido anclado **abajo** a la izquierda (no arriba), en una sola columna sobre la foto (no 2 columnas):
+- Foto de fondo con `object-fit: cover` (nunca se deforma) dentro de un contenedor de **`aspect-ratio` fijo** por tamaño de pantalla — `4/5` en celular, `16/9` desde tablet, `21/9` desde escritorio grande —, con un piso de altura mínima (520/420/380 px) para que nunca quede demasiado bajo. Así el recorte de la foto es consistente entre pantallas, no depende del alto variable del viewport como antes. Degradado de legibilidad de la sección 1 encima. Contenido anclado **abajo** a la izquierda (no arriba), en una sola columna sobre la foto (no 2 columnas):
   1. Insignia en píldora semitransparente con el tipo de negocio (`Negocio.tipo`, nunca un campo escrito a mano — así siempre coincide con el negocio real), 14 px.
   2. Título mayúsculas muy grande (56-72 px) y negrita — el tamaño más grande del sistema.
   3. Fila de ubicación (ícono `map-pin` 20 px + `direccion`, ya existente) y horario (ícono `clock` 20 px + `horarioHoy`, texto libre que escribe el super admin — **no se calcula solo todavía**, no hay un endpoint de horario de atención del negocio hoy; construirlo es una tarea aparte), 16-18 px.
@@ -258,6 +258,7 @@ El negocio no define un color libre para su identidad de marca: el super admin l
 - Tema personalizado: `--primario` como color primario, `--secundario` como éxito, fuente Asap, radios y sombras de la guía.
 - Agenda por columnas de empleado con el color de cada empleado en el borde izquierdo de la cita.
 - Vista "Hoy" del empleado pensada para celular: tarjetas grandes con hora, cliente, servicio, `Insignia` de estado y acciones visibles sin menús ocultos.
+- **Builder de bloques de página** (`NegocioForm`): usa el soporte nativo de Filament 5 para no obligar a hacer scroll por una lista larga — `->collapsible()->collapsed()` (cada bloque empieza contraído, con botón individual y "colapsar/expandir todo"), `->blockNumbers(false)` (sin número, solo label) y `Block::make(...)->icon(...)` con un ícono Heroicon por tipo de bloque, para reconocerlo sin expandirlo. Nunca construir esto a mano si Filament ya lo trae.
 
 ## 8. Estados obligatorios en cada pantalla
 

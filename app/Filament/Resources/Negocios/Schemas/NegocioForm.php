@@ -82,7 +82,10 @@ class NegocioForm
                         ->label('Bloques')
                         ->blocks(EsquemaBloquesPagina::blocks())
                         ->default([])
-                        ->addActionLabel('Agregar bloque'),
+                        ->addActionLabel('Agregar bloque')
+                        ->collapsible()
+                        ->collapsed()
+                        ->blockNumbers(false),
                 ]),
         ]);
     }

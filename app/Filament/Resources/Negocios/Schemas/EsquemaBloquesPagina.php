@@ -42,6 +42,7 @@ final class EsquemaBloquesPagina
         return [
             Block::make(TipoBloque::BarraPromocion->value)
                 ->label(TipoBloque::BarraPromocion->etiqueta())
+                ->icon(Heroicon::OutlinedMegaphone)
                 ->schema([
                     TextInput::make('texto')->required()->maxLength(255),
                     TextInput::make('textoBoton')->maxLength(255),
@@ -50,12 +51,14 @@ final class EsquemaBloquesPagina
                 ]),
             Block::make(TipoBloque::Encabezado->value)
                 ->label(TipoBloque::Encabezado->etiqueta())
+                ->icon(Heroicon::OutlinedBars3)
                 ->schema([
                     self::repetidorEnlaces('enlaces', 'Enlaces de navegación', maximo: 5),
                     ...self::camposColorLibre('#FFFFFF', '#3E4043'),
                 ]),
             Block::make(TipoBloque::Portada->value)
                 ->label(TipoBloque::Portada->etiqueta())
+                ->icon(Heroicon::OutlinedPhoto)
                 ->schema([
                     TextInput::make('titulo')->required()->maxLength(255),
                     self::selectorCapaPortada(),
@@ -79,18 +82,23 @@ final class EsquemaBloquesPagina
                 ]),
             Block::make(TipoBloque::Equipo->value)
                 ->label(TipoBloque::Equipo->etiqueta())
+                ->icon(Heroicon::OutlinedUserGroup)
                 ->schema(self::camposColorLibre('#FFFFFF', '#3E4043')),
             Block::make(TipoBloque::Servicios->value)
                 ->label(TipoBloque::Servicios->etiqueta())
+                ->icon(Heroicon::OutlinedSparkles)
                 ->schema(self::camposColorLibre('#FFFFFF', '#3E4043')),
             Block::make(TipoBloque::Cursos->value)
                 ->label(TipoBloque::Cursos->etiqueta().' (próximamente)')
+                ->icon(Heroicon::OutlinedAcademicCap)
                 ->schema(self::camposColorLibre('#FFFFFF', '#3E4043')),
             Block::make(TipoBloque::Productos->value)
                 ->label(TipoBloque::Productos->etiqueta().' (próximamente)')
+                ->icon(Heroicon::OutlinedShoppingBag)
                 ->schema(self::camposColorLibre('#FFFFFF', '#3E4043')),
             Block::make(TipoBloque::Texto->value)
                 ->label(TipoBloque::Texto->etiqueta())
+                ->icon(Heroicon::OutlinedDocumentText)
                 ->schema([
                     TextInput::make('titulo')->maxLength(255),
                     Textarea::make('parrafo')
@@ -100,6 +108,7 @@ final class EsquemaBloquesPagina
                 ]),
             Block::make(TipoBloque::TextoConImagen->value)
                 ->label(TipoBloque::TextoConImagen->etiqueta())
+                ->icon(Heroicon::OutlinedViewColumns)
                 ->schema([
                     TextInput::make('etiqueta')->maxLength(255),
                     TextInput::make('titulo')->maxLength(255),
@@ -118,12 +127,14 @@ final class EsquemaBloquesPagina
                 ]),
             Block::make(TipoBloque::Galeria->value)
                 ->label(TipoBloque::Galeria->etiqueta())
+                ->icon(Heroicon::OutlinedSquares2x2)
                 ->schema([
                     FileUpload::make('fotos')->image()->multiple()->disk('public')->directory('paginas'),
                     ...self::camposColorLibre('#FFFFFF', '#3E4043'),
                 ]),
             Block::make(TipoBloque::Tarjetas->value)
                 ->label(TipoBloque::Tarjetas->etiqueta())
+                ->icon(Heroicon::OutlinedRectangleStack)
                 ->schema([
                     Select::make('columnas')
                         ->options([1 => '1 columna', 2 => '2 columnas', 3 => '3 columnas'])
@@ -142,6 +153,7 @@ final class EsquemaBloquesPagina
                 ]),
             Block::make(TipoBloque::BannerOferta->value)
                 ->label(TipoBloque::BannerOferta->etiqueta())
+                ->icon(Heroicon::OutlinedTag)
                 ->schema([
                     TextInput::make('etiqueta')->maxLength(255),
                     TextInput::make('titulo')->required()->maxLength(255),
@@ -154,6 +166,7 @@ final class EsquemaBloquesPagina
                 ]),
             Block::make(TipoBloque::Testimonios->value)
                 ->label(TipoBloque::Testimonios->etiqueta())
+                ->icon(Heroicon::OutlinedChatBubbleLeftRight)
                 ->schema([
                     Hidden::make('fuente')->default(FuenteTestimonios::Manual->value),
                     Repeater::make('testimonios')
@@ -175,12 +188,15 @@ final class EsquemaBloquesPagina
                 ]),
             Block::make(TipoBloque::Ubicacion->value)
                 ->label(TipoBloque::Ubicacion->etiqueta())
+                ->icon(Heroicon::OutlinedMapPin)
                 ->schema(self::camposColorLibre('#FFFFFF', '#3E4043')),
             Block::make(TipoBloque::Whatsapp->value)
                 ->label(TipoBloque::Whatsapp->etiqueta())
+                ->icon(Heroicon::OutlinedChatBubbleOvalLeft)
                 ->schema(self::camposColorLibre('#7454E9', '#FFFFFF')),
             Block::make(TipoBloque::PieDePagina->value)
                 ->label(TipoBloque::PieDePagina->etiqueta())
+                ->icon(Heroicon::OutlinedBars3BottomLeft)
                 ->schema([
                     TextInput::make('facebookUrl')->label('Enlace de Facebook')->url()->maxLength(255),
                     TextInput::make('instagramUrl')->label('Enlace de Instagram')->url()->maxLength(255),

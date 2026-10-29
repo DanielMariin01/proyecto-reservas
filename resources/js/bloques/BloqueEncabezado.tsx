@@ -1,4 +1,4 @@
-import { LogIn } from 'lucide-react';
+import { UserCircle } from 'lucide-react';
 import type { ReactElement } from 'react';
 import { obtenerEstiloColor } from './colorLibre';
 import type { PropiedadesBloque } from './tipos';
@@ -42,7 +42,7 @@ export default function BloqueEncabezado({ datos, pagina }: PropiedadesBloque): 
                 )}
 
                 <a href="/ingresar" aria-label="Iniciar sesión" className="flex items-center">
-                    <LogIn size={22} strokeWidth={1.75} />
+                    <UserCircle size={24} strokeWidth={1.75} />
                 </a>
             </div>
         </header>
