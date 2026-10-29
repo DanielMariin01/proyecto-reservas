@@ -48,6 +48,25 @@ export interface ErrorReserva {
     horasCercanas: string[];
 }
 
+export interface Bloque {
+    tipo: string;
+    datos: Record<string, unknown>;
+}
+
+export interface PaginaPublica {
+    nombreNegocio: string;
+    tipo: string;
+    tipoEtiqueta: string;
+    logo: string | null;
+    colorPrimario: string | null;
+    colorSecundario: string | null;
+    direccion: string | null;
+    whatsapp: string | null;
+    redesSociales: Record<string, string>;
+    bloques: Bloque[];
+    esVistaPrevia: boolean;
+}
+
 export interface CitaPorToken {
     servicioId: number;
     profesionalId: number;

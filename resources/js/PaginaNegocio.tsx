@@ -1,81 +1,91 @@
-import { useState } from 'react';
-import type { ReactElement } from 'react';
+import { useMemo, useState } from 'react';
+import type { CSSProperties, ReactElement } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import Boton from '@/componentes/Boton';
-import Tarjeta from '@/componentes/Tarjeta';
+import { obtenerPagina } from '@/bloques/api/clientePagina';
+import registroBloques from '@/bloques/registroBloques';
+import type { OpcionesReserva } from '@/bloques/tipos';
 import FlujoReserva from '@/flujo-reserva/FlujoReserva';
-import { obtenerServicios } from '@/flujo-reserva/api/clientePublico';
-import type { Servicio } from '@/tipos';
 
 interface PropiedadesPaginaNegocio {
     slug: string;
-    nombreNegocio: string;
-    direccion: string | null;
 }
 
-/**
- * Página mínima para T6: la página armable por bloques (portada, equipo,
- * galería...) es T8. Aquí solo se demuestra el flujo completo de reserva
- * de principio a fin, consumiendo la API pública.
- */
-export default function PaginaNegocio({ slug, nombreNegocio, direccion }: PropiedadesPaginaNegocio): ReactElement {
-    const [servicioElegido, setServicioElegido] = useState<Servicio | null>(null);
+export default function PaginaNegocio({ slug }: PropiedadesPaginaNegocio): ReactElement {
+    const vistaPrevia = useMemo(() => new URLSearchParams(window.location.search).get('vista_previa') === '1', []);
+    const [reserva, setReserva] = useState<OpcionesReserva | null>(null);
 
-    const serviciosQuery = useQuery({
-        queryKey: ['servicios', slug],
-        queryFn: () => obtenerServicios(slug),
+    const paginaQuery = useQuery({
+        queryKey: ['pagina', slug, vistaPrevia],
+        queryFn: () => obtenerPagina(slug, vistaPrevia),
     });
 
+    if (paginaQuery.isLoading) {
+        return (
+            <main className="min-h-screen bg-fondo-panel p-6">
+                <div className="mx-auto max-w-5xl space-y-4">
+                    <div className="h-64 animate-pulse rounded-tarjeta bg-gris-claro" />
+                    <div className="h-32 animate-pulse rounded-tarjeta bg-gris-claro" />
+                </div>
+            </main>
+        );
+    }
+
+    if (paginaQuery.isError || !paginaQuery.data) {
+        return (
+            <main className="flex min-h-screen items-center justify-center bg-fondo-panel p-6 text-center">
+                <p className="text-sm text-texto-suave">Algo falló cargando esta página. Código REF-PAG1.</p>
+            </main>
+        );
+    }
+
+    const pagina = paginaQuery.data;
+
+    /**
+     * Skill diseno-reservas, sección 6: los colores de marca del negocio
+     * sobrescriben --primario/--secundario solo dentro de su página
+     * pública (incluido el flujo de reserva, que se renderiza dentro de
+     * este mismo <main>). Si el negocio no tiene paleta, quedan los
+     * tokens de sistema sin tocar.
+     */
+    const estiloMarca = {
+        ...(pagina.colorPrimario ? { '--color-primario': pagina.colorPrimario } : {}),
+        ...(pagina.colorSecundario ? { '--color-secundario': pagina.colorSecundario } : {}),
+    } as CSSProperties;
+
     return (
-        <main className="min-h-screen bg-fondo-panel">
-            <header className="border-b border-gris-claro bg-blanco p-6">
-                <h1 className="text-2xl font-bold text-tinta">{nombreNegocio}</h1>
-                {direccion && <p className="text-sm text-texto-suave">{direccion}</p>}
-            </header>
+        <main className="min-h-screen bg-blanco" style={estiloMarca}>
+            {pagina.esVistaPrevia && (
+                <div className="bg-acento p-2 text-center text-sm font-semibold text-blanco">
+                    Vista previa — esto todavía no está publicado
+                </div>
+            )}
 
-            <section className="mx-auto max-w-5xl p-6">
-                <h2 className="mb-4 text-xl font-semibold text-tinta">Servicios</h2>
+            {pagina.bloques.map((bloque, indice) => {
+                const Bloque = registroBloques[bloque.tipo];
 
-                {serviciosQuery.isLoading && (
-                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" aria-label="Cargando servicios">
-                        {[1, 2, 3].map((n) => (
-                            <div key={n} className="h-32 animate-pulse rounded-tarjeta bg-gris-claro" />
-                        ))}
-                    </div>
-                )}
+                if (!Bloque) {
+                    return null;
+                }
 
-                {serviciosQuery.isError && (
-                    <p className="text-sm text-red-600">Algo falló cargando los servicios. Código REF-SRV1. Intenta de nuevo.</p>
-                )}
+                return (
+                    <Bloque
+                        key={`${bloque.tipo}-${indice}`}
+                        tipo={bloque.tipo}
+                        datos={bloque.datos}
+                        pagina={pagina}
+                        slug={slug}
+                        onReservar={setReserva}
+                    />
+                );
+            })}
 
-                {serviciosQuery.data && serviciosQuery.data.length === 0 && (
-                    <p className="text-sm text-texto-suave">Este negocio aún no tiene servicios disponibles.</p>
-                )}
-
-                {serviciosQuery.data && serviciosQuery.data.length > 0 && (
-                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                        {serviciosQuery.data.map((servicio) => (
-                            <Tarjeta key={servicio.id}>
-                                {servicio.foto && <img src={servicio.foto} alt="" className="mb-3 h-32 w-full rounded-boton object-cover" />}
-                                <p className="font-semibold text-tinta">{servicio.nombre}</p>
-                                <p className="text-sm text-texto-suave">
-                                    ${servicio.precio.toLocaleString('es-CO')} · {servicio.duracionMinutos} min
-                                </p>
-                                <Boton className="mt-3 w-full" onClick={() => setServicioElegido(servicio)}>
-                                    Agendar
-                                </Boton>
-                            </Tarjeta>
-                        ))}
-                    </div>
-                )}
-            </section>
-
-            {servicioElegido && (
+            {reserva && (
                 <FlujoReserva
                     slug={slug}
-                    direccion={direccion}
-                    servicio={servicioElegido}
-                    onCerrar={() => setServicioElegido(null)}
+                    direccion={pagina.direccion}
+                    servicioInicial={reserva.servicio ?? null}
+                    profesionalInicial={reserva.profesionalId ?? null}
+                    onCerrar={() => setReserva(null)}
                 />
             )}
         </main>

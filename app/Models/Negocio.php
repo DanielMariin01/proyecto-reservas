@@ -13,7 +13,9 @@ use Filament\Facades\Filament;
 use Filament\Models\Contracts\HasName;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
@@ -33,8 +35,7 @@ final class Negocio extends Model implements HasName
         'slug',
         'tipo',
         'logo',
-        'color_primario',
-        'color_secundario',
+        'paleta_marca_id',
         'direccion',
         'ciudad',
         'telefono',
@@ -59,6 +60,7 @@ final class Negocio extends Model implements HasName
         'maximo_reprogramaciones',
         'confirmacion_manual',
         'minutos_tolerancia_inasistencia',
+        'permite_editar_pagina',
     ];
 
     /**
@@ -75,6 +77,7 @@ final class Negocio extends Model implements HasName
             'suspendido_desde' => 'datetime',
             'cancelado_desde' => 'datetime',
             'confirmacion_manual' => 'boolean',
+            'permite_editar_pagina' => 'boolean',
         ];
     }
 
@@ -84,6 +87,22 @@ final class Negocio extends Model implements HasName
     public function pagosSuscripcion(): HasMany
     {
         return $this->hasMany(PagoSuscripcion::class);
+    }
+
+    /**
+     * @return HasOne<Pagina, $this>
+     */
+    public function pagina(): HasOne
+    {
+        return $this->hasOne(Pagina::class);
+    }
+
+    /**
+     * @return BelongsTo<PaletaMarca, $this>
+     */
+    public function paletaMarca(): BelongsTo
+    {
+        return $this->belongsTo(PaletaMarca::class);
     }
 
     /**

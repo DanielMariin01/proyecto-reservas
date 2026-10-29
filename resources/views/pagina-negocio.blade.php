@@ -9,11 +9,6 @@
         @vite(['resources/css/app.css', 'resources/js/pagina-negocio.tsx'])
     </head>
     <body>
-        <div
-            id="pagina-negocio"
-            data-negocio-slug="{{ $negocio->slug }}"
-            data-negocio-nombre="{{ $negocio->nombre }}"
-            data-negocio-direccion="{{ $negocio->direccion }}"
-        ></div>
+        <div id="pagina-negocio" data-negocio-slug="{{ $negocio->slug }}"></div>
     </body>
 </html>

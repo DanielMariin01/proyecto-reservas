@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Http\Controllers\Publico\DisponibilidadController;
 use App\Http\Controllers\Publico\GestionarCitaPorTokenController;
+use App\Http\Controllers\Publico\PaginaController;
 use App\Http\Controllers\Publico\ProfesionalesController;
 use App\Http\Controllers\Publico\ReservasController;
 use App\Http\Controllers\Publico\ServiciosController;
@@ -16,6 +17,9 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('publico/{negocio:slug}')
     ->middleware(VerificarNegocioAceptaReservas::class)
     ->group(function (): void {
+        Route::get('/pagina', [PaginaController::class, 'mostrar'])
+            ->middleware('throttle:60,1');
+
         Route::get('/servicios', [ServiciosController::class, 'index'])
             ->middleware('throttle:60,1');
 

@@ -26,6 +26,12 @@ export async function obtenerProfesionales(slug: string, servicioId: number): Pr
     return respuesta.data.data.filter((profesional) => profesional.servicios.includes(servicioId));
 }
 
+export async function obtenerTodosLosProfesionales(slug: string): Promise<Profesional[]> {
+    const respuesta = await axios.get<{ data: Profesional[] }>(`/api/publico/${slug}/profesionales`);
+
+    return respuesta.data.data;
+}
+
 export async function obtenerDiasConDisponibilidad(
     slug: string,
     servicioId: number,
