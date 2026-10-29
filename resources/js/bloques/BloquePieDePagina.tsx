@@ -1,44 +1,60 @@
+import { MapPin, Phone } from 'lucide-react';
 import type { ReactElement } from 'react';
+import IconoFacebook from '@/componentes/IconoFacebook';
+import IconoInstagram from '@/componentes/IconoInstagram';
 import type { PropiedadesBloque } from './tipos';
 
-interface Enlace {
-    texto?: unknown;
-    url?: unknown;
-}
-
 export default function BloquePieDePagina({ datos, pagina }: PropiedadesBloque): ReactElement {
-    const descripcionCorta = typeof datos.descripcionCorta === 'string' ? datos.descripcionCorta : '';
-    const enlaces = Array.isArray(datos.enlaces) ? (datos.enlaces as Enlace[]) : [];
+    const facebookUrl = typeof datos.facebookUrl === 'string' ? datos.facebookUrl : '';
+    const instagramUrl = typeof datos.instagramUrl === 'string' ? datos.instagramUrl : '';
     const anio = new Date().getFullYear();
+    const sinRedes = facebookUrl === '' && instagramUrl === '';
 
     return (
         <footer className="bg-tinta text-blanco">
             <div className="mx-auto max-w-[1200px] px-4 py-12">
-                <div className="flex flex-col gap-8 sm:flex-row sm:justify-between">
-                    <div className="max-w-sm">
+                <div className="grid grid-cols-1 gap-8 text-center sm:grid-cols-3">
+                    <div>
                         <p className="text-lg font-bold">{pagina.nombreNegocio}</p>
-                        {descripcionCorta && <p className="mt-2 text-sm text-gris-claro">{descripcionCorta}</p>}
-                        {pagina.direccion && <p className="mt-4 text-sm text-gris-claro">{pagina.direccion}</p>}
-                        {pagina.whatsapp && <p className="text-sm text-gris-claro">{pagina.whatsapp}</p>}
+                        {pagina.direccion && <p className="mt-2 text-sm text-gris-claro">{pagina.direccion}</p>}
                     </div>
 
-                    {enlaces.length > 0 && (
-                        <nav className="flex flex-col gap-2 text-sm text-gris-claro">
-                            {enlaces.map((enlace, indice) => {
-                                const texto = typeof enlace.texto === 'string' ? enlace.texto : '';
-                                const url = typeof enlace.url === 'string' ? enlace.url : '#';
+                    <div>
+                        <p className="text-sm font-semibold uppercase tracking-widest">Info</p>
+                        {pagina.direccion && (
+                            <p className="mt-3 flex items-center justify-center gap-2 text-sm text-gris-claro">
+                                <MapPin size={16} strokeWidth={1.75} />
+                                {pagina.direccion}
+                            </p>
+                        )}
+                        {pagina.whatsapp && (
+                            <p className="mt-2 flex items-center justify-center gap-2 text-sm text-gris-claro">
+                                <Phone size={16} strokeWidth={1.75} />
+                                {pagina.whatsapp}
+                            </p>
+                        )}
+                    </div>
 
-                                return (
-                                    <a key={indice} href={url} className="hover:text-blanco">
-                                        {texto}
+                    {!sinRedes && (
+                        <div>
+                            <p className="text-sm font-semibold uppercase tracking-widest">Síguenos</p>
+                            <div className="mt-3 flex items-center justify-center gap-4">
+                                {facebookUrl && (
+                                    <a href={facebookUrl} target="_blank" rel="noreferrer" aria-label="Facebook" className="hover:opacity-75">
+                                        <IconoFacebook size={22} />
                                     </a>
-                                );
-                            })}
-                        </nav>
+                                )}
+                                {instagramUrl && (
+                                    <a href={instagramUrl} target="_blank" rel="noreferrer" aria-label="Instagram" className="hover:opacity-75">
+                                        <IconoInstagram size={22} />
+                                    </a>
+                                )}
+                            </div>
+                        </div>
                     )}
                 </div>
 
-                <p className="mt-10 text-xs text-gris-claro">
+                <p className="mt-10 text-center text-xs text-gris-claro">
                     © {anio} {pagina.nombreNegocio}
                 </p>
             </div>

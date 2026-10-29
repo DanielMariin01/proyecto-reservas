@@ -78,7 +78,7 @@ test('indicesEditables no incluye bloques sin texto propio', function (): void {
     expect($indices)->toBe([0]);
 });
 
-test('indicesEditables incluye los bloques nuevos con texto pero no encabezado ni testimonios', function (): void {
+test('indicesEditables incluye los bloques nuevos con texto pero no encabezado, testimonios ni pie de pagina', function (): void {
     $negocio = Negocio::factory()->create(['permite_editar_pagina' => true]);
     $dueno = crearUsuarioConRol($negocio, RolNegocio::Dueno);
     Pagina::factory()->create([
@@ -87,7 +87,7 @@ test('indicesEditables incluye los bloques nuevos con texto pero no encabezado n
             ['type' => TipoBloque::BarraPromocion->value, 'data' => ['texto' => 'Oferta']],
             ['type' => TipoBloque::Encabezado->value, 'data' => ['enlaces' => []]],
             ['type' => TipoBloque::Testimonios->value, 'data' => ['testimonios' => []]],
-            ['type' => TipoBloque::PieDePagina->value, 'data' => ['descripcionCorta' => '']],
+            ['type' => TipoBloque::PieDePagina->value, 'data' => ['facebookUrl' => '']],
         ],
     ]);
 
@@ -96,7 +96,7 @@ test('indicesEditables incluye los bloques nuevos con texto pero no encabezado n
 
     $indices = Livewire::actingAs($dueno)->test(PaginaWeb::class)->instance()->indicesEditables();
 
-    expect($indices)->toBe([0, 3]);
+    expect($indices)->toBe([0]);
 });
 
 test('el dueno puede subir una foto nueva de portada y queda guardada en el disco publico', function (): void {

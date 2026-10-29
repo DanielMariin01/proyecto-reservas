@@ -8,9 +8,9 @@ export default function BloqueTexto({ datos }: PropiedadesBloque): ReactElement 
 
     return (
         <section style={obtenerEstiloColor(datos)}>
-            <div className="mx-auto max-w-3xl px-4 py-10 sm:py-16">
-                {titulo && <h2 className="mb-4 text-2xl font-bold sm:text-3xl">{titulo}</h2>}
-                {parrafo && <p className="whitespace-pre-line text-base">{parrafo}</p>}
+            <div className="mx-auto max-w-3xl px-4 py-10 text-center sm:py-16">
+                {titulo && <h2 className="text-2xl font-bold sm:text-3xl">{titulo}</h2>}
+                {parrafo && <p className="mt-4 whitespace-pre-line text-base">{parrafo}</p>}
             </div>
         </section>
     );

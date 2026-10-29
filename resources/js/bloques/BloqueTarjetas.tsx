@@ -38,7 +38,7 @@ export default function BloqueTarjetas({ datos }: PropiedadesBloque): ReactEleme
                         const descripcion = typeof tarjeta.descripcion === 'string' ? tarjeta.descripcion : '';
 
                         return (
-                            <div key={indice}>
+                            <div key={indice} className="text-center">
                                 {imagen && <img src={imagen} alt="" className="mb-3 aspect-[4/3] w-full rounded-tarjeta object-cover" />}
                                 {titulo && <p className="font-semibold">{titulo}</p>}
                                 {descripcion && <p className="mt-1 text-sm opacity-80">{descripcion}</p>}

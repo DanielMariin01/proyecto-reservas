@@ -48,7 +48,6 @@ final class PaginaWeb extends Page
         TipoBloque::TextoConImagen->value => ['etiqueta', 'titulo', 'parrafo', 'fraseResaltada', 'textoBoton', 'enlaceBoton', 'imagen', 'textoManuscrito'],
         TipoBloque::Galeria->value => ['fotos'],
         TipoBloque::BannerOferta->value => ['etiqueta', 'titulo', 'descripcion', 'textoBoton', 'enlaceBoton', 'imagen', 'textoManuscrito'],
-        TipoBloque::PieDePagina->value => ['descripcionCorta'],
     ];
 
     protected static ?string $slug = 'pagina-web';

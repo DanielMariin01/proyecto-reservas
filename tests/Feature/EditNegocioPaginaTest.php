@@ -111,7 +111,7 @@ test('el super admin arma los bloques nuevos de la plantilla de landing', functi
         ->fillForm([
             'pagina.bloques' => [
                 ['type' => TipoBloque::BarraPromocion->value, 'data' => ['texto' => '20% de descuento hoy', 'textoBoton' => 'Ver más', 'enlaceBoton' => 'https://ejemplo.com']],
-                ['type' => TipoBloque::Encabezado->value, 'data' => ['enlaces' => [['texto' => 'Servicios', 'url' => '#servicios']]]],
+                ['type' => TipoBloque::Encabezado->value, 'data' => ['enlaces' => [['texto' => 'Servicios', 'url' => '#servicios']], 'colorFondo' => '#112233', 'colorTexto' => '#FFFFFF']],
                 ['type' => TipoBloque::BannerOferta->value, 'data' => ['titulo' => 'Oferta de octubre', 'descripcion' => 'Solo este mes']],
                 [
                     'type' => TipoBloque::Testimonios->value,
@@ -122,6 +122,7 @@ test('el super admin arma los bloques nuevos de la plantilla de landing', functi
                         ],
                     ],
                 ],
+                ['type' => TipoBloque::PieDePagina->value, 'data' => ['facebookUrl' => 'https://facebook.com/negocio', 'instagramUrl' => 'https://instagram.com/negocio']],
             ],
         ])
         ->call('save')
@@ -129,11 +130,13 @@ test('el super admin arma los bloques nuevos de la plantilla de landing', functi
 
     $pagina = Pagina::query()->where('negocio_id', $negocio->id)->first();
 
-    expect($pagina->bloques)->toHaveCount(4);
+    expect($pagina->bloques)->toHaveCount(5);
     expect($pagina->bloques[0]['type'])->toBe(TipoBloque::BarraPromocion->value);
     expect($pagina->bloques[1]['data']['enlaces'][0]['texto'])->toBe('Servicios');
+    expect($pagina->bloques[1]['data']['colorFondo'])->toBe('#112233');
     expect($pagina->bloques[3]['data']['testimonios'][0]['nombre'])->toBe('Ana');
     expect($pagina->bloques[3]['data']['testimonios'][0]['estrellas'])->toBe(5);
+    expect($pagina->bloques[4]['data']['facebookUrl'])->toBe('https://facebook.com/negocio');
 });
 
 test('el super admin arma un bloque de tarjetas en columnas', function (): void {

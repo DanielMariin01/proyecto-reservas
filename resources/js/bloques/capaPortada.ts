@@ -14,7 +14,7 @@ interface ClasesCapa {
  * exige a las paletas de marca).
  */
 const CAPAS: Record<CapaPortada, ClasesCapa> = {
-    oscura: { capa: 'bg-black/50', texto: 'text-blanco', pildora: 'bg-black/40' },
+    oscura: { capa: 'bg-black/35', texto: 'text-blanco', pildora: 'bg-black/40' },
     clara: { capa: 'bg-blanco/70', texto: 'text-tinta', pildora: 'bg-blanco/70' },
 };
 

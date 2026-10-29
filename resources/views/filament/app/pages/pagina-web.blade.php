@@ -112,14 +112,6 @@
                         </label>
                     @endif
 
-                    @if (array_key_exists('descripcionCorta', $bloques[$indice]['data'] ?? []))
-                        <label class="mb-3 block">
-                            <span class="fi-fo-field-wrp-label text-sm font-medium">Descripción corta</span>
-                            <input type="text" wire:model="bloques.{{ $indice }}.data.descripcionCorta"
-                                class="fi-input mt-1 block w-full rounded-lg border-gray-300 text-sm dark:border-gray-600 dark:bg-gray-800" />
-                        </label>
-                    @endif
-
                     @if (array_key_exists('imagen', $bloques[$indice]['data'] ?? []))
                         <label class="mt-3 block">
                             <span class="fi-fo-field-wrp-label text-sm font-medium">Imagen</span>

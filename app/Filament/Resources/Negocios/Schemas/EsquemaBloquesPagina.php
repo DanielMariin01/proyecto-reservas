@@ -52,6 +52,7 @@ final class EsquemaBloquesPagina
                 ->label(TipoBloque::Encabezado->etiqueta())
                 ->schema([
                     self::repetidorEnlaces('enlaces', 'Enlaces de navegación', maximo: 5),
+                    ...self::camposColorLibre('#FFFFFF', '#3E4043'),
                 ]),
             Block::make(TipoBloque::Portada->value)
                 ->label(TipoBloque::Portada->etiqueta())
@@ -145,7 +146,7 @@ final class EsquemaBloquesPagina
                     TextInput::make('etiqueta')->maxLength(255),
                     TextInput::make('titulo')->required()->maxLength(255),
                     Textarea::make('descripcion')->rows(3),
-                    TextInput::make('textoBoton')->maxLength(255),
+                    TextInput::make('textoBoton')->default('Reserva tu cupo')->maxLength(255),
                     TextInput::make('enlaceBoton')->url()->maxLength(255),
                     FileUpload::make('imagen')->image()->disk('public')->directory('paginas'),
                     TextInput::make('textoManuscrito')->maxLength(255),
@@ -181,8 +182,8 @@ final class EsquemaBloquesPagina
             Block::make(TipoBloque::PieDePagina->value)
                 ->label(TipoBloque::PieDePagina->etiqueta())
                 ->schema([
-                    TextInput::make('descripcionCorta')->label('Descripción corta')->maxLength(255),
-                    self::repetidorEnlaces('enlaces', 'Enlaces', maximo: 5),
+                    TextInput::make('facebookUrl')->label('Enlace de Facebook')->url()->maxLength(255),
+                    TextInput::make('instagramUrl')->label('Enlace de Instagram')->url()->maxLength(255),
                 ]),
         ];
     }

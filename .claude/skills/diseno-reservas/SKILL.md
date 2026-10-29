@@ -75,7 +75,7 @@ El texto manuscrito/decorativo superpuesto sobre fotos (`textoManuscrito`) **no 
 
 | Opción | Capa | Texto | Uso |
 | --- | --- | --- | --- |
-| `oscura` (por defecto) | Negro ~50 % de opacidad | Blanco | Fotos claras |
+| `oscura` (por defecto) | Negro ~35 % de opacidad | Blanco | Fotos claras |
 | `clara` | Blanco ~70 % de opacidad | `--tinta` | Fotos oscuras |
 
 No lleva el cálculo estricto de AA de las paletas de marca (una capa semitransparente sobre una foto variable no se puede verificar en el momento de guardar), pero ambas opacidades están pensadas para quedar razonablemente legibles a simple vista sobre casi cualquier foto. Si una foto puntual queda difícil de leer, el super admin cambia a la otra opción.
@@ -97,7 +97,7 @@ Todas las pantallas se arman con estos componentes. Si falta uno, se crea aquí 
 
 Íconos: solo **Lucide** (`lucide-react`), trazo 1,75, mismo tamaño en cada contexto. `clock` para duración/hora, `calendar` para fecha, `user` para empleado, `building-2` para dirección, `scissors` para el servicio, `banknote` para el precio, `x` para cerrar.
 
-**Única excepción**: el botón flotante de WhatsApp (`whatsapp`) usa el glifo oficial de la marca (`IconoWhatsapp`, un SVG local con el mismo path que el paquete `simple-icons`, sin agregar esa dependencia completa por un solo ícono) en vez de un ícono genérico de Lucide — Lucide no tiene logos de marca, y este es un canal de contacto reconocible, no un ícono de interfaz. No es precedente para agregar otros íconos de marca sueltos.
+**Única excepción, íconos de marca**: Lucide no tiene logos de marca (ni WhatsApp, ni Facebook, ni Instagram), solo íconos genéricos de interfaz. El botón flotante de WhatsApp (`whatsapp`) y los enlaces de redes sociales del pie de página (`pie_de_pagina`) usan el glifo oficial de cada marca como SVG local (`IconoWhatsapp`, `IconoFacebook`, `IconoInstagram` en `resources/js/componentes`, mismo `path` que el paquete `simple-icons`, sin agregar esa dependencia completa por 3 íconos) — son canales de contacto/redes reconocibles, no íconos de interfaz. No es precedente para agregar otros íconos de marca sueltos sin necesidad.
 
 ## 3. Patrón: ventana de reserva
 
@@ -155,7 +155,7 @@ Cada bloque es un componente registrado por tipo. El super admin arma la página
 | Bloque | Diseño |
 | --- | --- |
 | `barra_promocion` | Franja angosta, color libre. Texto corto + botón de texto opcional + botón de cerrar (x). |
-| `encabezado` | Logo a la izquierda, enlaces de navegación al centro, ícono de búsqueda (decorativo) + botón "Reservar" a la derecha. Fondo fijo blanco. |
+| `encabezado` | Color libre. Logo a la izquierda, enlaces de navegación al centro, ícono `log-in` a la derecha (enlaza a `/ingresar`, sin verificar sesión). |
 | `portada` | Foto de fondo a pantalla completa con capa de legibilidad (ver sección 1). Insignia con el tipo de negocio + título muy grande arriba a la izquierda; fila de ubicación/horario; descripción; 2 botones; fila de hasta 4 íconos con etiqueta; texto decorativo opcional. |
 | `equipo` | Color libre. Cuadrícula de `Tarjeta` con foto cuadrada, nombre, especialidad y botón "Reservar con {nombre}". |
 | `servicios` | Color libre. Tarjetas con ícono de tijeras, foto cuadrada, nombre, descripción, "$20.000 · 45 min" y botón "Agendar". |
@@ -169,7 +169,7 @@ Cada bloque es un componente registrado por tipo. El super admin arma la página
 | `testimonios` | Color libre. Tarjetas con cita, estrellas (1-5), foto y nombre — contenido manual (ver sección 6.1). |
 | `ubicacion` | Color libre. Mapa, dirección, horario de atención por día y botón "Cómo llegar". |
 | `whatsapp` | Color libre (fondo/ícono del botón). Botón flotante redondo abajo a la derecha, visible en toda la página. |
-| `pie_de_pagina` | Fondo fijo `--tinta`/texto blanco. Nombre del negocio, descripción corta, dirección/WhatsApp, enlaces y año de copyright. |
+| `pie_de_pagina` | Fondo fijo `--tinta`/texto blanco. 3 columnas (nombre+dirección, "Info" con dirección/teléfono, redes sociales) y año de copyright centrado debajo. |
 
 Los colores de marca del negocio (su paleta de marca, ver más abajo) sobrescriben `--primario` y `--secundario` solo dentro de su página pública (incluido el flujo de reserva); el resto de tokens se mantiene.
 
@@ -182,9 +182,9 @@ Igual de detallado que la ventana de reserva (sección 3), porque esta plantilla
 - **Celular**: el texto, el botón y la "x" se envuelven (`flex-wrap`) en vez de recortarse.
 
 **`encabezado`**
-- Logo (o nombre del negocio si no hay logo) a la izquierda; enlaces de navegación al centro; ícono de búsqueda (decorativo, sin buscador funcional en este alcance) + `Boton principal` "Reservar" a la derecha.
+- Color libre. Logo (o nombre del negocio si no hay logo) a la izquierda; enlaces de navegación al centro; ícono `log-in` a la derecha, enlaza directo a `/ingresar` (sin verificar si ya hay sesión activa — simple a propósito, no es el flujo de autenticación completo). Sin botón "Reservar" ni ícono de búsqueda.
 - No es `sticky`: el super admin lo puede reordenar como cualquier bloque, así que fijarlo rompería si no queda de primero.
-- **Celular**: los enlaces de navegación se **ocultan por completo** (sin menú hamburguesa en este alcance) — quedan logo, ícono de búsqueda y botón "Reservar".
+- **Celular**: los enlaces de navegación se **ocultan por completo** (sin menú hamburguesa en este alcance) — quedan logo e ícono de iniciar sesión.
 
 **`portada`**
 - Foto de fondo a pantalla completa (mínimo 80 % del alto de la ventana), con la capa de legibilidad de la sección 1 encima. Contenido anclado **abajo** a la izquierda (no arriba), en una sola columna sobre la foto (no 2 columnas):
@@ -205,6 +205,9 @@ Igual de detallado que la ventana de reserva (sección 3), porque esta plantilla
 **`equipo`, `cursos`, `productos`, `ubicacion`, `whatsapp`** (sin cambios de diseño en esta plantilla, solo color libre)
 - Mismo diseño que ya tenían (ver tabla de arriba); el color libre no cambia su comportamiento responsive.
 
+**`texto`**
+- Color libre. Título y párrafo **centrados**, mismo contenedor (`max-w-3xl` centrado), espaciado consistente (margen superior en el párrafo, no margen inferior solo en el título) para que ambos compartan la misma alineación en cualquier tamaño de pantalla.
+
 **`texto_con_imagen`**
 - Modo simple: párrafo con una frase resaltada en `--primario`.
 - Modo "motivos" (si el bloque tiene al menos un motivo): etiqueta + título centrado arriba del texto, grid 2×2 de motivos (ícono 24 px + título corto + descripción corta) en vez del párrafo.
@@ -215,15 +218,24 @@ Igual de detallado que la ventana de reserva (sección 3), porque esta plantilla
 - Cuadrícula de fotos cuadradas, 2 columnas en celular, 4 en escritorio, con vista ampliada al tocar.
 
 **`tarjetas`**
-- Genérico y manual (servicios destacados, pasos de un proceso, lo que el negocio necesite) — no se ata a ningún modelo de datos. Cada tarjeta: imagen arriba (relación 4:3, solo `--radio-tarjeta` en la imagen) + título opcional + descripción corta — **sin** el contenedor `Tarjeta` (sin fondo blanco, sombra ni radio en un recuadro propio): la imagen y el texto quedan directo sobre el fondo de la sección.
+- Genérico y manual (servicios destacados, pasos de un proceso, lo que el negocio necesite) — no se ata a ningún modelo de datos. Cada tarjeta: imagen arriba (relación 4:3, solo `--radio-tarjeta` en la imagen) + título opcional + descripción corta, **centrados** debajo de la imagen — **sin** el contenedor `Tarjeta` (sin fondo blanco, sombra ni radio en un recuadro propio): la imagen y el texto quedan directo sobre el fondo de la sección.
 - El super admin elige 1, 2 o 3 columnas para escritorio y agrega/quita tarjetas libremente (máximo 9).
-- **Celular**: siempre 1 columna, sin importar cuántas se eligieron para escritorio.
+- **Celular**: siempre 1 columna, sin importar cuántas se eligieron para escritorio; el centrado se mantiene igual.
 
 **`banner_oferta`**
-- Estilo "tienda online": etiqueta con ícono de descuento (`badge-percent`) en píldora, título, descripción y un `Boton` **tamaño `grande`** con ícono `arrow-right`, de un lado; foto con texto decorativo del otro.
+- Estilo "tienda online": etiqueta con ícono de descuento (`badge-percent`, 22 px) en píldora, título, descripción y un `Boton` **tamaño `grande`** con ícono `arrow-right`, de un lado; foto más pequeña (un tercio del ancho en escritorio) con texto decorativo del otro.
+- Elementos decorativos: 2 círculos translúcidos superpuestos (`bg-blanco/10`) y 2 destellos (`sparkles` de Lucide) con opacidad baja — todo con los tokens de opacidad ya permitidos, nunca un color nuevo. Es la composición (píldoras/destellos superpuestos), no los colores exactos de ninguna referencia visual.
 - Fondo en degradado calculado a partir del mismo `colorFondo` que ya elige el super admin (oscurecido ~15%, ver sección 1) — nunca un color nuevo.
-- Sección delgada a propósito (relleno vertical 24-40 px, bastante menos que el resto de bloques de la plantilla) para que se sienta como una franja promocional, no como otra sección completa.
+- Sección muy delgada a propósito (relleno vertical 16-24 px, bastante menos que el resto de bloques de la plantilla) para que se sienta como una franja promocional, no como otra sección completa.
 - **Celular**: una columna, texto primero, foto después.
+
+**`pie_de_pagina`**
+- Fondo fijo `--tinta`/texto blanco (no es color libre, sigue siendo "chrome" del sitio). 3 columnas centradas:
+  1. Nombre del negocio + dirección.
+  2. "Info": dirección (con ícono `map-pin`) + teléfono (con ícono `phone`, usa el WhatsApp del negocio, que ya es su número de contacto).
+  3. "Síguenos": ícono de Facebook y/o Instagram (excepción de marca, ver sección 2), cada uno enlazando al link que configuró el super admin — si no configuró el link de una red, no se muestra su ícono; si no configuró ninguna, la columna completa no aparece.
+- Línea de copyright centrada debajo de las 3 columnas, con el año actual.
+- **Celular**: las 3 columnas se apilan verticalmente, todo centrado igual que en escritorio.
 
 **`testimonios`**
 - Cuadrícula de `Tarjeta` (1 columna en celular, 2 en tablet, 3 en escritorio): estrellas (las de `estrellas` en `--secundario`, el resto en `--gris-claro`), cita entre comillas, foto circular + nombre.
