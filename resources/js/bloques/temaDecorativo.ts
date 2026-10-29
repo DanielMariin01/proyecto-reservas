@@ -26,20 +26,28 @@ const ICONOS_POR_TEMA: Record<Exclude<TemaDecorativo, 'ninguno'>, ComponentType<
 };
 
 /**
- * 9 posiciones fijas (compartidas por cualquier tema) donde dispersar
- * los íconos decorativos: distintos tamaños, rotaciones y ubicaciones
- * para que no se vean en fila ni repetitivos.
+ * 16 posiciones fijas (compartidas por cualquier tema) donde dispersar
+ * los íconos decorativos: tamaños notablemente más grandes (28-56px) y
+ * cobertura por todo el ancho/alto del fondo del banner, con rotaciones
+ * y ubicaciones variadas para que no se vean en fila ni repetitivos.
  */
 export const POSICIONES_DECORATIVAS: ReadonlyArray<{ top: string; left: string; size: number; rotate: number }> = [
-    { top: '10%', left: '5%', size: 18, rotate: -12 },
-    { top: '70%', left: '8%', size: 24, rotate: 15 },
-    { top: '20%', left: '85%', size: 20, rotate: 8 },
-    { top: '55%', left: '92%', size: 16, rotate: -20 },
-    { top: '85%', left: '78%', size: 22, rotate: 25 },
-    { top: '5%', left: '45%', size: 14, rotate: -8 },
-    { top: '40%', left: '60%', size: 18, rotate: 30 },
-    { top: '90%', left: '35%', size: 16, rotate: -15 },
-    { top: '15%', left: '65%', size: 20, rotate: 10 },
+    { top: '8%', left: '3%', size: 36, rotate: -15 },
+    { top: '65%', left: '6%', size: 48, rotate: 20 },
+    { top: '15%', left: '18%', size: 28, rotate: 10 },
+    { top: '80%', left: '22%', size: 40, rotate: -25 },
+    { top: '5%', left: '35%', size: 32, rotate: 15 },
+    { top: '45%', left: '40%', size: 52, rotate: -10 },
+    { top: '85%', left: '48%', size: 30, rotate: 25 },
+    { top: '20%', left: '55%', size: 44, rotate: -20 },
+    { top: '60%', left: '62%', size: 36, rotate: 30 },
+    { top: '10%', left: '70%', size: 48, rotate: -8 },
+    { top: '75%', left: '75%', size: 32, rotate: 18 },
+    { top: '35%', left: '82%', size: 56, rotate: -30 },
+    { top: '5%', left: '90%', size: 28, rotate: 12 },
+    { top: '55%', left: '95%', size: 40, rotate: -15 },
+    { top: '90%', left: '88%', size: 34, rotate: 22 },
+    { top: '30%', left: '10%', size: 44, rotate: -5 },
 ];
 
 export function obtenerIconosTema(valor: unknown): ComponentType<PropiedadesIconoTema>[] | null {
