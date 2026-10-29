@@ -8,6 +8,8 @@ use App\Filament\App\Pages\PaginaWeb;
 use App\Models\Negocio;
 use App\Models\Pagina;
 use Filament\Facades\Filament;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 
 test('un dueno sin permiso de editar la pagina no puede entrar', function (): void {
@@ -74,4 +76,86 @@ test('indicesEditables no incluye bloques sin texto propio', function (): void {
     $indices = Livewire::actingAs($dueno)->test(PaginaWeb::class)->instance()->indicesEditables();
 
     expect($indices)->toBe([0]);
+});
+
+test('el dueno puede subir una foto nueva de portada y queda guardada en el disco publico', function (): void {
+    Storage::fake('public');
+    $negocio = Negocio::factory()->create(['permite_editar_pagina' => true]);
+    $dueno = crearUsuarioConRol($negocio, RolNegocio::Dueno);
+    $pagina = Pagina::factory()->create([
+        'negocio_id' => $negocio->id,
+        'bloques' => [['type' => TipoBloque::Portada->value, 'data' => ['titulo' => 'Hola', 'imagen' => null]]],
+    ]);
+
+    Filament::setCurrentPanel(Filament::getPanel('app'));
+    Filament::setTenant($negocio, isQuiet: true);
+
+    Livewire::actingAs($dueno)
+        ->test(PaginaWeb::class)
+        ->set('bloques.0.data.imagen', UploadedFile::fake()->create('portada.jpg', 100, 'image/jpeg'))
+        ->call('guardarYPublicar');
+
+    $pagina->refresh();
+    expect($pagina->bloques[0]['data']['imagen'])->not->toBeNull();
+    Storage::disk('public')->assertExists($pagina->bloques[0]['data']['imagen']);
+});
+
+test('un archivo que no es imagen no se guarda y avisa en vez de publicar', function (): void {
+    Storage::fake('public');
+    $negocio = Negocio::factory()->create(['permite_editar_pagina' => true]);
+    $dueno = crearUsuarioConRol($negocio, RolNegocio::Dueno);
+    $pagina = Pagina::factory()->create([
+        'negocio_id' => $negocio->id,
+        'bloques' => [['type' => TipoBloque::Portada->value, 'data' => ['titulo' => 'Hola', 'imagen' => null]]],
+    ]);
+
+    Filament::setCurrentPanel(Filament::getPanel('app'));
+    Filament::setTenant($negocio, isQuiet: true);
+
+    Livewire::actingAs($dueno)
+        ->test(PaginaWeb::class)
+        ->set('bloques.0.data.imagen', UploadedFile::fake()->create('documento.pdf', 100))
+        ->call('guardarYPublicar');
+
+    expect($pagina->refresh()->estaPublicada())->toBeFalse();
+});
+
+test('el dueno puede agregar fotos nuevas a la galeria sin perder las que ya tenia', function (): void {
+    Storage::fake('public');
+    Storage::disk('public')->put('paginas/vieja.jpg', 'contenido');
+    $negocio = Negocio::factory()->create(['permite_editar_pagina' => true]);
+    $dueno = crearUsuarioConRol($negocio, RolNegocio::Dueno);
+    $pagina = Pagina::factory()->create([
+        'negocio_id' => $negocio->id,
+        'bloques' => [['type' => TipoBloque::Galeria->value, 'data' => ['fotos' => ['paginas/vieja.jpg']]]],
+    ]);
+
+    Filament::setCurrentPanel(Filament::getPanel('app'));
+    Filament::setTenant($negocio, isQuiet: true);
+
+    Livewire::actingAs($dueno)
+        ->test(PaginaWeb::class)
+        ->set('fotosNuevasPorIndice.0', [UploadedFile::fake()->create('nueva.jpg', 100, 'image/jpeg')])
+        ->call('guardarYPublicar');
+
+    $fotos = $pagina->refresh()->bloques[0]['data']['fotos'];
+    expect($fotos)->toHaveCount(2);
+    expect($fotos)->toContain('paginas/vieja.jpg');
+});
+
+test('quitar una foto existente de la galeria la elimina de los bloques', function (): void {
+    $negocio = Negocio::factory()->create(['permite_editar_pagina' => true]);
+    $dueno = crearUsuarioConRol($negocio, RolNegocio::Dueno);
+    Pagina::factory()->create([
+        'negocio_id' => $negocio->id,
+        'bloques' => [['type' => TipoBloque::Galeria->value, 'data' => ['fotos' => ['paginas/a.jpg', 'paginas/b.jpg']]]],
+    ]);
+
+    Filament::setCurrentPanel(Filament::getPanel('app'));
+    Filament::setTenant($negocio, isQuiet: true);
+
+    Livewire::actingAs($dueno)
+        ->test(PaginaWeb::class)
+        ->call('quitarFotoExistente', 0, 0)
+        ->assertSet('bloques.0.data.fotos', ['paginas/b.jpg']);
 });

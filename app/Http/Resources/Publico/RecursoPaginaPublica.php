@@ -8,6 +8,7 @@ use App\Models\Negocio;
 use App\Models\Pagina;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Storage;
 
 final class RecursoPaginaPublica extends JsonResource
 {
@@ -31,7 +32,7 @@ final class RecursoPaginaPublica extends JsonResource
         return [
             'nombreNegocio' => $this->negocio->nombre,
             'tipo' => $this->negocio->tipo->value,
-            'logo' => $this->negocio->logo,
+            'logo' => $this->negocio->logo !== null ? Storage::disk('public')->url($this->negocio->logo) : null,
             'colorPrimario' => $this->negocio->color_primario,
             'colorSecundario' => $this->negocio->color_secundario,
             'direccion' => $this->negocio->direccion,
@@ -55,9 +56,32 @@ final class RecursoPaginaPublica extends JsonResource
         return array_values(array_map(
             fn (array $bloque): array => [
                 'tipo' => $bloque['type'] ?? '',
-                'datos' => $bloque['data'] ?? [],
+                'datos' => $this->traducirRutasDeArchivo($bloque['data'] ?? []),
             ],
             $bloquesCrudos,
         ));
+    }
+
+    /**
+     * `imagen` y `fotos` guardan la ruta relativa del disco `public`
+     * (igual que Servicio::foto en RecursoServicioPublico), no la URL.
+     *
+     * @param  array<string, mixed>  $datos
+     * @return array<string, mixed>
+     */
+    private function traducirRutasDeArchivo(array $datos): array
+    {
+        if (isset($datos['imagen']) && is_string($datos['imagen'])) {
+            $datos['imagen'] = Storage::disk('public')->url($datos['imagen']);
+        }
+
+        if (isset($datos['fotos']) && is_array($datos['fotos'])) {
+            $datos['fotos'] = array_map(
+                fn (mixed $foto): mixed => is_string($foto) ? Storage::disk('public')->url($foto) : $foto,
+                $datos['fotos'],
+            );
+        }
+
+        return $datos;
     }
 }
