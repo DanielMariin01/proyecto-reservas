@@ -6,6 +6,7 @@ export type TemaDecorativo = 'ninguno' | 'halloween' | 'navidad' | 'amor_amistad
 interface PropiedadesIconoTema {
     size?: number;
     strokeWidth?: number;
+    fill?: string;
     className?: string;
     style?: CSSProperties;
 }

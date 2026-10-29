@@ -2,7 +2,7 @@ import { ArrowRight, BadgePercent, Sparkles } from 'lucide-react';
 import type { CSSProperties, ReactElement } from 'react';
 import Boton from '@/componentes/Boton';
 import ImagenConManuscrito from '@/componentes/ImagenConManuscrito';
-import { obtenerEstiloGradiente } from './colorLibre';
+import { obtenerColoresLibres, obtenerEstiloGradiente } from './colorLibre';
 import { obtenerIconosTema, POSICIONES_DECORATIVAS } from './temaDecorativo';
 import type { PropiedadesBloque } from './tipos';
 
@@ -23,6 +23,7 @@ export default function BloqueBannerOferta({ datos }: PropiedadesBloque): ReactE
     const imagen = typeof datos.imagen === 'string' ? datos.imagen : null;
     const textoManuscrito = typeof datos.textoManuscrito === 'string' ? datos.textoManuscrito : '';
     const iconosTema = obtenerIconosTema(datos.temaDecorativo);
+    const { colorTexto } = obtenerColoresLibres(datos);
 
     return (
         <section style={obtenerEstiloGradiente(datos)} className="relative overflow-hidden">
@@ -30,9 +31,20 @@ export default function BloqueBannerOferta({ datos }: PropiedadesBloque): ReactE
                 {iconosTema ? (
                     POSICIONES_DECORATIVAS.map((posicion, indice) => {
                         const Icono = iconosTema[indice % iconosTema.length];
-                        const estilo: CSSProperties = { top: posicion.top, left: posicion.left, transform: `rotate(${posicion.rotate}deg)` };
+                        // Siluetas rellenas (no solo trazo) en el color de
+                        // texto del bloque (nunca blanco fijo): así se ven
+                        // sin importar si colorFondo es claro u oscuro,
+                        // configurado o no — un trazo delgado al 20% de
+                        // opacidad se vuelve invisible a estos tamaños.
+                        const estilo: CSSProperties = {
+                            top: posicion.top,
+                            left: posicion.left,
+                            transform: `rotate(${posicion.rotate}deg)`,
+                            color: colorTexto,
+                            opacity: 0.3,
+                        };
 
-                        return <Icono key={indice} size={posicion.size} strokeWidth={1.5} className="absolute text-blanco/20" style={estilo} />;
+                        return <Icono key={indice} size={posicion.size} fill="currentColor" strokeWidth={1} className="absolute" style={estilo} />;
                     })
                 ) : (
                     <>
