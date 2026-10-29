@@ -86,7 +86,7 @@ Todas las pantallas se arman con estos componentes. Si falta uno, se crea aquí 
 
 | Componente | Reglas |
 | --- | --- |
-| `Boton` | Variantes `principal` (fondo `--primario`, texto blanco), `contorno` (borde `--gris-claro`, texto `--primario`), `texto`. Radio 8 px, alto 44 px, peso 600. Estado deshabilitado con opacidad 0,45. Hover del principal en `--acento`. |
+| `Boton` | Variantes `principal` (fondo `--primario`, texto blanco), `contorno` (borde `--gris-claro`, texto `--primario`), `texto`. Tamaño `normal` (alto 44 px, por defecto) o `grande` (alto 56 px, texto 18 px — para llamados a la acción destacados, ej. `banner_oferta`). Radio 8 px, peso 600. Estado deshabilitado con opacidad 0,45. Hover del principal en `--acento`. |
 | `Tarjeta` | Fondo blanco, radio 16 px, `--sombra-tarjeta`, relleno 24 px (16 px en celular). |
 | `CampoTexto` | Alto 48 px, borde `--gris-claro`, radio 8 px, etiqueta flotante o arriba, foco con borde `--primario`. Error en rojo accesible debajo del campo. |
 | `CampoTelefono` | Selector de país con bandera y +57 por defecto, más el número. |
@@ -96,6 +96,8 @@ Todas las pantallas se arman con estos componentes. Si falta uno, se crea aquí 
 | `LineaDetalle` | Ícono de Lucide de 18 px en `--texto-suave` + texto, para duración, fecha, empleado, dirección, servicio y precio. |
 
 Íconos: solo **Lucide** (`lucide-react`), trazo 1,75, mismo tamaño en cada contexto. `clock` para duración/hora, `calendar` para fecha, `user` para empleado, `building-2` para dirección, `scissors` para el servicio, `banknote` para el precio, `x` para cerrar.
+
+**Única excepción**: el botón flotante de WhatsApp (`whatsapp`) usa el glifo oficial de la marca (`IconoWhatsapp`, un SVG local con el mismo path que el paquete `simple-icons`, sin agregar esa dependencia completa por un solo ícono) en vez de un ícono genérico de Lucide — Lucide no tiene logos de marca, y este es un canal de contacto reconocible, no un ícono de interfaz. No es precedente para agregar otros íconos de marca sueltos.
 
 ## 3. Patrón: ventana de reserva
 
@@ -185,14 +187,14 @@ Igual de detallado que la ventana de reserva (sección 3), porque esta plantilla
 - **Celular**: los enlaces de navegación se **ocultan por completo** (sin menú hamburguesa en este alcance) — quedan logo, ícono de búsqueda y botón "Reservar".
 
 **`portada`**
-- Foto de fondo a pantalla completa (mínimo 80 % del alto de la ventana), con la capa de legibilidad de la sección 1 encima. Contenido anclado arriba a la izquierda, en una sola columna sobre la foto (no 2 columnas):
-  1. Insignia en píldora semitransparente con el tipo de negocio (`Negocio.tipo`, nunca un campo escrito a mano — así siempre coincide con el negocio real).
-  2. Título mayúsculas muy grande (48-60 px) y negrita.
-  3. Fila de ubicación (ícono `map-pin` + `direccion`, ya existente) y horario (ícono `clock` + `horarioHoy`, texto libre que escribe el super admin — **no se calcula solo todavía**, no hay un endpoint de horario de atención del negocio hoy; construirlo es una tarea aparte).
-  4. Descripción (máx. 450 px de ancho, opacidad 90 %).
+- Foto de fondo a pantalla completa (mínimo 80 % del alto de la ventana), con la capa de legibilidad de la sección 1 encima. Contenido anclado **abajo** a la izquierda (no arriba), en una sola columna sobre la foto (no 2 columnas):
+  1. Insignia en píldora semitransparente con el tipo de negocio (`Negocio.tipo`, nunca un campo escrito a mano — así siempre coincide con el negocio real), 14 px.
+  2. Título mayúsculas muy grande (56-72 px) y negrita — el tamaño más grande del sistema.
+  3. Fila de ubicación (ícono `map-pin` 20 px + `direccion`, ya existente) y horario (ícono `clock` 20 px + `horarioHoy`, texto libre que escribe el super admin — **no se calcula solo todavía**, no hay un endpoint de horario de atención del negocio hoy; construirlo es una tarea aparte), 16-18 px.
+  4. Descripción (máx. 500 px de ancho, opacidad 90 %, 16-18 px).
   5. 2 botones (`Boton principal` "Reservar cita" + `Boton contorno` con ícono `play` "Ver video", opcional).
-  6. Fila de hasta 4 íconos con etiqueta corta debajo.
-- Texto decorativo opcional (`textoManuscrito`) como insignia flotante en la esquina superior derecha de la foto, no en el flujo del contenido.
+  6. Fila de hasta 4 íconos de 36 px con etiqueta de 14 px debajo.
+- Texto decorativo opcional (`textoManuscrito`) como insignia flotante en la esquina superior derecha de la foto, no en el flujo del contenido (que ahora está abajo).
 - **Sin calificación de estrellas/reseñas**: el sistema real de reseñas no existe todavía (tarea aparte) — no se muestra nada ni se inventa un campo manual para esto aquí; cuando ese sistema exista, se agrega.
 - **Celular**: los tamaños de título y relleno se reducen para que el texto nunca quede recortado contra la foto; la fila de íconos pasa de 4 a 2 columnas; los 2 botones y la fila de ubicación/horario se envuelven en vez de desbordar.
 
@@ -213,12 +215,14 @@ Igual de detallado que la ventana de reserva (sección 3), porque esta plantilla
 - Cuadrícula de fotos cuadradas, 2 columnas en celular, 4 en escritorio, con vista ampliada al tocar.
 
 **`tarjetas`**
-- Genérico y manual (servicios destacados, pasos de un proceso, lo que el negocio necesite) — no se ata a ningún modelo de datos. Cada tarjeta: imagen arriba (relación 4:3) + título opcional + descripción corta, dentro de una `Tarjeta` blanca fija.
+- Genérico y manual (servicios destacados, pasos de un proceso, lo que el negocio necesite) — no se ata a ningún modelo de datos. Cada tarjeta: imagen arriba (relación 4:3, solo `--radio-tarjeta` en la imagen) + título opcional + descripción corta — **sin** el contenedor `Tarjeta` (sin fondo blanco, sombra ni radio en un recuadro propio): la imagen y el texto quedan directo sobre el fondo de la sección.
 - El super admin elige 1, 2 o 3 columnas para escritorio y agrega/quita tarjetas libremente (máximo 9).
 - **Celular**: siempre 1 columna, sin importar cuántas se eligieron para escritorio.
 
 **`banner_oferta`**
-- Mismo patrón que `portada` sin la fila de íconos ni el botón de video: etiqueta + título + descripción + botón de un lado, foto con texto decorativo del otro.
+- Estilo "tienda online": etiqueta con ícono de descuento (`badge-percent`) en píldora, título, descripción y un `Boton` **tamaño `grande`** con ícono `arrow-right`, de un lado; foto con texto decorativo del otro.
+- Fondo en degradado calculado a partir del mismo `colorFondo` que ya elige el super admin (oscurecido ~15%, ver sección 1) — nunca un color nuevo.
+- Sección delgada a propósito (relleno vertical 24-40 px, bastante menos que el resto de bloques de la plantilla) para que se sienta como una franja promocional, no como otra sección completa.
 - **Celular**: una columna, texto primero, foto después.
 
 **`testimonios`**

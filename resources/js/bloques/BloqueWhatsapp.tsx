@@ -1,5 +1,5 @@
-import { MessageCircle } from 'lucide-react';
 import type { ReactElement } from 'react';
+import IconoWhatsapp from '@/componentes/IconoWhatsapp';
 import { obtenerEstiloColor } from './colorLibre';
 import type { PropiedadesBloque } from './tipos';
 
@@ -21,7 +21,7 @@ export default function BloqueWhatsapp({ datos, pagina }: PropiedadesBloque): Re
             style={obtenerEstiloColor(datos)}
             className="fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full shadow-tarjeta"
         >
-            <MessageCircle size={28} />
+            <IconoWhatsapp size={28} />
         </a>
     );
 }

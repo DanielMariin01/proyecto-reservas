@@ -1,5 +1,4 @@
 import type { ReactElement } from 'react';
-import Tarjeta from '@/componentes/Tarjeta';
 import { obtenerEstiloColor } from './colorLibre';
 import type { PropiedadesBloque } from './tipos';
 
@@ -39,11 +38,11 @@ export default function BloqueTarjetas({ datos }: PropiedadesBloque): ReactEleme
                         const descripcion = typeof tarjeta.descripcion === 'string' ? tarjeta.descripcion : '';
 
                         return (
-                            <Tarjeta key={indice}>
-                                {imagen && <img src={imagen} alt="" className="mb-3 aspect-[4/3] w-full rounded-boton object-cover" />}
-                                {titulo && <p className="font-semibold text-tinta">{titulo}</p>}
-                                {descripcion && <p className="mt-1 text-sm text-texto-suave">{descripcion}</p>}
-                            </Tarjeta>
+                            <div key={indice}>
+                                {imagen && <img src={imagen} alt="" className="mb-3 aspect-[4/3] w-full rounded-tarjeta object-cover" />}
+                                {titulo && <p className="font-semibold">{titulo}</p>}
+                                {descripcion && <p className="mt-1 text-sm opacity-80">{descripcion}</p>}
+                            </div>
                         );
                     })}
                 </div>

@@ -28,7 +28,7 @@ export default function BloquePortada({ datos, pagina, onReservar }: Propiedades
     const capa = obtenerCapaPortada(datos.overlay);
 
     return (
-        <section className={`relative flex min-h-[80vh] items-start overflow-hidden ${capa.texto}`}>
+        <section className={`relative flex min-h-[80vh] items-end overflow-hidden ${capa.texto}`}>
             {imagen ? (
                 <img src={imagen} alt="" className="absolute inset-0 h-full w-full object-cover" />
             ) : (
@@ -42,32 +42,32 @@ export default function BloquePortada({ datos, pagina, onReservar }: Propiedades
                 </span>
             )}
 
-            <div className="relative z-10 w-full px-4 py-16 sm:py-24">
+            <div className="relative z-10 w-full px-4 pb-16 pt-24 sm:pb-20">
                 <div className="mx-auto max-w-[1200px]">
-                    <span className={`inline-block rounded-boton px-3 py-1 text-xs font-semibold uppercase tracking-widest ${capa.pildora}`}>
+                    <span className={`inline-block rounded-boton px-3 py-1 text-sm font-semibold uppercase tracking-widest ${capa.pildora}`}>
                         {pagina.tipoEtiqueta}
                     </span>
 
-                    <h1 className="mt-3 max-w-2xl text-4xl font-extrabold uppercase leading-[1.05] sm:text-5xl md:text-6xl">{titulo}</h1>
+                    <h1 className="mt-4 max-w-3xl text-5xl font-extrabold uppercase leading-[1.05] sm:text-6xl md:text-7xl">{titulo}</h1>
 
                     {(pagina.direccion || horarioHoy) && (
-                        <div className="mt-4 flex flex-col gap-1 text-sm opacity-90 sm:flex-row sm:items-center sm:gap-6">
+                        <div className="mt-5 flex flex-col gap-2 text-base opacity-90 sm:flex-row sm:items-center sm:gap-6 sm:text-lg">
                             {pagina.direccion && (
                                 <span className="flex items-center gap-2">
-                                    <MapPin size={16} strokeWidth={1.75} />
+                                    <MapPin size={20} strokeWidth={1.75} />
                                     {pagina.direccion}
                                 </span>
                             )}
                             {horarioHoy && (
                                 <span className="flex items-center gap-2">
-                                    <Clock size={16} strokeWidth={1.75} />
+                                    <Clock size={20} strokeWidth={1.75} />
                                     {horarioHoy}
                                 </span>
                             )}
                         </div>
                     )}
 
-                    {descripcion && <p className="mt-4 max-w-[450px] text-sm opacity-90 sm:text-base">{descripcion}</p>}
+                    {descripcion && <p className="mt-5 max-w-[500px] text-base opacity-90 sm:text-lg">{descripcion}</p>}
 
                     <div className="mt-8 flex flex-wrap items-center gap-3">
                         <Boton onClick={() => onReservar({})}>{textoBotonPrincipal}</Boton>
@@ -90,8 +90,8 @@ export default function BloquePortada({ datos, pagina, onReservar }: Propiedades
 
                                 return (
                                     <div key={indice} className="flex flex-col items-center gap-2 text-center">
-                                        <Icono size={28} strokeWidth={1.75} />
-                                        <span className="text-xs opacity-90">{etiquetaIcono}</span>
+                                        <Icono size={36} strokeWidth={1.75} />
+                                        <span className="text-sm opacity-90">{etiquetaIcono}</span>
                                     </div>
                                 );
                             })}
