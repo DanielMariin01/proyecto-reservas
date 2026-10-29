@@ -1,4 +1,5 @@
 import type { ReactElement } from 'react';
+import { obtenerEstiloColor } from './colorLibre';
 import type { PropiedadesBloque } from './tipos';
 
 const ETIQUETAS: Record<string, string> = {
@@ -12,11 +13,13 @@ const ETIQUETAS: Record<string, string> = {
  * existe todavía. En vez de llamar a una API que no existe, se muestra
  * este estado vacío.
  */
-export default function BloqueProximamente({ tipo }: PropiedadesBloque): ReactElement {
+export default function BloqueProximamente({ datos, tipo }: PropiedadesBloque): ReactElement {
     return (
-        <section className="mx-auto max-w-5xl px-4 py-10 text-center sm:py-16">
-            <h2 className="mb-2 text-2xl font-bold text-tinta sm:text-3xl">{ETIQUETAS[tipo] ?? tipo}</h2>
-            <p className="text-sm text-texto-suave">Próximamente.</p>
+        <section style={obtenerEstiloColor(datos)}>
+            <div className="mx-auto max-w-5xl px-4 py-10 text-center sm:py-16">
+                <h2 className="mb-2 text-2xl font-bold sm:text-3xl">{ETIQUETAS[tipo] ?? tipo}</h2>
+                <p className="text-sm opacity-80">Próximamente.</p>
+            </div>
         </section>
     );
 }

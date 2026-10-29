@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Enums\CombinacionColorBloque;
 use App\Enums\RolNegocio;
 use App\Enums\TipoBloque;
 use App\Filament\App\Pages\PaginaWeb;
@@ -68,6 +67,27 @@ test('indicesEditables no incluye bloques sin texto propio', function (): void {
             ['type' => TipoBloque::Portada->value, 'data' => ['titulo' => 'Hola']],
             ['type' => TipoBloque::Equipo->value, 'data' => []],
             ['type' => TipoBloque::Whatsapp->value, 'data' => []],
+        ],
+    ]);
+
+    Filament::setCurrentPanel(Filament::getPanel('app'));
+    Filament::setTenant($negocio, isQuiet: true);
+
+    $indices = Livewire::actingAs($dueno)->test(PaginaWeb::class)->instance()->indicesEditables();
+
+    expect($indices)->toBe([0]);
+});
+
+test('indicesEditables incluye los bloques nuevos con texto pero no encabezado, testimonios ni pie de pagina', function (): void {
+    $negocio = Negocio::factory()->create(['permite_editar_pagina' => true]);
+    $dueno = crearUsuarioConRol($negocio, RolNegocio::Dueno);
+    Pagina::factory()->create([
+        'negocio_id' => $negocio->id,
+        'bloques' => [
+            ['type' => TipoBloque::BarraPromocion->value, 'data' => ['texto' => 'Oferta']],
+            ['type' => TipoBloque::Encabezado->value, 'data' => ['enlaces' => []]],
+            ['type' => TipoBloque::Testimonios->value, 'data' => ['testimonios' => []]],
+            ['type' => TipoBloque::PieDePagina->value, 'data' => ['facebookUrl' => '']],
         ],
     ]);
 
@@ -152,7 +172,7 @@ test('el dueno puede editar el texto y la foto de un bloque de texto con imagen'
         'negocio_id' => $negocio->id,
         'bloques' => [[
             'type' => TipoBloque::TextoConImagen->value,
-            'data' => ['titulo' => 'Viejo', 'parrafo' => 'viejo parrafo', 'fraseResaltada' => '', 'imagen' => null, 'combinacionColor' => CombinacionColorBloque::Clara->value],
+            'data' => ['titulo' => 'Viejo', 'parrafo' => 'viejo parrafo', 'fraseResaltada' => '', 'imagen' => null, 'colorFondo' => '#FFFFFF', 'colorTexto' => '#3E4043'],
         ]],
     ]);
 
@@ -174,14 +194,14 @@ test('el dueno puede editar el texto y la foto de un bloque de texto con imagen'
     expect($datos['imagen'])->not->toBeNull();
 });
 
-test('el dueno nunca puede cambiar la combinacion de color de un bloque, aunque lo mande en el payload', function (): void {
+test('el dueno nunca puede cambiar el color de un bloque ni su tipo, aunque lo mande en el payload', function (): void {
     $negocio = Negocio::factory()->create(['permite_editar_pagina' => true]);
     $dueno = crearUsuarioConRol($negocio, RolNegocio::Dueno);
     $pagina = Pagina::factory()->create([
         'negocio_id' => $negocio->id,
         'bloques' => [[
             'type' => TipoBloque::Texto->value,
-            'data' => ['titulo' => 'Hola', 'parrafo' => 'Texto', 'combinacionColor' => CombinacionColorBloque::Clara->value],
+            'data' => ['titulo' => 'Hola', 'parrafo' => 'Texto', 'colorFondo' => '#FFFFFF', 'colorTexto' => '#3E4043'],
         ]],
     ]);
 
@@ -190,13 +210,15 @@ test('el dueno nunca puede cambiar la combinacion de color de un bloque, aunque 
 
     Livewire::actingAs($dueno)
         ->test(PaginaWeb::class)
-        ->set('bloques.0.data.combinacionColor', CombinacionColorBloque::Marca->value)
+        ->set('bloques.0.data.colorFondo', '#000000')
+        ->set('bloques.0.data.colorTexto', '#000000')
         ->set('bloques.0.type', TipoBloque::Portada->value)
         ->call('guardarYPublicar');
 
     $bloque = $pagina->refresh()->bloques[0];
     expect($bloque['type'])->toBe(TipoBloque::Texto->value);
-    expect($bloque['data']['combinacionColor'])->toBe(CombinacionColorBloque::Clara->value);
+    expect($bloque['data']['colorFondo'])->toBe('#FFFFFF');
+    expect($bloque['data']['colorTexto'])->toBe('#3E4043');
 });
 
 test('quitar una foto existente de la galeria la elimina de los bloques', function (): void {

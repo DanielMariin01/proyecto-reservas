@@ -32,6 +32,7 @@ final class RecursoPaginaPublica extends JsonResource
         return [
             'nombreNegocio' => $this->negocio->nombre,
             'tipo' => $this->negocio->tipo->value,
+            'tipoEtiqueta' => $this->negocio->tipo->etiqueta(),
             'logo' => $this->negocio->logo !== null ? Storage::disk('public')->url($this->negocio->logo) : null,
             'colorPrimario' => $this->negocio->paletaMarca?->color_primario,
             'colorSecundario' => $this->negocio->paletaMarca?->color_secundario,
@@ -81,6 +82,39 @@ final class RecursoPaginaPublica extends JsonResource
                 $datos['fotos'],
             );
         }
+
+        // `testimonios` y `tarjetas` guardan la foto de cada item en una
+        // ruta anidada (datos.testimonios[].foto, datos.tarjetas[].imagen),
+        // no en las claves de nivel superior que cubre el resto de este
+        // método.
+        $datos = $this->traducirRutaAnidada($datos, 'testimonios', 'foto');
+        $datos = $this->traducirRutaAnidada($datos, 'tarjetas', 'imagen');
+
+        return $datos;
+    }
+
+    /**
+     * @param  array<string, mixed>  $datos
+     * @return array<string, mixed>
+     */
+    private function traducirRutaAnidada(array $datos, string $campoLista, string $campoRuta): array
+    {
+        if (! isset($datos[$campoLista]) || ! is_array($datos[$campoLista])) {
+            return $datos;
+        }
+
+        $datos[$campoLista] = array_map(
+            function (mixed $item) use ($campoRuta): mixed {
+                if (! is_array($item) || ! isset($item[$campoRuta]) || ! is_string($item[$campoRuta])) {
+                    return $item;
+                }
+
+                $item[$campoRuta] = Storage::disk('public')->url($item[$campoRuta]);
+
+                return $item;
+            },
+            $datos[$campoLista],
+        );
 
         return $datos;
     }
