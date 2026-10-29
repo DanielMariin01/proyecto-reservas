@@ -1,29 +1,47 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { ReactElement } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { crearReserva, esErrorDeReservaPublica, obtenerDiasConDisponibilidad, obtenerHorasDisponibles, obtenerProfesionales } from './api/clientePublico';
+import {
+    crearReserva,
+    esErrorDeReservaPublica,
+    obtenerDiasConDisponibilidad,
+    obtenerHorasDisponibles,
+    obtenerProfesionales,
+    obtenerServicios,
+} from './api/clientePublico';
 import ConfirmarResumen from './ConfirmarResumen';
 import DatosYConfirmacion from './DatosYConfirmacion';
 import PantallaExito from './PantallaExito';
 import SeleccionarProfesional from './SeleccionarProfesional';
+import SeleccionarServicio from './SeleccionarServicio';
 import VentanaReserva from './VentanaReserva';
 import type { CitaCreada, DatosDelCliente, HoraDisponible, Servicio } from '@/tipos';
 
 interface PropiedadesFlujoReserva {
     slug: string;
     direccion: string | null;
-    servicio: Servicio;
+    /** Si no se pasa (p. ej. "Reservar" desde la portada), el primer paso pide elegir servicio. */
+    servicioInicial?: Servicio | null;
     profesionalInicial?: number | null;
     onCerrar: () => void;
 }
 
-type Paso = 'profesional' | 'ventana' | 'datos' | 'confirmar' | 'exito';
+type Paso = 'servicio' | 'profesional' | 'ventana' | 'datos' | 'confirmar' | 'exito';
 
 const CUALQUIERA_DISPONIBLE = 'Cualquiera disponible';
 
-export default function FlujoReserva({ slug, direccion, servicio, profesionalInicial, onCerrar }: PropiedadesFlujoReserva): ReactElement {
+function pasoInicial(servicioInicial: Servicio | null | undefined, profesionalInicial: number | null | undefined): Paso {
+    if (!servicioInicial) {
+        return 'servicio';
+    }
+
+    return profesionalInicial != null ? 'ventana' : 'profesional';
+}
+
+export default function FlujoReserva({ slug, direccion, servicioInicial, profesionalInicial, onCerrar }: PropiedadesFlujoReserva): ReactElement {
     const hoy = useMemo(() => new Date(), []);
-    const [paso, setPaso] = useState<Paso>(profesionalInicial != null ? 'ventana' : 'profesional');
+    const [paso, setPaso] = useState<Paso>(pasoInicial(servicioInicial, profesionalInicial));
+    const [servicio, setServicio] = useState<Servicio | null>(servicioInicial ?? null);
     const [profesionalId, setProfesionalId] = useState<number | null>(profesionalInicial ?? null);
     const [anio, setAnio] = useState(hoy.getFullYear());
     const [mes, setMes] = useState(hoy.getMonth() + 1);
@@ -31,6 +49,12 @@ export default function FlujoReserva({ slug, direccion, servicio, profesionalIni
     const [horaSeleccionada, setHoraSeleccionada] = useState<HoraDisponible | null>(null);
     const [datosDelCliente, setDatosDelCliente] = useState<DatosDelCliente | null>(null);
     const [citaCreada, setCitaCreada] = useState<CitaCreada | null>(null);
+
+    const serviciosQuery = useQuery({
+        queryKey: ['servicios', slug],
+        queryFn: () => obtenerServicios(slug),
+        enabled: paso === 'servicio',
+    });
 
     useEffect(() => {
         function alPresionarTecla(evento: KeyboardEvent): void {
@@ -45,26 +69,27 @@ export default function FlujoReserva({ slug, direccion, servicio, profesionalIni
     }, [onCerrar]);
 
     const profesionalesQuery = useQuery({
-        queryKey: ['profesionales', slug, servicio.id],
-        queryFn: () => obtenerProfesionales(slug, servicio.id),
+        queryKey: ['profesionales', slug, servicio?.id],
+        queryFn: () => obtenerProfesionales(slug, (servicio as Servicio).id),
+        enabled: servicio !== null,
     });
 
     const mesTexto = `${anio}-${String(mes).padStart(2, '0')}`;
     const diasQuery = useQuery({
-        queryKey: ['dias', slug, servicio.id, profesionalId, mesTexto],
-        queryFn: () => obtenerDiasConDisponibilidad(slug, servicio.id, profesionalId, mesTexto),
-        enabled: paso !== 'profesional',
+        queryKey: ['dias', slug, servicio?.id, profesionalId, mesTexto],
+        queryFn: () => obtenerDiasConDisponibilidad(slug, (servicio as Servicio).id, profesionalId, mesTexto),
+        enabled: servicio !== null && paso !== 'profesional',
     });
 
     const horasQuery = useQuery({
-        queryKey: ['horas', slug, servicio.id, profesionalId, diaSeleccionado],
-        queryFn: () => obtenerHorasDisponibles(slug, servicio.id, profesionalId, diaSeleccionado as string),
-        enabled: diaSeleccionado !== null,
+        queryKey: ['horas', slug, servicio?.id, profesionalId, diaSeleccionado],
+        queryFn: () => obtenerHorasDisponibles(slug, (servicio as Servicio).id, profesionalId, diaSeleccionado as string),
+        enabled: servicio !== null && diaSeleccionado !== null,
     });
 
     const mutacionReserva = useMutation({
         mutationFn: () => {
-            if (!horaSeleccionada || !datosDelCliente) {
+            if (!servicio || !horaSeleccionada || !datosDelCliente) {
                 throw new Error('Faltan datos para reservar.');
             }
 
@@ -104,7 +129,19 @@ export default function FlujoReserva({ slug, direccion, servicio, profesionalIni
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-tinta/60 p-4">
-            {paso === 'profesional' && (
+            {paso === 'servicio' && (
+                <SeleccionarServicio
+                    servicios={serviciosQuery.data ?? []}
+                    cargando={serviciosQuery.isLoading}
+                    onElegir={(servicioElegido) => {
+                        setServicio(servicioElegido);
+                        setPaso(profesionalInicial != null ? 'ventana' : 'profesional');
+                    }}
+                    onCerrar={onCerrar}
+                />
+            )}
+
+            {paso === 'profesional' && servicio && (
                 <SeleccionarProfesional
                     servicio={servicio}
                     profesionales={profesionalesQuery.data ?? []}
@@ -117,7 +154,7 @@ export default function FlujoReserva({ slug, direccion, servicio, profesionalIni
                 />
             )}
 
-            {paso === 'ventana' && (
+            {paso === 'ventana' && servicio && (
                 <VentanaReserva
                     servicio={servicio}
                     direccion={direccion}
@@ -142,7 +179,7 @@ export default function FlujoReserva({ slug, direccion, servicio, profesionalIni
                 />
             )}
 
-            {paso === 'datos' && horaSeleccionada && (
+            {paso === 'datos' && servicio && horaSeleccionada && (
                 <DatosYConfirmacion
                     servicio={servicio}
                     nombreProfesional={nombrePorId(horaSeleccionada.profesionalId)}
@@ -157,7 +194,7 @@ export default function FlujoReserva({ slug, direccion, servicio, profesionalIni
                 />
             )}
 
-            {paso === 'confirmar' && horaSeleccionada && datosDelCliente && (
+            {paso === 'confirmar' && servicio && horaSeleccionada && datosDelCliente && (
                 <ConfirmarResumen
                     nombreProfesional={nombrePorId(horaSeleccionada.profesionalId)}
                     horaVisible={horaSeleccionada.horaVisible}

@@ -30,8 +30,10 @@ final class NegocioFactory extends Factory
             'tipo' => fake()->randomElement(TipoNegocio::cases()),
             'direccion' => fake()->streetAddress(),
             'ciudad' => fake()->city(),
-            'telefono' => fake()->phoneNumber(),
-            'whatsapp' => fake()->phoneNumber(),
+            // fake()->phoneNumber() a veces agrega una extension con letras
+            // ("x1234") que no pasa el regex de TextInput::tel() del formulario.
+            'telefono' => fake()->numerify('3## #######'),
+            'whatsapp' => fake()->numerify('3## #######'),
             'zona_horaria' => 'America/Bogota',
             'estado_suscripcion' => EstadoSuscripcion::Activo,
             'proxima_fecha_pago' => now()->addMonth()->toDateString(),
