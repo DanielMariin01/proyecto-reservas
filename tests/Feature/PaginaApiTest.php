@@ -6,6 +6,7 @@ use App\Actions\PublicarPagina;
 use App\Enums\EstadoSuscripcion;
 use App\Enums\RolNegocio;
 use App\Enums\TipoBloque;
+use App\Enums\TipoNegocio;
 use App\Models\Negocio;
 use App\Models\Pagina;
 use App\Models\PaletaMarca;
@@ -113,4 +114,31 @@ test('la api traduce la foto de cada testimonio a una url completa', function ()
     $respuesta->assertJsonPath('data.bloques.0.datos.testimonios.0.nombre', 'Luisa');
     $url = $respuesta->json('data.bloques.0.datos.testimonios.0.foto');
     expect($url)->toContain('/storage/paginas/luisa.jpg');
+});
+
+test('la api traduce la imagen de cada tarjeta a una url completa', function (): void {
+    $negocio = Negocio::factory()->create();
+    $pagina = Pagina::factory()->create([
+        'negocio_id' => $negocio->id,
+        'bloques' => [[
+            'type' => TipoBloque::Tarjetas->value,
+            'data' => ['columnas' => 2, 'tarjetas' => [
+                ['imagen' => 'paginas/paso1.jpg', 'titulo' => 'Paso 1', 'descripcion' => 'Agenda'],
+            ]],
+        ]],
+    ]);
+    app(PublicarPagina::class)->ejecutar($pagina);
+
+    $respuesta = $this->getJson("/api/publico/{$negocio->slug}/pagina");
+
+    $url = $respuesta->json('data.bloques.0.datos.tarjetas.0.imagen');
+    expect($url)->toContain('/storage/paginas/paso1.jpg');
+});
+
+test('la api expone la etiqueta legible del tipo de negocio', function (): void {
+    $negocio = Negocio::factory()->create(['tipo' => TipoNegocio::Barberia]);
+
+    $respuesta = $this->getJson("/api/publico/{$negocio->slug}/pagina");
+
+    $respuesta->assertJsonPath('data.tipoEtiqueta', 'Barbería');
 });

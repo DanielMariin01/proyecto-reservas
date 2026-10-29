@@ -1,8 +1,7 @@
-import { Play } from 'lucide-react';
+import { Clock, MapPin, Play } from 'lucide-react';
 import type { ReactElement } from 'react';
 import Boton from '@/componentes/Boton';
-import ImagenConManuscrito from '@/componentes/ImagenConManuscrito';
-import { obtenerEstiloColor } from './colorLibre';
+import { obtenerCapaPortada } from './capaPortada';
 import { obtenerIcono } from './iconoBloque';
 import type { PropiedadesBloque } from './tipos';
 
@@ -11,9 +10,14 @@ interface IconoConEtiqueta {
     etiqueta?: unknown;
 }
 
-export default function BloquePortada({ datos, onReservar }: PropiedadesBloque): ReactElement {
-    const etiqueta = typeof datos.etiqueta === 'string' ? datos.etiqueta : '';
+/**
+ * Sin calificación de estrellas/reseñas: el sistema real de reseñas
+ * todavía no existe (tarea aparte) y no se inventa un campo manual
+ * para esto en portada — cuando exista, se agrega ahí.
+ */
+export default function BloquePortada({ datos, pagina, onReservar }: PropiedadesBloque): ReactElement {
     const titulo = typeof datos.titulo === 'string' ? datos.titulo : '';
+    const horarioHoy = typeof datos.horarioHoy === 'string' ? datos.horarioHoy : '';
     const descripcion = typeof datos.descripcion === 'string' ? datos.descripcion : '';
     const textoBotonPrincipal = typeof datos.textoBotonPrincipal === 'string' && datos.textoBotonPrincipal !== '' ? datos.textoBotonPrincipal : 'Reservar cita';
     const mostrarBotonVideo = Boolean(datos.mostrarBotonVideo) && typeof datos.enlaceVideo === 'string' && datos.enlaceVideo !== '';
@@ -21,16 +25,49 @@ export default function BloquePortada({ datos, onReservar }: PropiedadesBloque):
     const imagen = typeof datos.imagen === 'string' ? datos.imagen : null;
     const textoManuscrito = typeof datos.textoManuscrito === 'string' ? datos.textoManuscrito : '';
     const iconos = Array.isArray(datos.iconos) ? (datos.iconos as IconoConEtiqueta[]) : [];
+    const capa = obtenerCapaPortada(datos.overlay);
 
     return (
-        <section style={obtenerEstiloColor(datos)}>
-            <div className="mx-auto flex max-w-[1200px] flex-col gap-10 px-4 py-16 sm:py-24 md:flex-row md:items-center md:justify-between">
-                <div className="md:w-1/2">
-                    {etiqueta && <p className="mb-3 text-xs font-semibold uppercase tracking-widest opacity-80">{etiqueta}</p>}
+        <section className={`relative flex min-h-[80vh] items-start overflow-hidden ${capa.texto}`}>
+            {imagen ? (
+                <img src={imagen} alt="" className="absolute inset-0 h-full w-full object-cover" />
+            ) : (
+                <div className="absolute inset-0 bg-tinta" />
+            )}
+            <div className={`absolute inset-0 ${capa.capa}`} />
 
-                    <h1 className="text-4xl font-extrabold uppercase leading-[1.05] sm:text-5xl md:text-6xl">{titulo}</h1>
+            {textoManuscrito && (
+                <span className="absolute right-6 top-6 -rotate-3 rounded-boton bg-blanco px-4 py-2 text-lg italic text-tinta shadow-tarjeta sm:text-xl">
+                    {textoManuscrito}
+                </span>
+            )}
 
-                    {descripcion && <p className="mt-4 max-w-[450px] text-sm opacity-80 sm:text-base">{descripcion}</p>}
+            <div className="relative z-10 w-full px-4 py-16 sm:py-24">
+                <div className="mx-auto max-w-[1200px]">
+                    <span className={`inline-block rounded-boton px-3 py-1 text-xs font-semibold uppercase tracking-widest ${capa.pildora}`}>
+                        {pagina.tipoEtiqueta}
+                    </span>
+
+                    <h1 className="mt-3 max-w-2xl text-4xl font-extrabold uppercase leading-[1.05] sm:text-5xl md:text-6xl">{titulo}</h1>
+
+                    {(pagina.direccion || horarioHoy) && (
+                        <div className="mt-4 flex flex-col gap-1 text-sm opacity-90 sm:flex-row sm:items-center sm:gap-6">
+                            {pagina.direccion && (
+                                <span className="flex items-center gap-2">
+                                    <MapPin size={16} strokeWidth={1.75} />
+                                    {pagina.direccion}
+                                </span>
+                            )}
+                            {horarioHoy && (
+                                <span className="flex items-center gap-2">
+                                    <Clock size={16} strokeWidth={1.75} />
+                                    {horarioHoy}
+                                </span>
+                            )}
+                        </div>
+                    )}
+
+                    {descripcion && <p className="mt-4 max-w-[450px] text-sm opacity-90 sm:text-base">{descripcion}</p>}
 
                     <div className="mt-8 flex flex-wrap items-center gap-3">
                         <Boton onClick={() => onReservar({})}>{textoBotonPrincipal}</Boton>
@@ -54,15 +91,13 @@ export default function BloquePortada({ datos, onReservar }: PropiedadesBloque):
                                 return (
                                     <div key={indice} className="flex flex-col items-center gap-2 text-center">
                                         <Icono size={28} strokeWidth={1.75} />
-                                        <span className="text-xs opacity-80">{etiquetaIcono}</span>
+                                        <span className="text-xs opacity-90">{etiquetaIcono}</span>
                                     </div>
                                 );
                             })}
                         </div>
                     )}
                 </div>
-
-                {imagen && <ImagenConManuscrito imagen={imagen} textoManuscrito={textoManuscrito} className="md:w-1/2" />}
             </div>
         </section>
     );

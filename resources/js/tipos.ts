@@ -56,6 +56,7 @@ export interface Bloque {
 export interface PaginaPublica {
     nombreNegocio: string;
     tipo: string;
+    tipoEtiqueta: string;
     logo: string | null;
     colorPrimario: string | null;
     colorSecundario: string | null;

@@ -32,6 +32,14 @@
                         </label>
                     @endif
 
+                    @if (array_key_exists('horarioHoy', $bloques[$indice]['data'] ?? []))
+                        <label class="mb-3 block">
+                            <span class="fi-fo-field-wrp-label text-sm font-medium">Horario de hoy</span>
+                            <input type="text" wire:model="bloques.{{ $indice }}.data.horarioHoy"
+                                class="fi-input mt-1 block w-full rounded-lg border-gray-300 text-sm dark:border-gray-600 dark:bg-gray-800" />
+                        </label>
+                    @endif
+
                     @if (array_key_exists('texto', $bloques[$indice]['data'] ?? []))
                         <label class="mb-3 block">
                             <span class="fi-fo-field-wrp-label text-sm font-medium">Texto</span>

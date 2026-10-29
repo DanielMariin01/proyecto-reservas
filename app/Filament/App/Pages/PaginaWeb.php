@@ -33,9 +33,9 @@ final class PaginaWeb extends Page
 
     /**
      * Por tipo de bloque, los únicos campos de `data` que el dueño puede
-     * cambiar. Todo lo demás (type, combinacionColor, el orden y la
-     * cantidad de bloques) sale siempre de lo guardado en la base de
-     * datos, nunca de lo que mande el navegador — así se cumple RF-PAG-01
+     * cambiar. Todo lo demás (type, colorFondo/colorTexto, overlay, el
+     * orden y la cantidad de bloques) sale siempre de lo guardado en la
+     * base de datos, nunca de lo que mande el navegador — así se cumple RF-PAG-01
      * ("nunca agrega, quita ni reordena bloques, ni cambia colores")
      * aunque alguien manipule el payload de Livewire a mano.
      *
@@ -43,7 +43,7 @@ final class PaginaWeb extends Page
      */
     private const CAMPOS_EDITABLES_POR_TIPO = [
         TipoBloque::BarraPromocion->value => ['texto', 'textoBoton', 'enlaceBoton'],
-        TipoBloque::Portada->value => ['etiqueta', 'titulo', 'descripcion', 'textoBotonPrincipal', 'enlaceVideo', 'imagen', 'textoManuscrito'],
+        TipoBloque::Portada->value => ['titulo', 'horarioHoy', 'descripcion', 'textoBotonPrincipal', 'enlaceVideo', 'imagen', 'textoManuscrito'],
         TipoBloque::Texto->value => ['titulo', 'parrafo'],
         TipoBloque::TextoConImagen->value => ['etiqueta', 'titulo', 'parrafo', 'fraseResaltada', 'textoBoton', 'enlaceBoton', 'imagen', 'textoManuscrito'],
         TipoBloque::Galeria->value => ['fotos'],

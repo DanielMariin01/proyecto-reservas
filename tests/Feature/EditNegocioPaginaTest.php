@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Enums\CapaPortada;
 use App\Enums\FuenteTestimonios;
 use App\Enums\IconoBloque;
 use App\Enums\TipoBloque;
@@ -23,7 +24,7 @@ test('el super admin arma los bloques de la pagina con el Builder y crea la Pagi
         ->test(EditNegocio::class, ['record' => $negocio->getRouteKey()])
         ->fillForm([
             'pagina.bloques' => [
-                ['type' => TipoBloque::Portada->value, 'data' => ['titulo' => 'Bienvenido', 'etiqueta' => 'Agenda hoy', 'imagen' => null]],
+                ['type' => TipoBloque::Portada->value, 'data' => ['titulo' => 'Bienvenido', 'overlay' => CapaPortada::Clara->value, 'horarioHoy' => 'Hoy: 9:00 a.m. - 7:00 p.m.', 'imagen' => null]],
                 ['type' => TipoBloque::Servicios->value, 'data' => []],
             ],
         ])
@@ -36,6 +37,8 @@ test('el super admin arma los bloques de la pagina con el Builder y crea la Pagi
     expect($pagina->bloques)->toHaveCount(2);
     expect($pagina->bloques[0]['type'])->toBe(TipoBloque::Portada->value);
     expect($pagina->bloques[0]['data']['titulo'])->toBe('Bienvenido');
+    expect($pagina->bloques[0]['data']['overlay'])->toBe(CapaPortada::Clara->value);
+    expect($pagina->bloques[0]['data']['horarioHoy'])->toBe('Hoy: 9:00 a.m. - 7:00 p.m.');
     expect($pagina->bloques_publicados)->toBeNull();
 });
 
@@ -131,6 +134,60 @@ test('el super admin arma los bloques nuevos de la plantilla de landing', functi
     expect($pagina->bloques[1]['data']['enlaces'][0]['texto'])->toBe('Servicios');
     expect($pagina->bloques[3]['data']['testimonios'][0]['nombre'])->toBe('Ana');
     expect($pagina->bloques[3]['data']['testimonios'][0]['estrellas'])->toBe(5);
+});
+
+test('el super admin arma un bloque de tarjetas en columnas', function (): void {
+    $negocio = Negocio::factory()->create();
+    $superAdmin = Usuario::factory()->superAdmin()->create();
+
+    Filament::setCurrentPanel(Filament::getPanel('admin'));
+
+    Livewire::actingAs($superAdmin)
+        ->test(EditNegocio::class, ['record' => $negocio->getRouteKey()])
+        ->fillForm([
+            'pagina.bloques' => [
+                [
+                    'type' => TipoBloque::Tarjetas->value,
+                    'data' => [
+                        'columnas' => 3,
+                        'tarjetas' => [
+                            ['imagen' => null, 'titulo' => 'Paso 1', 'descripcion' => 'Agenda tu cita'],
+                            ['imagen' => null, 'titulo' => 'Paso 2', 'descripcion' => 'Llega a tiempo'],
+                        ],
+                    ],
+                ],
+            ],
+        ])
+        ->call('save')
+        ->assertHasNoFormErrors();
+
+    $pagina = Pagina::query()->where('negocio_id', $negocio->id)->first();
+    $datos = $pagina->bloques[0]['data'];
+
+    expect($pagina->bloques[0]['type'])->toBe(TipoBloque::Tarjetas->value);
+    expect($datos['columnas'])->toBe(3);
+    expect($datos['tarjetas'])->toHaveCount(2);
+    expect($datos['tarjetas'][1]['titulo'])->toBe('Paso 2');
+});
+
+test('ubicacion (uno de los bloques recien cubiertos) guarda color libre sin bloquear', function (): void {
+    $negocio = Negocio::factory()->create();
+    $superAdmin = Usuario::factory()->superAdmin()->create();
+
+    Filament::setCurrentPanel(Filament::getPanel('admin'));
+
+    Livewire::actingAs($superAdmin)
+        ->test(EditNegocio::class, ['record' => $negocio->getRouteKey()])
+        ->fillForm([
+            'pagina.bloques' => [
+                ['type' => TipoBloque::Ubicacion->value, 'data' => ['colorFondo' => '#DDDDDD', 'colorTexto' => '#E0E0E0']],
+            ],
+        ])
+        ->call('save')
+        ->assertHasNoFormErrors();
+
+    $pagina = Pagina::query()->where('negocio_id', $negocio->id)->first();
+    expect($pagina->bloques[0]['data']['colorFondo'])->toBe('#DDDDDD');
 });
 
 test('el super admin asigna una paleta de marca al negocio desde un select', function (): void {

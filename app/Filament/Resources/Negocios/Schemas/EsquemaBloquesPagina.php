@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Negocios\Schemas;
 
+use App\Enums\CapaPortada;
 use App\Enums\FuenteTestimonios;
 use App\Enums\IconoBloque;
 use App\Enums\TipoBloque;
@@ -55,8 +56,12 @@ final class EsquemaBloquesPagina
             Block::make(TipoBloque::Portada->value)
                 ->label(TipoBloque::Portada->etiqueta())
                 ->schema([
-                    TextInput::make('etiqueta')->maxLength(255)->helperText('Palabra o frase corta, va en mayúsculas arriba del título.'),
                     TextInput::make('titulo')->required()->maxLength(255),
+                    self::selectorCapaPortada(),
+                    TextInput::make('horarioHoy')
+                        ->label('Horario de hoy')
+                        ->maxLength(255)
+                        ->helperText('Texto libre, ej. "Hoy: 9:00 a.m. – 7:00 p.m.". No se calcula solo todavía.'),
                     Textarea::make('descripcion')->rows(3),
                     TextInput::make('textoBotonPrincipal')->default('Reservar cita')->maxLength(255),
                     Toggle::make('mostrarBotonVideo')->label('Mostrar botón "Ver video"')->live()->default(false),
@@ -70,16 +75,19 @@ final class EsquemaBloquesPagina
                     TextInput::make('textoManuscrito')
                         ->maxLength(255)
                         ->helperText('Texto decorativo superpuesto en la foto, en Asap itálica (sin fuente nueva).'),
-                    ...self::camposColorLibre('#3E4043', '#FFFFFF'),
                 ]),
             Block::make(TipoBloque::Equipo->value)
-                ->label(TipoBloque::Equipo->etiqueta()),
+                ->label(TipoBloque::Equipo->etiqueta())
+                ->schema(self::camposColorLibre('#FFFFFF', '#3E4043')),
             Block::make(TipoBloque::Servicios->value)
-                ->label(TipoBloque::Servicios->etiqueta()),
+                ->label(TipoBloque::Servicios->etiqueta())
+                ->schema(self::camposColorLibre('#FFFFFF', '#3E4043')),
             Block::make(TipoBloque::Cursos->value)
-                ->label(TipoBloque::Cursos->etiqueta().' (próximamente)'),
+                ->label(TipoBloque::Cursos->etiqueta().' (próximamente)')
+                ->schema(self::camposColorLibre('#FFFFFF', '#3E4043')),
             Block::make(TipoBloque::Productos->value)
-                ->label(TipoBloque::Productos->etiqueta().' (próximamente)'),
+                ->label(TipoBloque::Productos->etiqueta().' (próximamente)')
+                ->schema(self::camposColorLibre('#FFFFFF', '#3E4043')),
             Block::make(TipoBloque::Texto->value)
                 ->label(TipoBloque::Texto->etiqueta())
                 ->schema([
@@ -111,6 +119,25 @@ final class EsquemaBloquesPagina
                 ->label(TipoBloque::Galeria->etiqueta())
                 ->schema([
                     FileUpload::make('fotos')->image()->multiple()->disk('public')->directory('paginas'),
+                    ...self::camposColorLibre('#FFFFFF', '#3E4043'),
+                ]),
+            Block::make(TipoBloque::Tarjetas->value)
+                ->label(TipoBloque::Tarjetas->etiqueta())
+                ->schema([
+                    Select::make('columnas')
+                        ->options([1 => '1 columna', 2 => '2 columnas', 3 => '3 columnas'])
+                        ->default(2),
+                    Repeater::make('tarjetas')
+                        ->label('Tarjetas')
+                        ->schema([
+                            FileUpload::make('imagen')->image()->disk('public')->directory('paginas'),
+                            TextInput::make('titulo')->maxLength(255),
+                            Textarea::make('descripcion')->rows(2)->maxLength(255),
+                        ])
+                        ->addActionLabel('Agregar tarjeta')
+                        ->maxItems(9)
+                        ->defaultItems(0),
+                    ...self::camposColorLibre('#FFFFFF', '#3E4043'),
                 ]),
             Block::make(TipoBloque::BannerOferta->value)
                 ->label(TipoBloque::BannerOferta->etiqueta())
@@ -146,9 +173,11 @@ final class EsquemaBloquesPagina
                     ...self::camposColorLibre('#FFFFFF', '#3E4043'),
                 ]),
             Block::make(TipoBloque::Ubicacion->value)
-                ->label(TipoBloque::Ubicacion->etiqueta()),
+                ->label(TipoBloque::Ubicacion->etiqueta())
+                ->schema(self::camposColorLibre('#FFFFFF', '#3E4043')),
             Block::make(TipoBloque::Whatsapp->value)
-                ->label(TipoBloque::Whatsapp->etiqueta()),
+                ->label(TipoBloque::Whatsapp->etiqueta())
+                ->schema(self::camposColorLibre('#7454E9', '#FFFFFF')),
             Block::make(TipoBloque::PieDePagina->value)
                 ->label(TipoBloque::PieDePagina->etiqueta())
                 ->schema([
@@ -199,6 +228,25 @@ final class EsquemaBloquesPagina
         }
 
         return sprintf('Este texto puede ser difícil de leer con este fondo (contraste %.1f:1; se recomienda 4,5:1 o más). Se puede guardar igual.', $contraste);
+    }
+
+    /**
+     * Capa de legibilidad sobre la foto de fondo de `portada` — 2
+     * opciones fijas, no un `ColorPicker`: es para que el texto se lea
+     * bien sobre cualquier foto, no una decisión de marca.
+     */
+    private static function selectorCapaPortada(): Select
+    {
+        $opciones = [];
+
+        foreach (CapaPortada::cases() as $capa) {
+            $opciones[$capa->value] = $capa->etiqueta();
+        }
+
+        return Select::make('overlay')
+            ->label('Capa sobre la foto')
+            ->options($opciones)
+            ->default(CapaPortada::Oscura->value);
     }
 
     private static function selectorIcono(): Select

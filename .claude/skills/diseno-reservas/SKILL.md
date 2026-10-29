@@ -59,13 +59,26 @@ Reglas:
 
 ### Color libre de bloque (única excepción a "nunca colores sueltos")
 
-Los bloques de la plantilla de landing (sección 6.1: `barra_promocion`, `portada`, `texto`, `texto_con_imagen`, `banner_oferta`, `testimonios`) no usan los tokens de color — cada uno tiene 2 campos de color libre (`colorFondo`/`colorTexto`, un `ColorPicker` en el Builder) para que el super admin arme la paleta exacta de cada sección. Esta es la **única** excepción permitida a la regla de "prohibido escribir colores sueltos" de arriba; el resto del sistema (botones, tarjetas, paneles, componentes base) sigue solo con tokens.
+Todos los bloques de contenido (sección 6.1: `barra_promocion`, `texto`, `texto_con_imagen`, `banner_oferta`, `testimonios`, `tarjetas`, `equipo`, `servicios`, `cursos`, `productos`, `galeria`, `ubicacion`, `whatsapp`) no usan los tokens de color en su fondo/texto — cada uno tiene 2 campos de color libre (`colorFondo`/`colorTexto`, un `ColorPicker` en el Builder, reutilizando el mismo helper `camposColorLibre()`) para que el super admin arme la paleta exacta de cada sección. Esta es la **única** excepción permitida a la regla de "prohibido escribir colores sueltos" de arriba; el resto del sistema (botones, tarjetas, paneles, componentes base) sigue solo con tokens — incluidas las tarjetas blancas dentro de estos bloques (`equipo`, `servicios`, `testimonios`, `tarjetas`), que mantienen su texto `--tinta` fijo sin importar el color del fondo de la sección.
 
-Sobre esos 2 campos, el contraste AA **es una advertencia, no un bloqueo**: el Builder calcula el contraste entre `colorFondo` y `colorTexto` (con `App\Services\CalculadoraContraste`, el mismo servicio de las paletas de marca) y muestra "⚠ Este texto puede ser difícil de leer con este fondo" si da menos de 4,5:1 — pero el super admin puede guardar igual. Esto es distinto de:
+`encabezado`, `pie_de_pagina` y `portada` quedan fuera de este sistema (fondo fijo o capa de legibilidad, ver abajo) — no son "contenido de marca" sino chrome del sitio o una foto de fondo.
+
+Sobre `colorFondo`/`colorTexto`, el contraste AA **es una advertencia, no un bloqueo**: el Builder calcula el contraste entre ambos (con `App\Services\CalculadoraContraste`, el mismo servicio de las paletas de marca) y muestra "⚠ Este texto puede ser difícil de leer con este fondo" si da menos de 4,5:1 — pero el super admin puede guardar igual. Esto es distinto de:
 - La tabla de contraste de arriba (tokens del sistema): sigue siendo obligatoria, sin excepción.
 - Las paletas de marca (sección 6.1, "Librería de paletas de marca"): su `color_primario` **sigue bloqueando** el guardado si no llega a 4,5:1 con texto blanco.
 
 El texto manuscrito/decorativo superpuesto sobre fotos (`textoManuscrito`) **no usa una fuente nueva**: es Asap itálica (el mismo `--fuente-base` de todo el proyecto), solo con un tratamiento visual distinto (itálica, rotación leve, chip de fondo).
+
+### Capa de legibilidad de `portada` (no es color libre)
+
+`portada` usa una foto de fondo a pantalla completa con una capa semitransparente encima para que el texto se lea — es legibilidad, no decoración, por eso es un `Select` de 2 opciones fijas (`App\Enums\CapaPortada`), no un `ColorPicker`:
+
+| Opción | Capa | Texto | Uso |
+| --- | --- | --- | --- |
+| `oscura` (por defecto) | Negro ~50 % de opacidad | Blanco | Fotos claras |
+| `clara` | Blanco ~70 % de opacidad | `--tinta` | Fotos oscuras |
+
+No lleva el cálculo estricto de AA de las paletas de marca (una capa semitransparente sobre una foto variable no se puede verificar en el momento de guardar), pero ambas opacidades están pensadas para quedar razonablemente legibles a simple vista sobre casi cualquier foto. Si una foto puntual queda difícil de leer, el super admin cambia a la otra opción.
 
 ## 2. Componentes base
 
@@ -141,18 +154,19 @@ Cada bloque es un componente registrado por tipo. El super admin arma la página
 | --- | --- |
 | `barra_promocion` | Franja angosta, color libre. Texto corto + botón de texto opcional + botón de cerrar (x). |
 | `encabezado` | Logo a la izquierda, enlaces de navegación al centro, ícono de búsqueda (decorativo) + botón "Reservar" a la derecha. Fondo fijo blanco. |
-| `portada` | Color libre (ver sección 6.1). Dos columnas: texto a la izquierda, foto rectangular a la derecha con texto decorativo opcional. Título en 3 líneas, mayúsculas, muy grande y negrita; descripción corta; 2 botones; fila de hasta 4 íconos con etiqueta. |
-| `equipo` | Cuadrícula de `Tarjeta` con foto cuadrada, nombre, especialidad y botón "Reservar con {nombre}". |
-| `servicios` | Tarjetas con ícono de tijeras, foto cuadrada, nombre, descripción, "$20.000 · 45 min" y botón "Agendar". |
-| `cursos` | Tarjeta por fecha: nombre, fecha y hora, "Quedan 3 cupos" en `--secundario`, precio, botón "Inscribirme"; agotado en gris. |
-| `productos` | Cuadrícula de tarjetas con foto, nombre, precio y botón "Agregar". |
+| `portada` | Foto de fondo a pantalla completa con capa de legibilidad (ver sección 1). Insignia con el tipo de negocio + título muy grande arriba a la izquierda; fila de ubicación/horario; descripción; 2 botones; fila de hasta 4 íconos con etiqueta; texto decorativo opcional. |
+| `equipo` | Color libre. Cuadrícula de `Tarjeta` con foto cuadrada, nombre, especialidad y botón "Reservar con {nombre}". |
+| `servicios` | Color libre. Tarjetas con ícono de tijeras, foto cuadrada, nombre, descripción, "$20.000 · 45 min" y botón "Agendar". |
+| `cursos` | Color libre. Tarjeta por fecha: nombre, fecha y hora, "Quedan 3 cupos" en `--secundario`, precio, botón "Inscribirme"; agotado en gris. |
+| `productos` | Color libre. Cuadrícula de tarjetas con foto, nombre, precio y botón "Agregar". |
 | `texto` | Color libre. Título y párrafo de máximo 70 caracteres por línea. |
 | `texto_con_imagen` | Color libre. Modo simple (párrafo con una frase resaltada) o modo "motivos" (etiqueta + título + grid 2×2 de ícono/título/descripción) si se agrega al menos un motivo — mismo bloque, dos formas de verse. Foto con texto decorativo opcional del otro lado. |
-| `galeria` | Cuadrícula de fotos cuadradas con vista ampliada al tocar. |
+| `galeria` | Color libre. Cuadrícula de fotos cuadradas con vista ampliada al tocar. |
+| `tarjetas` | Color libre. Tarjetas repetidas genéricas (imagen + título opcional + descripción), 1 a 3 columnas elegidas por el super admin — contenido manual, sin atarse a ningún modelo. |
 | `banner_oferta` | Color libre. Etiqueta + título + descripción + botón de un lado; foto con texto decorativo opcional del otro. |
 | `testimonios` | Color libre. Tarjetas con cita, estrellas (1-5), foto y nombre — contenido manual (ver sección 6.1). |
-| `ubicacion` | Mapa, dirección, horario de atención por día y botón "Cómo llegar". |
-| `whatsapp` | Botón flotante redondo abajo a la derecha, visible en toda la página. |
+| `ubicacion` | Color libre. Mapa, dirección, horario de atención por día y botón "Cómo llegar". |
+| `whatsapp` | Color libre (fondo/ícono del botón). Botón flotante redondo abajo a la derecha, visible en toda la página. |
 | `pie_de_pagina` | Fondo fijo `--tinta`/texto blanco. Nombre del negocio, descripción corta, dirección/WhatsApp, enlaces y año de copyright. |
 
 Los colores de marca del negocio (su paleta de marca, ver más abajo) sobrescriben `--primario` y `--secundario` solo dentro de su página pública (incluido el flujo de reserva); el resto de tokens se mantiene.
@@ -171,12 +185,23 @@ Igual de detallado que la ventana de reserva (sección 3), porque esta plantilla
 - **Celular**: los enlaces de navegación se **ocultan por completo** (sin menú hamburguesa en este alcance) — quedan logo, ícono de búsqueda y botón "Reservar".
 
 **`portada`**
-- Escritorio: 2 columnas. Izquierda: etiqueta pequeña en mayúsculas espaciadas (opacidad 80 %), título en 3 líneas mayúsculas muy grande (48-60 px) y negrita, descripción (máx. 450 px de ancho, opacidad 80 %), 2 botones (`Boton principal` "Reservar cita" + `Boton contorno` con ícono `play` "Ver video", opcional), fila de hasta 4 íconos con etiqueta corta debajo. Derecha: foto rectangular `--radio-tarjeta`, con texto decorativo opcional superpuesto en una esquina (Asap itálica, ver sección 1).
-- **Celular**: una sola columna; el texto va primero, la foto después (más pequeña, relación de aspecto 4:3 igual que en escritorio); la fila de íconos pasa de 4 a 2 columnas; los 2 botones se envuelven en vez de desbordar.
+- Foto de fondo a pantalla completa (mínimo 80 % del alto de la ventana), con la capa de legibilidad de la sección 1 encima. Contenido anclado arriba a la izquierda, en una sola columna sobre la foto (no 2 columnas):
+  1. Insignia en píldora semitransparente con el tipo de negocio (`Negocio.tipo`, nunca un campo escrito a mano — así siempre coincide con el negocio real).
+  2. Título mayúsculas muy grande (48-60 px) y negrita.
+  3. Fila de ubicación (ícono `map-pin` + `direccion`, ya existente) y horario (ícono `clock` + `horarioHoy`, texto libre que escribe el super admin — **no se calcula solo todavía**, no hay un endpoint de horario de atención del negocio hoy; construirlo es una tarea aparte).
+  4. Descripción (máx. 450 px de ancho, opacidad 90 %).
+  5. 2 botones (`Boton principal` "Reservar cita" + `Boton contorno` con ícono `play` "Ver video", opcional).
+  6. Fila de hasta 4 íconos con etiqueta corta debajo.
+- Texto decorativo opcional (`textoManuscrito`) como insignia flotante en la esquina superior derecha de la foto, no en el flujo del contenido.
+- **Sin calificación de estrellas/reseñas**: el sistema real de reseñas no existe todavía (tarea aparte) — no se muestra nada ni se inventa un campo manual para esto aquí; cuando ese sistema exista, se agrega.
+- **Celular**: los tamaños de título y relleno se reducen para que el texto nunca quede recortado contra la foto; la fila de íconos pasa de 4 a 2 columnas; los 2 botones y la fila de ubicación/horario se envuelven en vez de desbordar.
 
-**`servicios`** (ajuste visual sobre el bloque ya existente)
+**`servicios`** (ajuste visual sobre el bloque ya existente, más color libre)
 - Ícono fijo de tijeras + foto + nombre + descripción + precio/duración + botón "Agendar", en `Tarjeta`.
 - **Celular**: cuadrícula de 1 columna (ya lo hacía).
+
+**`equipo`, `cursos`, `productos`, `ubicacion`, `whatsapp`** (sin cambios de diseño en esta plantilla, solo color libre)
+- Mismo diseño que ya tenían (ver tabla de arriba); el color libre no cambia su comportamiento responsive.
 
 **`texto_con_imagen`**
 - Modo simple: párrafo con una frase resaltada en `--primario`.
@@ -184,8 +209,13 @@ Igual de detallado que la ventana de reserva (sección 3), porque esta plantilla
 - Foto con texto decorativo opcional, del lado contrario al texto.
 - **Celular**: una columna, foto primero; el grid de motivos pasa de 2 columnas a 1.
 
-**`galeria`** (sin cambios de diseño en esta plantilla)
+**`galeria`** (sin cambios de diseño en esta plantilla, solo color libre)
 - Cuadrícula de fotos cuadradas, 2 columnas en celular, 4 en escritorio, con vista ampliada al tocar.
+
+**`tarjetas`**
+- Genérico y manual (servicios destacados, pasos de un proceso, lo que el negocio necesite) — no se ata a ningún modelo de datos. Cada tarjeta: imagen arriba (relación 4:3) + título opcional + descripción corta, dentro de una `Tarjeta` blanca fija.
+- El super admin elige 1, 2 o 3 columnas para escritorio y agrega/quita tarjetas libremente (máximo 9).
+- **Celular**: siempre 1 columna, sin importar cuántas se eligieron para escritorio.
 
 **`banner_oferta`**
 - Mismo patrón que `portada` sin la fila de íconos ni el botón de video: etiqueta + título + descripción + botón de un lado, foto con texto decorativo del otro.
