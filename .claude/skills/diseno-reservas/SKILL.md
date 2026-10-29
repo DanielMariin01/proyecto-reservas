@@ -224,10 +224,20 @@ Igual de detallado que la ventana de reserva (sección 3), porque esta plantilla
 
 **`banner_oferta`**
 - Estilo "tienda online": etiqueta con ícono de descuento (`badge-percent`, 22 px) en píldora, título, descripción y un `Boton` **tamaño `grande`** con ícono `arrow-right`, de un lado; foto más pequeña (un tercio del ancho en escritorio) con texto decorativo del otro.
-- Elementos decorativos: 2 círculos translúcidos superpuestos (`bg-blanco/10`) y 2 destellos (`sparkles` de Lucide) con opacidad baja — todo con los tokens de opacidad ya permitidos, nunca un color nuevo. Es la composición (píldoras/destellos superpuestos), no los colores exactos de ninguna referencia visual.
+- Elementos decorativos por defecto (sin tema): 2 círculos translúcidos superpuestos (`bg-blanco/10`) y 2 destellos (`sparkles` de Lucide) con opacidad baja — todo con los tokens de opacidad ya permitidos, nunca un color nuevo. Es la composición (píldoras/destellos superpuestos), no los colores exactos de ninguna referencia visual.
 - Fondo en degradado calculado a partir del mismo `colorFondo` que ya elige el super admin (oscurecido ~15%, ver sección 1) — nunca un color nuevo.
 - Sección muy delgada a propósito (relleno vertical 16-24 px, bastante menos que el resto de bloques de la plantilla) para que se sienta como una franja promocional, no como otra sección completa.
 - **Celular**: una columna, texto primero, foto después.
+
+**Fondo decorativo temático (`temaDecorativo`)**: activación manual del super admin (nunca por fecha del sistema) — `App\Enums\TemaDecorativo`, `ninguno` por defecto (sin cambios visuales). Si hay un tema activo, sus 3 íconos reemplazan los destellos genéricos de arriba, dispersos en 9 posiciones fijas (tamaños 14-24 px, rotaciones -20° a 30°) en `text-blanco/20` sobre el degradado:
+
+| Tema | Íconos Lucide |
+| --- | --- |
+| `halloween` | `ghost`, `bug` (no existe `spider` en el paquete), `skull` |
+| `navidad` | `tree-pine`, `gift`, `snowflake` |
+| `amor_amistad` | `heart`, `heart-handshake`, `gift` |
+| `anio_nuevo` | `party-popper`, `balloon`, `stars` |
+| `dia_madre` | `flower`, `flower-2`, `heart` |
 
 **`pie_de_pagina`**
 - Fondo fijo `--tinta`/texto blanco (no es color libre, sigue siendo "chrome" del sitio). 3 columnas centradas:

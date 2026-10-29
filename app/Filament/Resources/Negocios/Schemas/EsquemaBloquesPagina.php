@@ -7,6 +7,7 @@ namespace App\Filament\Resources\Negocios\Schemas;
 use App\Enums\CapaPortada;
 use App\Enums\FuenteTestimonios;
 use App\Enums\IconoBloque;
+use App\Enums\TemaDecorativo;
 use App\Enums\TipoBloque;
 use App\Services\CalculadoraContraste;
 use Filament\Forms\Components\Builder\Block;
@@ -162,6 +163,7 @@ final class EsquemaBloquesPagina
                     TextInput::make('enlaceBoton')->url()->maxLength(255),
                     FileUpload::make('imagen')->image()->disk('public')->directory('paginas'),
                     TextInput::make('textoManuscrito')->maxLength(255),
+                    self::selectorTemaDecorativo(),
                     ...self::camposColorLibre('#673DE6', '#FFFFFF'),
                 ]),
             Block::make(TipoBloque::Testimonios->value)
@@ -264,6 +266,24 @@ final class EsquemaBloquesPagina
             ->label('Capa sobre la foto')
             ->options($opciones)
             ->default(CapaPortada::Oscura->value);
+    }
+
+    /**
+     * Fondo decorativo temático de `banner_oferta` (sección 1 de la
+     * skill): activación manual, nunca por fecha del sistema.
+     */
+    private static function selectorTemaDecorativo(): Select
+    {
+        $opciones = [];
+
+        foreach (TemaDecorativo::cases() as $tema) {
+            $opciones[$tema->value] = $tema->etiqueta();
+        }
+
+        return Select::make('temaDecorativo')
+            ->label('Fondo decorativo temático')
+            ->options($opciones)
+            ->default(TemaDecorativo::Ninguno->value);
     }
 
     private static function selectorIcono(): Select

@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Enums\CapaPortada;
 use App\Enums\FuenteTestimonios;
 use App\Enums\IconoBloque;
+use App\Enums\TemaDecorativo;
 use App\Enums\TipoBloque;
 use App\Filament\Resources\Negocios\Pages\EditNegocio;
 use App\Models\Negocio;
@@ -137,6 +138,27 @@ test('el super admin arma los bloques nuevos de la plantilla de landing', functi
     expect($pagina->bloques[3]['data']['testimonios'][0]['nombre'])->toBe('Ana');
     expect($pagina->bloques[3]['data']['testimonios'][0]['estrellas'])->toBe(5);
     expect($pagina->bloques[4]['data']['facebookUrl'])->toBe('https://facebook.com/negocio');
+});
+
+test('el super admin activa un tema decorativo en el banner de oferta', function (): void {
+    $negocio = Negocio::factory()->create();
+    $superAdmin = Usuario::factory()->superAdmin()->create();
+
+    Filament::setCurrentPanel(Filament::getPanel('admin'));
+
+    Livewire::actingAs($superAdmin)
+        ->test(EditNegocio::class, ['record' => $negocio->getRouteKey()])
+        ->fillForm([
+            'pagina.bloques' => [
+                ['type' => TipoBloque::BannerOferta->value, 'data' => ['titulo' => 'Oferta de Halloween', 'temaDecorativo' => TemaDecorativo::Halloween->value]],
+            ],
+        ])
+        ->call('save')
+        ->assertHasNoFormErrors();
+
+    $pagina = Pagina::query()->where('negocio_id', $negocio->id)->first();
+
+    expect($pagina->bloques[0]['data']['temaDecorativo'])->toBe(TemaDecorativo::Halloween->value);
 });
 
 test('el super admin arma un bloque de tarjetas en columnas', function (): void {
