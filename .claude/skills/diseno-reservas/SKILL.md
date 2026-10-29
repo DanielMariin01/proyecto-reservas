@@ -76,7 +76,7 @@ El texto manuscrito/decorativo superpuesto sobre fotos (`textoManuscrito`) **no 
 | Opción | Capa | Texto | Uso |
 | --- | --- | --- | --- |
 | `oscura` (por defecto) | Negro ~35 % de opacidad | Blanco | Fotos claras |
-| `clara` | Blanco ~70 % de opacidad | `--tinta` | Fotos oscuras |
+| `clara` | Blanco ~45 % de opacidad | `--tinta` | Fotos oscuras |
 
 No lleva el cálculo estricto de AA de las paletas de marca (una capa semitransparente sobre una foto variable no se puede verificar en el momento de guardar), pero ambas opacidades están pensadas para quedar razonablemente legibles a simple vista sobre casi cualquier foto. Si una foto puntual queda difícil de leer, el super admin cambia a la otra opción.
 

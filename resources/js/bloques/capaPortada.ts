@@ -15,7 +15,7 @@ interface ClasesCapa {
  */
 const CAPAS: Record<CapaPortada, ClasesCapa> = {
     oscura: { capa: 'bg-black/35', texto: 'text-blanco', pildora: 'bg-black/40' },
-    clara: { capa: 'bg-blanco/70', texto: 'text-tinta', pildora: 'bg-blanco/70' },
+    clara: { capa: 'bg-blanco/45', texto: 'text-tinta', pildora: 'bg-blanco/70' },
 };
 
 export function obtenerCapaPortada(valor: unknown): ClasesCapa {
