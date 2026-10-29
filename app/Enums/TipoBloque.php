@@ -14,6 +14,8 @@ namespace App\Enums;
  */
 enum TipoBloque: string
 {
+    case BarraPromocion = 'barra_promocion';
+    case Encabezado = 'encabezado';
     case Portada = 'portada';
     case Equipo = 'equipo';
     case Servicios = 'servicios';
@@ -22,12 +24,17 @@ enum TipoBloque: string
     case Texto = 'texto';
     case TextoConImagen = 'texto_con_imagen';
     case Galeria = 'galeria';
+    case BannerOferta = 'banner_oferta';
+    case Testimonios = 'testimonios';
     case Ubicacion = 'ubicacion';
     case Whatsapp = 'whatsapp';
+    case PieDePagina = 'pie_de_pagina';
 
     public function etiqueta(): string
     {
         return match ($this) {
+            self::BarraPromocion => 'Barra de promoción',
+            self::Encabezado => 'Encabezado',
             self::Portada => 'Portada',
             self::Equipo => 'Nuestro equipo',
             self::Servicios => 'Servicios',
@@ -36,8 +43,11 @@ enum TipoBloque: string
             self::Texto => 'Texto',
             self::TextoConImagen => 'Texto con imagen',
             self::Galeria => 'Galería',
+            self::BannerOferta => 'Banner de oferta',
+            self::Testimonios => 'Testimonios',
             self::Ubicacion => 'Ubicación',
             self::Whatsapp => 'WhatsApp flotante',
+            self::PieDePagina => 'Pie de página',
         };
     }
 

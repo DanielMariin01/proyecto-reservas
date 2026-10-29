@@ -57,24 +57,15 @@ Reglas:
 | `--texto` | 3,5:1 | Solo días deshabilitados, marcadores de posición y ayudas grandes |
 | Blanco sobre `--secundario` | 3,2:1 | Solo texto de 18 px o más en negrita; si no, texto `--tinta` |
 
-### Combinaciones de color de bloque (contraste AA verificado)
+### Color libre de bloque (única excepción a "nunca colores sueltos")
 
-Cada bloque de página pública con texto libre (portada, texto, texto con imagen) usa una de estas 3 combinaciones — nunca un color suelto. El super admin la elige al armar el bloque; el dueño nunca la cambia.
+Los bloques de la plantilla de landing (sección 6.1: `barra_promocion`, `portada`, `texto`, `texto_con_imagen`, `banner_oferta`, `testimonios`) no usan los tokens de color — cada uno tiene 2 campos de color libre (`colorFondo`/`colorTexto`, un `ColorPicker` en el Builder) para que el super admin arme la paleta exacta de cada sección. Esta es la **única** excepción permitida a la regla de "prohibido escribir colores sueltos" de arriba; el resto del sistema (botones, tarjetas, paneles, componentes base) sigue solo con tokens.
 
-| Combinación | Fondo | Texto principal | Contraste |
-| --- | --- | --- | --- |
-| `clara` | `--blanco` | `--tinta` | 10,4:1 |
-| `oscura` | `--tinta` | `--blanco` | 10,4:1 |
-| `marca` | `--primario` (o el de la paleta de marca del negocio) | `--blanco` | 5,0:1 (paletas de marca: mínimo 4,5:1, validado al guardarlas) |
+Sobre esos 2 campos, el contraste AA **es una advertencia, no un bloqueo**: el Builder calcula el contraste entre `colorFondo` y `colorTexto` (con `App\Services\CalculadoraContraste`, el mismo servicio de las paletas de marca) y muestra "⚠ Este texto puede ser difícil de leer con este fondo" si da menos de 4,5:1 — pero el super admin puede guardar igual. Esto es distinto de:
+- La tabla de contraste de arriba (tokens del sistema): sigue siendo obligatoria, sin excepción.
+- Las paletas de marca (sección 6.1, "Librería de paletas de marca"): su `color_primario` **sigue bloqueando** el guardado si no llega a 4,5:1 con texto blanco.
 
-Dentro de un bloque con combinación `oscura` o `marca`, el texto secundario (subtítulos, descripciones) nunca usa `--acento`, `--secundario` ni `--texto-suave` — ninguno cumple AA sobre fondo oscuro. Usa en su lugar:
-
-| Uso | Color sobre fondo oscuro | Contraste |
-| --- | --- | --- |
-| Acento/subtítulo sobre `--tinta` o `--primario` | `--celeste` | 8,85:1 sobre `--tinta` |
-| Texto secundario/descripción sobre `--tinta` | `--gris-claro` | 8,63:1 sobre `--tinta`, 5,15:1 sobre `--primario` |
-
-`--acento` solo se usa como texto sobre fondo **claro** y en 18 px o más (ver tabla de arriba). Para resaltar una frase dentro de un párrafo de tamaño normal (< 18 px), usa `--primario` (5,0:1, cumple a cualquier tamaño), nunca `--acento`.
+El texto manuscrito/decorativo superpuesto sobre fotos (`textoManuscrito`) **no usa una fuente nueva**: es Asap itálica (el mismo `--fuente-base` de todo el proyecto), solo con un tratamiento visual distinto (itálica, rotación leve, chip de fondo).
 
 ## 2. Componentes base
 
@@ -144,26 +135,77 @@ Basado en el checkout de Hostinger Ecommerce, corregido.
 
 ## 6. Bloques de la página pública
 
-Cada bloque es un componente registrado por tipo. Reglas comunes: ancho máximo 1200 px centrado, relleno vertical 64 px (40 px en celular), título de sección en 28 px peso 700 `--tinta`.
+Cada bloque es un componente registrado por tipo. El super admin arma la página agregando, quitando y reordenando bloques de este catálogo en el Builder — **ningún bloque es obligatorio para todos los negocios**: si un negocio no vende productos, no agrega ese bloque; si otro sí, lo agrega. Reglas comunes: ancho máximo 1200 px centrado, relleno vertical 64 px (40 px en celular), título de sección en 28 px peso 700 (o el `colorTexto` libre del bloque, ver más abajo).
 
 | Bloque | Diseño |
 | --- | --- |
-| `portada` | Combinación de color (por defecto `oscura`). Dos columnas en escritorio (texto a la izquierda, imagen a la derecha dentro de una forma orgánica recortada con `clip-path`; una columna apilada en celular, imagen debajo). Título en 2 líneas, mayúsculas, muy grande (48-60 px) y negrita; subtítulo corto en `--celeste`; descripción corta (máx. 450 px de ancho) en `--gris-claro`; `Boton principal` "Reservar". |
+| `barra_promocion` | Franja angosta, color libre. Texto corto + botón de texto opcional + botón de cerrar (x). |
+| `encabezado` | Logo a la izquierda, enlaces de navegación al centro, ícono de búsqueda (decorativo) + botón "Reservar" a la derecha. Fondo fijo blanco. |
+| `portada` | Color libre (ver sección 6.1). Dos columnas: texto a la izquierda, foto rectangular a la derecha con texto decorativo opcional. Título en 3 líneas, mayúsculas, muy grande y negrita; descripción corta; 2 botones; fila de hasta 4 íconos con etiqueta. |
 | `equipo` | Cuadrícula de `Tarjeta` con foto cuadrada, nombre, especialidad y botón "Reservar con {nombre}". |
-| `servicios` | Tarjetas por categoría: foto cuadrada, nombre, "$20.000 · 45 min" y botón "Agendar". Sin buscador si hay menos de 10 servicios. |
+| `servicios` | Tarjetas con ícono de tijeras, foto cuadrada, nombre, descripción, "$20.000 · 45 min" y botón "Agendar". |
 | `cursos` | Tarjeta por fecha: nombre, fecha y hora, "Quedan 3 cupos" en `--secundario`, precio, botón "Inscribirme"; agotado en gris. |
 | `productos` | Cuadrícula de tarjetas con foto, nombre, precio y botón "Agregar". |
-| `texto` | Combinación de color (por defecto `clara`). Título y párrafo de máximo 70 caracteres por línea. |
-| `texto_con_imagen` | Combinación de color (por defecto `clara`). Título centrado en `--acento` (28-32 px); párrafo a la izquierda con una frase clave resaltada en `--primario`; imagen rectangular a la derecha con `--sombra-tarjeta` y `--radio-tarjeta`. En celular, una columna con la imagen arriba o abajo del texto. |
+| `texto` | Color libre. Título y párrafo de máximo 70 caracteres por línea. |
+| `texto_con_imagen` | Color libre. Modo simple (párrafo con una frase resaltada) o modo "motivos" (etiqueta + título + grid 2×2 de ícono/título/descripción) si se agrega al menos un motivo — mismo bloque, dos formas de verse. Foto con texto decorativo opcional del otro lado. |
 | `galeria` | Cuadrícula de fotos cuadradas con vista ampliada al tocar. |
+| `banner_oferta` | Color libre. Etiqueta + título + descripción + botón de un lado; foto con texto decorativo opcional del otro. |
+| `testimonios` | Color libre. Tarjetas con cita, estrellas (1-5), foto y nombre — contenido manual (ver sección 6.1). |
 | `ubicacion` | Mapa, dirección, horario de atención por día y botón "Cómo llegar". |
 | `whatsapp` | Botón flotante redondo abajo a la derecha, visible en toda la página. |
+| `pie_de_pagina` | Fondo fijo `--tinta`/texto blanco. Nombre del negocio, descripción corta, dirección/WhatsApp, enlaces y año de copyright. |
 
-Los colores de marca del negocio (su paleta de marca, sección "Librería de paletas de marca") sobrescriben `--primario` y `--secundario` solo dentro de su página pública (incluido el flujo de reserva); el resto de tokens se mantiene.
+Los colores de marca del negocio (su paleta de marca, ver más abajo) sobrescriben `--primario` y `--secundario` solo dentro de su página pública (incluido el flujo de reserva); el resto de tokens se mantiene.
+
+### 6.1 Plantilla de landing — detalle por bloque
+
+Igual de detallado que la ventana de reserva (sección 3), porque esta plantilla reemplaza la portada orgánica de una iteración anterior y suma varios bloques de una sola vez.
+
+**`barra_promocion`**
+- Franja de ancho completo, alto mínimo (padding vertical 8 px), texto centrado 14 px.
+- **Celular**: el texto, el botón y la "x" se envuelven (`flex-wrap`) en vez de recortarse.
+
+**`encabezado`**
+- Logo (o nombre del negocio si no hay logo) a la izquierda; enlaces de navegación al centro; ícono de búsqueda (decorativo, sin buscador funcional en este alcance) + `Boton principal` "Reservar" a la derecha.
+- No es `sticky`: el super admin lo puede reordenar como cualquier bloque, así que fijarlo rompería si no queda de primero.
+- **Celular**: los enlaces de navegación se **ocultan por completo** (sin menú hamburguesa en este alcance) — quedan logo, ícono de búsqueda y botón "Reservar".
+
+**`portada`**
+- Escritorio: 2 columnas. Izquierda: etiqueta pequeña en mayúsculas espaciadas (opacidad 80 %), título en 3 líneas mayúsculas muy grande (48-60 px) y negrita, descripción (máx. 450 px de ancho, opacidad 80 %), 2 botones (`Boton principal` "Reservar cita" + `Boton contorno` con ícono `play` "Ver video", opcional), fila de hasta 4 íconos con etiqueta corta debajo. Derecha: foto rectangular `--radio-tarjeta`, con texto decorativo opcional superpuesto en una esquina (Asap itálica, ver sección 1).
+- **Celular**: una sola columna; el texto va primero, la foto después (más pequeña, relación de aspecto 4:3 igual que en escritorio); la fila de íconos pasa de 4 a 2 columnas; los 2 botones se envuelven en vez de desbordar.
+
+**`servicios`** (ajuste visual sobre el bloque ya existente)
+- Ícono fijo de tijeras + foto + nombre + descripción + precio/duración + botón "Agendar", en `Tarjeta`.
+- **Celular**: cuadrícula de 1 columna (ya lo hacía).
+
+**`texto_con_imagen`**
+- Modo simple: párrafo con una frase resaltada en `--primario`.
+- Modo "motivos" (si el bloque tiene al menos un motivo): etiqueta + título centrado arriba del texto, grid 2×2 de motivos (ícono 24 px + título corto + descripción corta) en vez del párrafo.
+- Foto con texto decorativo opcional, del lado contrario al texto.
+- **Celular**: una columna, foto primero; el grid de motivos pasa de 2 columnas a 1.
+
+**`galeria`** (sin cambios de diseño en esta plantilla)
+- Cuadrícula de fotos cuadradas, 2 columnas en celular, 4 en escritorio, con vista ampliada al tocar.
+
+**`banner_oferta`**
+- Mismo patrón que `portada` sin la fila de íconos ni el botón de video: etiqueta + título + descripción + botón de un lado, foto con texto decorativo del otro.
+- **Celular**: una columna, texto primero, foto después.
+
+**`testimonios`**
+- Cuadrícula de `Tarjeta` (1 columna en celular, 2 en tablet, 3 en escritorio): estrellas (las de `estrellas` en `--secundario`, el resto en `--gris-claro`), cita entre comillas, foto circular + nombre.
+- **Alcance**: contenido 100 % manual (cita, nombre, foto y estrellas elegidos a mano por el super admin) — no es un sistema de reseñas ni se relaciona con citas reales. El dato `fuente` (hoy siempre `'manual'`, `App\Enums\FuenteTestimonios`) existe para que, cuando se construya el sistema real de reseñas (tarea aparte), se pueda sumar una fuente que resuelva este mismo arreglo de testimonios desde otra parte, sin cambiar la forma visual del bloque ni el componente de React.
+
+**`pie_de_pagina`**
+- Nombre del negocio + descripción corta + dirección/WhatsApp de un lado, enlaces del otro, línea de copyright abajo.
+- **Celular**: las 2 columnas se apilan (nombre/dirección primero, enlaces después).
+
+### Lista fija de íconos (`IconoBloque`)
+
+Los campos "ícono" de `portada` y `texto_con_imagen` (modo motivos) eligen de una lista fija, nunca texto libre: escudo, reloj, estrella, premio, corazón, usuarios, destellos, ubicación, billete, pulgar arriba, teléfono, tijeras. El Select del Builder (`App\Enums\IconoBloque`) y el mapa a Lucide en React (`iconoBloque.tsx`) comparten los mismos valores.
 
 ### Librería de paletas de marca
 
-El negocio no define un color libre: el super admin le asigna una paleta con nombre de una lista reutilizable (tabla `paletas_marca`), pensada para crecer sin tocar código. Cada paleta tiene `color_primario` y `color_secundario`; `color_primario` debe cumplir AA con texto blanco (mínimo 4,5:1) para poder guardarse — lo valida `App\Services\CalculadoraContraste`. Paletas iniciales: "Color Barbería" (`#1B263B` / `#415A77`, 15,1:1) y "Color Uñas" (`#C2185B` / `#F06292`, 5,9:1).
+El negocio no define un color libre para su identidad de marca: el super admin le asigna una paleta con nombre de una lista reutilizable (tabla `paletas_marca`), pensada para crecer sin tocar código. Cada paleta tiene `color_primario` y `color_secundario`; `color_primario` debe cumplir AA con texto blanco (mínimo 4,5:1) para poder guardarse — lo valida `App\Services\CalculadoraContraste`, y a diferencia del color libre de bloque (sección 1), aquí **sí bloquea**. Paletas iniciales: "Color Barbería" (`#1B263B` / `#415A77`, 15,1:1) y "Color Uñas" (`#C2185B` / `#F06292`, 5,9:1).
 
 ## 7. Paneles (Filament)
 

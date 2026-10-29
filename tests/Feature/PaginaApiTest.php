@@ -94,3 +94,23 @@ test('sin paleta de marca asignada, la api devuelve los colores en null', functi
     $respuesta->assertJsonPath('data.colorPrimario', null);
     $respuesta->assertJsonPath('data.colorSecundario', null);
 });
+
+test('la api traduce la foto de cada testimonio a una url completa', function (): void {
+    $negocio = Negocio::factory()->create();
+    $pagina = Pagina::factory()->create([
+        'negocio_id' => $negocio->id,
+        'bloques' => [[
+            'type' => TipoBloque::Testimonios->value,
+            'data' => ['fuente' => 'manual', 'testimonios' => [
+                ['cita' => 'Muy buen servicio', 'nombre' => 'Luisa', 'foto' => 'paginas/luisa.jpg', 'estrellas' => 5],
+            ]],
+        ]],
+    ]);
+    app(PublicarPagina::class)->ejecutar($pagina);
+
+    $respuesta = $this->getJson("/api/publico/{$negocio->slug}/pagina");
+
+    $respuesta->assertJsonPath('data.bloques.0.datos.testimonios.0.nombre', 'Luisa');
+    $url = $respuesta->json('data.bloques.0.datos.testimonios.0.foto');
+    expect($url)->toContain('/storage/paginas/luisa.jpg');
+});

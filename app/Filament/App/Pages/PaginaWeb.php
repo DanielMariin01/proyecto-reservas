@@ -42,10 +42,13 @@ final class PaginaWeb extends Page
      * @var array<string, list<string>>
      */
     private const CAMPOS_EDITABLES_POR_TIPO = [
-        TipoBloque::Portada->value => ['titulo', 'subtitulo', 'descripcion', 'imagen'],
+        TipoBloque::BarraPromocion->value => ['texto', 'textoBoton', 'enlaceBoton'],
+        TipoBloque::Portada->value => ['etiqueta', 'titulo', 'descripcion', 'textoBotonPrincipal', 'enlaceVideo', 'imagen', 'textoManuscrito'],
         TipoBloque::Texto->value => ['titulo', 'parrafo'],
-        TipoBloque::TextoConImagen->value => ['titulo', 'parrafo', 'fraseResaltada', 'imagen'],
+        TipoBloque::TextoConImagen->value => ['etiqueta', 'titulo', 'parrafo', 'fraseResaltada', 'textoBoton', 'enlaceBoton', 'imagen', 'textoManuscrito'],
         TipoBloque::Galeria->value => ['fotos'],
+        TipoBloque::BannerOferta->value => ['etiqueta', 'titulo', 'descripcion', 'textoBoton', 'enlaceBoton', 'imagen', 'textoManuscrito'],
+        TipoBloque::PieDePagina->value => ['descripcionCorta'],
     ];
 
     protected static ?string $slug = 'pagina-web';

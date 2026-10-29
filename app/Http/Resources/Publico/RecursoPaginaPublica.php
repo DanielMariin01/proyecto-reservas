@@ -82,6 +82,24 @@ final class RecursoPaginaPublica extends JsonResource
             );
         }
 
+        // Testimonios guarda la foto de cada item en una ruta anidada
+        // (datos.testimonios[].foto), no en las claves de nivel superior
+        // que cubre el resto de este método.
+        if (isset($datos['testimonios']) && is_array($datos['testimonios'])) {
+            $datos['testimonios'] = array_map(
+                function (mixed $testimonio): mixed {
+                    if (! is_array($testimonio) || ! isset($testimonio['foto']) || ! is_string($testimonio['foto'])) {
+                        return $testimonio;
+                    }
+
+                    $testimonio['foto'] = Storage::disk('public')->url($testimonio['foto']);
+
+                    return $testimonio;
+                },
+                $datos['testimonios'],
+            );
+        }
+
         return $datos;
     }
 }

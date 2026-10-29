@@ -16,6 +16,14 @@
                 <x-filament::card>
                     <p class="mb-3 text-sm font-semibold">{{ \App\Enums\TipoBloque::from($bloques[$indice]['type'])->etiqueta() }}</p>
 
+                    @if (array_key_exists('etiqueta', $bloques[$indice]['data'] ?? []))
+                        <label class="mb-3 block">
+                            <span class="fi-fo-field-wrp-label text-sm font-medium">Etiqueta</span>
+                            <input type="text" wire:model="bloques.{{ $indice }}.data.etiqueta"
+                                class="fi-input mt-1 block w-full rounded-lg border-gray-300 text-sm dark:border-gray-600 dark:bg-gray-800" />
+                        </label>
+                    @endif
+
                     @if (array_key_exists('titulo', $bloques[$indice]['data'] ?? []))
                         <label class="mb-3 block">
                             <span class="fi-fo-field-wrp-label text-sm font-medium">Título</span>
@@ -24,10 +32,10 @@
                         </label>
                     @endif
 
-                    @if (array_key_exists('subtitulo', $bloques[$indice]['data'] ?? []))
+                    @if (array_key_exists('texto', $bloques[$indice]['data'] ?? []))
                         <label class="mb-3 block">
-                            <span class="fi-fo-field-wrp-label text-sm font-medium">Subtítulo</span>
-                            <input type="text" wire:model="bloques.{{ $indice }}.data.subtitulo"
+                            <span class="fi-fo-field-wrp-label text-sm font-medium">Texto</span>
+                            <input type="text" wire:model="bloques.{{ $indice }}.data.texto"
                                 class="fi-input mt-1 block w-full rounded-lg border-gray-300 text-sm dark:border-gray-600 dark:bg-gray-800" />
                         </label>
                     @endif
@@ -52,6 +60,54 @@
                         <label class="mb-3 block">
                             <span class="fi-fo-field-wrp-label text-sm font-medium">Frase resaltada</span>
                             <input type="text" wire:model="bloques.{{ $indice }}.data.fraseResaltada"
+                                class="fi-input mt-1 block w-full rounded-lg border-gray-300 text-sm dark:border-gray-600 dark:bg-gray-800" />
+                        </label>
+                    @endif
+
+                    @if (array_key_exists('textoBotonPrincipal', $bloques[$indice]['data'] ?? []))
+                        <label class="mb-3 block">
+                            <span class="fi-fo-field-wrp-label text-sm font-medium">Texto del botón</span>
+                            <input type="text" wire:model="bloques.{{ $indice }}.data.textoBotonPrincipal"
+                                class="fi-input mt-1 block w-full rounded-lg border-gray-300 text-sm dark:border-gray-600 dark:bg-gray-800" />
+                        </label>
+                    @endif
+
+                    @if (array_key_exists('enlaceVideo', $bloques[$indice]['data'] ?? []))
+                        <label class="mb-3 block">
+                            <span class="fi-fo-field-wrp-label text-sm font-medium">Enlace del video</span>
+                            <input type="text" wire:model="bloques.{{ $indice }}.data.enlaceVideo"
+                                class="fi-input mt-1 block w-full rounded-lg border-gray-300 text-sm dark:border-gray-600 dark:bg-gray-800" />
+                        </label>
+                    @endif
+
+                    @if (array_key_exists('textoBoton', $bloques[$indice]['data'] ?? []))
+                        <label class="mb-3 block">
+                            <span class="fi-fo-field-wrp-label text-sm font-medium">Texto del botón</span>
+                            <input type="text" wire:model="bloques.{{ $indice }}.data.textoBoton"
+                                class="fi-input mt-1 block w-full rounded-lg border-gray-300 text-sm dark:border-gray-600 dark:bg-gray-800" />
+                        </label>
+                    @endif
+
+                    @if (array_key_exists('enlaceBoton', $bloques[$indice]['data'] ?? []))
+                        <label class="mb-3 block">
+                            <span class="fi-fo-field-wrp-label text-sm font-medium">Enlace del botón</span>
+                            <input type="text" wire:model="bloques.{{ $indice }}.data.enlaceBoton"
+                                class="fi-input mt-1 block w-full rounded-lg border-gray-300 text-sm dark:border-gray-600 dark:bg-gray-800" />
+                        </label>
+                    @endif
+
+                    @if (array_key_exists('textoManuscrito', $bloques[$indice]['data'] ?? []))
+                        <label class="mb-3 block">
+                            <span class="fi-fo-field-wrp-label text-sm font-medium">Texto decorativo sobre la foto</span>
+                            <input type="text" wire:model="bloques.{{ $indice }}.data.textoManuscrito"
+                                class="fi-input mt-1 block w-full rounded-lg border-gray-300 text-sm dark:border-gray-600 dark:bg-gray-800" />
+                        </label>
+                    @endif
+
+                    @if (array_key_exists('descripcionCorta', $bloques[$indice]['data'] ?? []))
+                        <label class="mb-3 block">
+                            <span class="fi-fo-field-wrp-label text-sm font-medium">Descripción corta</span>
+                            <input type="text" wire:model="bloques.{{ $indice }}.data.descripcionCorta"
                                 class="fi-input mt-1 block w-full rounded-lg border-gray-300 text-sm dark:border-gray-600 dark:bg-gray-800" />
                         </label>
                     @endif

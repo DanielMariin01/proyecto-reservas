@@ -1,3 +1,4 @@
+import { Scissors } from 'lucide-react';
 import type { ReactElement } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { obtenerServicios } from '@/flujo-reserva/api/clientePublico';
@@ -34,8 +35,12 @@ export default function BloqueServicios({ slug, onReservar }: PropiedadesBloque)
                     {serviciosQuery.data.map((servicio) => (
                         <Tarjeta key={servicio.id}>
                             {servicio.foto && <img src={servicio.foto} alt="" className="mb-3 h-32 w-full rounded-boton object-cover" />}
+                            <span className="mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-fondo-panel text-primario">
+                                <Scissors size={18} strokeWidth={1.75} />
+                            </span>
                             <p className="font-semibold text-tinta">{servicio.nombre}</p>
-                            <p className="text-sm text-texto-suave">
+                            {servicio.descripcion && <p className="mt-1 text-sm text-texto-suave">{servicio.descripcion}</p>}
+                            <p className="mt-2 text-sm text-texto-suave">
                                 ${servicio.precio.toLocaleString('es-CO')} · {servicio.duracionMinutos} min
                             </p>
                             <Boton className="mt-3 w-full" onClick={() => onReservar({ servicio })}>
