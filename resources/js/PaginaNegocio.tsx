@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import type { ReactElement } from 'react';
+import type { CSSProperties, ReactElement } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { obtenerPagina } from '@/bloques/api/clientePagina';
 import registroBloques from '@/bloques/registroBloques';
@@ -40,8 +40,20 @@ export default function PaginaNegocio({ slug }: PropiedadesPaginaNegocio): React
 
     const pagina = paginaQuery.data;
 
+    /**
+     * Skill diseno-reservas, sección 6: los colores de marca del negocio
+     * sobrescriben --primario/--secundario solo dentro de su página
+     * pública (incluido el flujo de reserva, que se renderiza dentro de
+     * este mismo <main>). Si el negocio no tiene paleta, quedan los
+     * tokens de sistema sin tocar.
+     */
+    const estiloMarca = {
+        ...(pagina.colorPrimario ? { '--color-primario': pagina.colorPrimario } : {}),
+        ...(pagina.colorSecundario ? { '--color-secundario': pagina.colorSecundario } : {}),
+    } as CSSProperties;
+
     return (
-        <main className="min-h-screen bg-blanco">
+        <main className="min-h-screen bg-blanco" style={estiloMarca}>
             {pagina.esVistaPrevia && (
                 <div className="bg-acento p-2 text-center text-sm font-semibold text-blanco">
                     Vista previa — esto todavía no está publicado

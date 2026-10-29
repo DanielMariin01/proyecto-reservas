@@ -57,6 +57,25 @@ Reglas:
 | `--texto` | 3,5:1 | Solo días deshabilitados, marcadores de posición y ayudas grandes |
 | Blanco sobre `--secundario` | 3,2:1 | Solo texto de 18 px o más en negrita; si no, texto `--tinta` |
 
+### Combinaciones de color de bloque (contraste AA verificado)
+
+Cada bloque de página pública con texto libre (portada, texto, texto con imagen) usa una de estas 3 combinaciones — nunca un color suelto. El super admin la elige al armar el bloque; el dueño nunca la cambia.
+
+| Combinación | Fondo | Texto principal | Contraste |
+| --- | --- | --- | --- |
+| `clara` | `--blanco` | `--tinta` | 10,4:1 |
+| `oscura` | `--tinta` | `--blanco` | 10,4:1 |
+| `marca` | `--primario` (o el de la paleta de marca del negocio) | `--blanco` | 5,0:1 (paletas de marca: mínimo 4,5:1, validado al guardarlas) |
+
+Dentro de un bloque con combinación `oscura` o `marca`, el texto secundario (subtítulos, descripciones) nunca usa `--acento`, `--secundario` ni `--texto-suave` — ninguno cumple AA sobre fondo oscuro. Usa en su lugar:
+
+| Uso | Color sobre fondo oscuro | Contraste |
+| --- | --- | --- |
+| Acento/subtítulo sobre `--tinta` o `--primario` | `--celeste` | 8,85:1 sobre `--tinta` |
+| Texto secundario/descripción sobre `--tinta` | `--gris-claro` | 8,63:1 sobre `--tinta`, 5,15:1 sobre `--primario` |
+
+`--acento` solo se usa como texto sobre fondo **claro** y en 18 px o más (ver tabla de arriba). Para resaltar una frase dentro de un párrafo de tamaño normal (< 18 px), usa `--primario` (5,0:1, cumple a cualquier tamaño), nunca `--acento`.
+
 ## 2. Componentes base
 
 Todas las pantallas se arman con estos componentes. Si falta uno, se crea aquí primero.
@@ -129,17 +148,22 @@ Cada bloque es un componente registrado por tipo. Reglas comunes: ancho máximo 
 
 | Bloque | Diseño |
 | --- | --- |
-| `portada` | Imagen a pantalla completa con capa oscura al 45 %, título del negocio en mayúsculas blanco, subtítulo, `Boton principal` "Reservar". |
+| `portada` | Combinación de color (por defecto `oscura`). Dos columnas en escritorio (texto a la izquierda, imagen a la derecha dentro de una forma orgánica recortada con `clip-path`; una columna apilada en celular, imagen debajo). Título en 2 líneas, mayúsculas, muy grande (48-60 px) y negrita; subtítulo corto en `--celeste`; descripción corta (máx. 450 px de ancho) en `--gris-claro`; `Boton principal` "Reservar". |
 | `equipo` | Cuadrícula de `Tarjeta` con foto cuadrada, nombre, especialidad y botón "Reservar con {nombre}". |
 | `servicios` | Tarjetas por categoría: foto cuadrada, nombre, "$20.000 · 45 min" y botón "Agendar". Sin buscador si hay menos de 10 servicios. |
 | `cursos` | Tarjeta por fecha: nombre, fecha y hora, "Quedan 3 cupos" en `--secundario`, precio, botón "Inscribirme"; agotado en gris. |
 | `productos` | Cuadrícula de tarjetas con foto, nombre, precio y botón "Agregar". |
-| `texto` | Título y párrafo de máximo 70 caracteres por línea. |
+| `texto` | Combinación de color (por defecto `clara`). Título y párrafo de máximo 70 caracteres por línea. |
+| `texto_con_imagen` | Combinación de color (por defecto `clara`). Título centrado en `--acento` (28-32 px); párrafo a la izquierda con una frase clave resaltada en `--primario`; imagen rectangular a la derecha con `--sombra-tarjeta` y `--radio-tarjeta`. En celular, una columna con la imagen arriba o abajo del texto. |
 | `galeria` | Cuadrícula de fotos cuadradas con vista ampliada al tocar. |
 | `ubicacion` | Mapa, dirección, horario de atención por día y botón "Cómo llegar". |
 | `whatsapp` | Botón flotante redondo abajo a la derecha, visible en toda la página. |
 
-Los colores de marca del negocio sobrescriben `--primario` y `--secundario` solo dentro de su página pública; el resto de tokens se mantiene.
+Los colores de marca del negocio (su paleta de marca, sección "Librería de paletas de marca") sobrescriben `--primario` y `--secundario` solo dentro de su página pública (incluido el flujo de reserva); el resto de tokens se mantiene.
+
+### Librería de paletas de marca
+
+El negocio no define un color libre: el super admin le asigna una paleta con nombre de una lista reutilizable (tabla `paletas_marca`), pensada para crecer sin tocar código. Cada paleta tiene `color_primario` y `color_secundario`; `color_primario` debe cumplir AA con texto blanco (mínimo 4,5:1) para poder guardarse — lo valida `App\Services\CalculadoraContraste`. Paletas iniciales: "Color Barbería" (`#1B263B` / `#415A77`, 15,1:1) y "Color Uñas" (`#C2185B` / `#F06292`, 5,9:1).
 
 ## 7. Paneles (Filament)
 

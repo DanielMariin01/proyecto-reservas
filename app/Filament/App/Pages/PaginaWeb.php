@@ -31,6 +31,23 @@ final class PaginaWeb extends Page
 
     private const REGLAS_IMAGEN = ['image', 'max:5120'];
 
+    /**
+     * Por tipo de bloque, los únicos campos de `data` que el dueño puede
+     * cambiar. Todo lo demás (type, combinacionColor, el orden y la
+     * cantidad de bloques) sale siempre de lo guardado en la base de
+     * datos, nunca de lo que mande el navegador — así se cumple RF-PAG-01
+     * ("nunca agrega, quita ni reordena bloques, ni cambia colores")
+     * aunque alguien manipule el payload de Livewire a mano.
+     *
+     * @var array<string, list<string>>
+     */
+    private const CAMPOS_EDITABLES_POR_TIPO = [
+        TipoBloque::Portada->value => ['titulo', 'subtitulo', 'descripcion', 'imagen'],
+        TipoBloque::Texto->value => ['titulo', 'parrafo'],
+        TipoBloque::TextoConImagen->value => ['titulo', 'parrafo', 'fraseResaltada', 'imagen'],
+        TipoBloque::Galeria->value => ['fotos'],
+    ];
+
     protected static ?string $slug = 'pagina-web';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedGlobeAlt;
@@ -86,12 +103,10 @@ final class PaginaWeb extends Page
      */
     public function indicesEditables(): array
     {
-        $tiposEditables = [TipoBloque::Portada->value, TipoBloque::Texto->value, TipoBloque::Galeria->value];
-
         $indices = [];
 
         foreach ($this->bloques as $indice => $bloque) {
-            if (in_array($bloque['type'], $tiposEditables, true)) {
+            if (array_key_exists($bloque['type'], self::CAMPOS_EDITABLES_POR_TIPO)) {
                 $indices[] = $indice;
             }
         }
@@ -108,35 +123,74 @@ final class PaginaWeb extends Page
 
     public function guardarYPublicar(): void
     {
-        if (! $this->subirImagenesPendientes()) {
+        $pagina = $this->paginaOFallar();
+
+        $bloques = $this->sanitizarBloques($pagina->bloques, $this->bloques);
+        $bloques = $this->subirImagenesPendientes($bloques);
+
+        if ($bloques === null) {
             return;
         }
 
-        $pagina = $this->paginaOFallar();
-        $pagina->update(['bloques' => $this->bloques]);
+        $pagina->update(['bloques' => $bloques]);
 
         app(PublicarPagina::class)->ejecutar($pagina->refresh(), Filament::auth()->user());
 
+        $this->bloques = $bloques;
         $this->fotosNuevasPorIndice = [];
         Notification::make()->success()->title('Página publicada')->send();
     }
 
     /**
-     * Valida y guarda en el disco `public` cada imagen nueva (la portada
-     * reemplazada, las fotos nuevas de galería), antes de persistir
-     * $bloques. Si una imagen no pasa la validación, avisa y no guarda
-     * nada — para no publicar una página a medio actualizar.
+     * Reconstruye $bloques a partir de lo guardado en la base de datos
+     * ($original), tomando del navegador ($enviados) solo los campos que
+     * CAMPOS_EDITABLES_POR_TIPO permite para cada tipo. El orden, la
+     * cantidad de bloques y cualquier campo no listado (type,
+     * combinacionColor…) siempre quedan como estaban.
+     *
+     * @param  array<int, array{type: string, data: array<string, mixed>}>  $original
+     * @param  array<int, array{type?: string, data?: array<string, mixed>}>  $enviados
+     * @return array<int, array{type: string, data: array<string, mixed>}>
      */
-    private function subirImagenesPendientes(): bool
+    private function sanitizarBloques(array $original, array $enviados): array
     {
-        $bloques = $this->bloques;
+        $bloques = [];
 
+        foreach ($original as $indice => $bloque) {
+            $campos = self::CAMPOS_EDITABLES_POR_TIPO[$bloque['type']] ?? [];
+            $datosEnviados = $enviados[$indice]['data'] ?? [];
+
+            foreach ($campos as $campo) {
+                if (array_key_exists($campo, $datosEnviados)) {
+                    $bloque['data'][$campo] = $datosEnviados[$campo];
+                }
+            }
+
+            $bloques[$indice] = $bloque;
+        }
+
+        return $bloques;
+    }
+
+    /**
+     * Valida y guarda en el disco `public` cada imagen nueva (la portada
+     * o el texto con imagen reemplazados, las fotos nuevas de galería).
+     * Si una imagen no pasa la validación, avisa y no guarda nada — para
+     * no publicar una página a medio actualizar.
+     *
+     * @param  array<int, array{type: string, data: array<string, mixed>}>  $bloques
+     * @return array<int, array{type: string, data: array<string, mixed>}>|null
+     */
+    private function subirImagenesPendientes(array $bloques): ?array
+    {
         foreach ($bloques as $indice => $bloque) {
             $imagen = $bloque['data']['imagen'] ?? null;
 
             if ($imagen instanceof TemporaryUploadedFile) {
-                if (! $this->archivoValido($imagen, 'La imagen de portada')) {
-                    return false;
+                $etiqueta = TipoBloque::from($bloque['type'])->etiqueta();
+
+                if (! $this->archivoValido($imagen, "La imagen de {$etiqueta}")) {
+                    return null;
                 }
 
                 $bloque['data']['imagen'] = $imagen->store('paginas', 'public');
@@ -145,12 +199,16 @@ final class PaginaWeb extends Page
         }
 
         foreach ($this->fotosNuevasPorIndice as $indice => $fotosNuevas) {
+            if (($bloques[$indice]['type'] ?? null) !== TipoBloque::Galeria->value) {
+                continue;
+            }
+
             $bloque = $bloques[$indice];
             $rutasExistentes = $bloque['data']['fotos'] ?? [];
 
             foreach ($fotosNuevas as $fotoNueva) {
                 if (! $this->archivoValido($fotoNueva, 'Una de las fotos de la galería')) {
-                    return false;
+                    return null;
                 }
 
                 $rutasExistentes[] = $fotoNueva->store('paginas', 'public');
@@ -160,9 +218,7 @@ final class PaginaWeb extends Page
             $bloques[$indice] = $bloque;
         }
 
-        $this->bloques = $bloques;
-
-        return true;
+        return $bloques;
     }
 
     private function archivoValido(TemporaryUploadedFile $archivo, string $etiqueta): bool

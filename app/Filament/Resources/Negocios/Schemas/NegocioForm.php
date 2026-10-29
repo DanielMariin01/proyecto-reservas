@@ -49,10 +49,12 @@ class NegocioForm
                     TextInput::make('whatsapp')
                         ->tel()
                         ->maxLength(255),
-                    TextInput::make('color_primario')
-                        ->maxLength(7),
-                    TextInput::make('color_secundario')
-                        ->maxLength(7),
+                    Select::make('paleta_marca_id')
+                        ->label('Paleta de marca')
+                        ->relationship('paletaMarca', 'nombre')
+                        ->searchable()
+                        ->preload()
+                        ->helperText('Define los colores de la página pública del negocio. Las paletas se administran en Paletas de marca.'),
                     Toggle::make('permite_editar_pagina')
                         ->label('El dueño puede editar los textos y fotos de su página')
                         ->helperText('RF-PAG-01: la estructura de bloques y los colores siguen siendo solo del super admin.')

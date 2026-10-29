@@ -8,6 +8,7 @@ use App\Enums\RolNegocio;
 use App\Enums\TipoBloque;
 use App\Models\Negocio;
 use App\Models\Pagina;
+use App\Models\PaletaMarca;
 use App\Models\Usuario;
 
 function negocioConPaginaBorradorYPublicada(): array
@@ -73,4 +74,23 @@ test('un negocio sin pagina todavia responde con bloques vacios, no con error', 
 
     $respuesta->assertOk();
     $respuesta->assertJsonPath('data.bloques', []);
+});
+
+test('la api expone los colores de la paleta de marca del negocio', function (): void {
+    $paleta = PaletaMarca::factory()->create(['color_primario' => '#1B263B', 'color_secundario' => '#415A77']);
+    $negocio = Negocio::factory()->create(['paleta_marca_id' => $paleta->id]);
+
+    $respuesta = $this->getJson("/api/publico/{$negocio->slug}/pagina");
+
+    $respuesta->assertJsonPath('data.colorPrimario', '#1B263B');
+    $respuesta->assertJsonPath('data.colorSecundario', '#415A77');
+});
+
+test('sin paleta de marca asignada, la api devuelve los colores en null', function (): void {
+    $negocio = Negocio::factory()->create(['paleta_marca_id' => null]);
+
+    $respuesta = $this->getJson("/api/publico/{$negocio->slug}/pagina");
+
+    $respuesta->assertJsonPath('data.colorPrimario', null);
+    $respuesta->assertJsonPath('data.colorSecundario', null);
 });

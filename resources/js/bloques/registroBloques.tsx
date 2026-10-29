@@ -5,6 +5,7 @@ import BloquePortada from './BloquePortada';
 import BloqueProximamente from './BloqueProximamente';
 import BloqueServicios from './BloqueServicios';
 import BloqueTexto from './BloqueTexto';
+import BloqueTextoConImagen from './BloqueTextoConImagen';
 import BloqueUbicacion from './BloqueUbicacion';
 import BloqueWhatsapp from './BloqueWhatsapp';
 import type { PropiedadesBloque } from './tipos';
@@ -19,6 +20,7 @@ const registroBloques: Record<string, ComponentType<PropiedadesBloque>> = {
     equipo: BloqueEquipo,
     servicios: BloqueServicios,
     texto: BloqueTexto,
+    texto_con_imagen: BloqueTextoConImagen,
     galeria: BloqueGaleria,
     ubicacion: BloqueUbicacion,
     whatsapp: BloqueWhatsapp,
