@@ -20,6 +20,7 @@ enum TipoBloque: string
     case Cursos = 'cursos';
     case Productos = 'productos';
     case Texto = 'texto';
+    case TextoConImagen = 'texto_con_imagen';
     case Galeria = 'galeria';
     case Ubicacion = 'ubicacion';
     case Whatsapp = 'whatsapp';
@@ -33,6 +34,7 @@ enum TipoBloque: string
             self::Cursos => 'Cursos',
             self::Productos => 'Productos',
             self::Texto => 'Texto',
+            self::TextoConImagen => 'Texto con imagen',
             self::Galeria => 'Galería',
             self::Ubicacion => 'Ubicación',
             self::Whatsapp => 'WhatsApp flotante',

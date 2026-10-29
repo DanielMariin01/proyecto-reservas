@@ -15,6 +15,7 @@ final class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call(RolesYPermisosSeeder::class);
+        $this->call(PaletasMarcaSeeder::class);
 
         Usuario::factory()->superAdmin()->create([
             'nombre' => 'Super Admin',

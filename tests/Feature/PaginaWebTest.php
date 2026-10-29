@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Enums\CombinacionColorBloque;
 use App\Enums\RolNegocio;
 use App\Enums\TipoBloque;
 use App\Filament\App\Pages\PaginaWeb;
@@ -141,6 +142,61 @@ test('el dueno puede agregar fotos nuevas a la galeria sin perder las que ya ten
     $fotos = $pagina->refresh()->bloques[0]['data']['fotos'];
     expect($fotos)->toHaveCount(2);
     expect($fotos)->toContain('paginas/vieja.jpg');
+});
+
+test('el dueno puede editar el texto y la foto de un bloque de texto con imagen', function (): void {
+    Storage::fake('public');
+    $negocio = Negocio::factory()->create(['permite_editar_pagina' => true]);
+    $dueno = crearUsuarioConRol($negocio, RolNegocio::Dueno);
+    $pagina = Pagina::factory()->create([
+        'negocio_id' => $negocio->id,
+        'bloques' => [[
+            'type' => TipoBloque::TextoConImagen->value,
+            'data' => ['titulo' => 'Viejo', 'parrafo' => 'viejo parrafo', 'fraseResaltada' => '', 'imagen' => null, 'combinacionColor' => CombinacionColorBloque::Clara->value],
+        ]],
+    ]);
+
+    Filament::setCurrentPanel(Filament::getPanel('app'));
+    Filament::setTenant($negocio, isQuiet: true);
+
+    $componente = Livewire::actingAs($dueno)->test(PaginaWeb::class);
+    expect($componente->instance()->indicesEditables())->toBe([0]);
+
+    $componente
+        ->set('bloques.0.data.titulo', 'Nuevo')
+        ->set('bloques.0.data.fraseResaltada', 'palabra clave')
+        ->set('bloques.0.data.imagen', UploadedFile::fake()->create('foto.jpg', 100, 'image/jpeg'))
+        ->call('guardarYPublicar');
+
+    $datos = $pagina->refresh()->bloques[0]['data'];
+    expect($datos['titulo'])->toBe('Nuevo');
+    expect($datos['fraseResaltada'])->toBe('palabra clave');
+    expect($datos['imagen'])->not->toBeNull();
+});
+
+test('el dueno nunca puede cambiar la combinacion de color de un bloque, aunque lo mande en el payload', function (): void {
+    $negocio = Negocio::factory()->create(['permite_editar_pagina' => true]);
+    $dueno = crearUsuarioConRol($negocio, RolNegocio::Dueno);
+    $pagina = Pagina::factory()->create([
+        'negocio_id' => $negocio->id,
+        'bloques' => [[
+            'type' => TipoBloque::Texto->value,
+            'data' => ['titulo' => 'Hola', 'parrafo' => 'Texto', 'combinacionColor' => CombinacionColorBloque::Clara->value],
+        ]],
+    ]);
+
+    Filament::setCurrentPanel(Filament::getPanel('app'));
+    Filament::setTenant($negocio, isQuiet: true);
+
+    Livewire::actingAs($dueno)
+        ->test(PaginaWeb::class)
+        ->set('bloques.0.data.combinacionColor', CombinacionColorBloque::Marca->value)
+        ->set('bloques.0.type', TipoBloque::Portada->value)
+        ->call('guardarYPublicar');
+
+    $bloque = $pagina->refresh()->bloques[0];
+    expect($bloque['type'])->toBe(TipoBloque::Texto->value);
+    expect($bloque['data']['combinacionColor'])->toBe(CombinacionColorBloque::Clara->value);
 });
 
 test('quitar una foto existente de la galeria la elimina de los bloques', function (): void {

@@ -14,7 +14,7 @@
         <div class="space-y-4">
             @foreach ($indicesEditables as $indice)
                 <x-filament::card>
-                    <p class="mb-3 text-sm font-semibold capitalize">{{ $bloques[$indice]['type'] }}</p>
+                    <p class="mb-3 text-sm font-semibold">{{ \App\Enums\TipoBloque::from($bloques[$indice]['type'])->etiqueta() }}</p>
 
                     @if (array_key_exists('titulo', $bloques[$indice]['data'] ?? []))
                         <label class="mb-3 block">
@@ -32,11 +32,27 @@
                         </label>
                     @endif
 
+                    @if (array_key_exists('descripcion', $bloques[$indice]['data'] ?? []))
+                        <label class="mb-3 block">
+                            <span class="fi-fo-field-wrp-label text-sm font-medium">Descripción</span>
+                            <textarea wire:model="bloques.{{ $indice }}.data.descripcion" rows="3"
+                                class="fi-input mt-1 block w-full rounded-lg border-gray-300 text-sm dark:border-gray-600 dark:bg-gray-800"></textarea>
+                        </label>
+                    @endif
+
                     @if (array_key_exists('parrafo', $bloques[$indice]['data'] ?? []))
                         <label class="block">
                             <span class="fi-fo-field-wrp-label text-sm font-medium">Párrafo</span>
                             <textarea wire:model="bloques.{{ $indice }}.data.parrafo" rows="4"
                                 class="fi-input mt-1 block w-full rounded-lg border-gray-300 text-sm dark:border-gray-600 dark:bg-gray-800"></textarea>
+                        </label>
+                    @endif
+
+                    @if (array_key_exists('fraseResaltada', $bloques[$indice]['data'] ?? []))
+                        <label class="mb-3 block">
+                            <span class="fi-fo-field-wrp-label text-sm font-medium">Frase resaltada</span>
+                            <input type="text" wire:model="bloques.{{ $indice }}.data.fraseResaltada"
+                                class="fi-input mt-1 block w-full rounded-lg border-gray-300 text-sm dark:border-gray-600 dark:bg-gray-800" />
                         </label>
                     @endif
 
