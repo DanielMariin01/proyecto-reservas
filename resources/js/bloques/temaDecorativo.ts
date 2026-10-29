@@ -26,28 +26,37 @@ const ICONOS_POR_TEMA: Record<Exclude<TemaDecorativo, 'ninguno'>, ComponentType<
 };
 
 /**
- * 16 posiciones fijas (compartidas por cualquier tema) donde dispersar
- * los íconos decorativos: tamaños notablemente más grandes (28-56px) y
- * cobertura por todo el ancho/alto del fondo del banner, con rotaciones
- * y ubicaciones variadas para que no se vean en fila ni repetitivos.
+ * 25 posiciones fijas (compartidas por cualquier tema) donde dispersar
+ * los íconos decorativos: tamaños grandes (40-72px) y cobertura por
+ * todo el ancho/alto del fondo del banner, con rotaciones y
+ * ubicaciones variadas para que no se vean en fila ni repetitivos.
  */
 export const POSICIONES_DECORATIVAS: ReadonlyArray<{ top: string; left: string; size: number; rotate: number }> = [
-    { top: '8%', left: '3%', size: 36, rotate: -15 },
-    { top: '65%', left: '6%', size: 48, rotate: 20 },
-    { top: '15%', left: '18%', size: 28, rotate: 10 },
-    { top: '80%', left: '22%', size: 40, rotate: -25 },
-    { top: '5%', left: '35%', size: 32, rotate: 15 },
-    { top: '45%', left: '40%', size: 52, rotate: -10 },
-    { top: '85%', left: '48%', size: 30, rotate: 25 },
-    { top: '20%', left: '55%', size: 44, rotate: -20 },
-    { top: '60%', left: '62%', size: 36, rotate: 30 },
-    { top: '10%', left: '70%', size: 48, rotate: -8 },
-    { top: '75%', left: '75%', size: 32, rotate: 18 },
-    { top: '35%', left: '82%', size: 56, rotate: -30 },
-    { top: '5%', left: '90%', size: 28, rotate: 12 },
-    { top: '55%', left: '95%', size: 40, rotate: -15 },
-    { top: '90%', left: '88%', size: 34, rotate: 22 },
-    { top: '30%', left: '10%', size: 44, rotate: -5 },
+    { top: '5%', left: '2%', size: 48, rotate: -20 },
+    { top: '50%', left: '4%', size: 60, rotate: 15 },
+    { top: '90%', left: '8%', size: 44, rotate: -10 },
+    { top: '20%', left: '14%', size: 52, rotate: 25 },
+    { top: '70%', left: '18%', size: 40, rotate: -30 },
+    { top: '45%', left: '10%', size: 44, rotate: 22 },
+    { top: '10%', left: '28%', size: 64, rotate: 10 },
+    { top: '40%', left: '30%', size: 46, rotate: -15 },
+    { top: '85%', left: '33%', size: 56, rotate: 20 },
+    { top: '60%', left: '38%', size: 42, rotate: -5 },
+    { top: '2%', left: '48%', size: 50, rotate: 30 },
+    { top: '78%', left: '45%', size: 50, rotate: -18 },
+    { top: '30%', left: '50%', size: 68, rotate: -25 },
+    { top: '75%', left: '52%', size: 44, rotate: 15 },
+    { top: '95%', left: '58%', size: 48, rotate: -12 },
+    { top: '15%', left: '62%', size: 56, rotate: 8 },
+    { top: '50%', left: '65%', size: 40, rotate: -30 },
+    { top: '5%', left: '72%', size: 60, rotate: 18 },
+    { top: '65%', left: '75%', size: 52, rotate: -8 },
+    { top: '85%', left: '78%', size: 44, rotate: 25 },
+    { top: '35%', left: '80%', size: 72, rotate: -20 },
+    { top: '10%', left: '88%', size: 46, rotate: 12 },
+    { top: '55%', left: '90%', size: 50, rotate: -15 },
+    { top: '90%', left: '92%', size: 40, rotate: 30 },
+    { top: '25%', left: '95%', size: 58, rotate: -5 },
 ];
 
 export function obtenerIconosTema(valor: unknown): ComponentType<PropiedadesIconoTema>[] | null {
