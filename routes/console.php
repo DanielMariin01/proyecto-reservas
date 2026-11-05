@@ -12,6 +12,11 @@ Artisan::command('inspire', function () {
 
 Schedule::command('suscripciones:actualizar-estados')->dailyAt('06:00');
 
+// RNF-OBS-04: "cola detenida" se detecta por antigüedad del job pendiente
+// más viejo (ver ServicioSaludDelSistema), no preguntándole a un worker
+// que no existe en este hosting.
+Schedule::command('observabilidad:verificar-salud')->everyTenMinutes();
+
 Schedule::command('citas:enviar-recordatorios')->everyFifteenMinutes()->withoutOverlapping();
 Schedule::command('citas:enviar-resumen-diario-profesionales')->dailyAt('07:00')->withoutOverlapping();
 

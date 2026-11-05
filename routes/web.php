@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\ElegirNegocioController;
+use App\Http\Controllers\EstadoController;
 use App\Http\Controllers\GestionarCitaVistaController;
 use App\Http\Controllers\PaginaNegocioController;
 use App\Http\Controllers\RestablecimientoContrasenaController;
@@ -25,6 +26,11 @@ Route::redirect('/app/login', '/ingresar');
 
 Route::get('/restablecer-contrasena/{token}', [RestablecimientoContrasenaController::class, 'mostrar'])->name('password.reset');
 Route::post('/restablecer-contrasena', [RestablecimientoContrasenaController::class, 'actualizar'])->name('password.update');
+
+// RNF-OBS-05: pública, sin autenticación — la pega un monitor externo. Va
+// antes del comodín de un solo segmento de abajo, igual que las demás
+// rutas literales de este archivo.
+Route::get('/estado', [EstadoController::class, 'mostrar'])->name('estado');
 
 Route::middleware('auth')->group(function (): void {
     Route::get('/elegir-negocio', [ElegirNegocioController::class, 'mostrar'])->name('elegir-negocio');
