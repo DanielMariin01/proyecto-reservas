@@ -46,6 +46,8 @@ Reglas:
 - Fuente Asap desde Google Fonts, pesos 400, 500, 600 y 700.
 - Espaciados en múltiplos de 4 px (4, 8, 12, 16, 24, 32, 48).
 
+**Excepción puntual — página pública (`/{slug}` y el flujo de reserva, sección 3 a 5):** usa la pila de fuentes del sistema (`-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif`) en vez de Asap, vía la clase `.fuente-publica` (`resources/css/app.css`) aplicada en el `<main>` de `resources/js/PaginaNegocio.tsx`. Es para que la página pública cargue sin depender de la descarga de Asap vía Google Fonts y se sienta nativa en cada dispositivo — los paneles de Filament no tienen ese objetivo y **siguen con Asap** (su propio `->font('Asap', ...)` en `AdminPanelProvider`/`AppPanelProvider`, sin relación con esta clase). **No uses esto como precedente** para cambiar la fuente en ningún panel ni en ningún otro componente: es una excepción acotada a este único contenedor.
+
 ### Contraste (obligatorio, nivel AA)
 
 | Color sobre blanco | Contraste | Uso permitido |
@@ -150,7 +152,7 @@ Basado en el checkout de Hostinger Ecommerce, corregido.
 
 ## 6. Bloques de la página pública
 
-Cada bloque es un componente registrado por tipo. El super admin arma la página agregando, quitando y reordenando bloques de este catálogo en el Builder — **ningún bloque es obligatorio para todos los negocios**: si un negocio no vende productos, no agrega ese bloque; si otro sí, lo agrega. Reglas comunes: ancho máximo 1200 px centrado, relleno vertical 64 px (40 px en celular), título de sección en 28 px peso 700 (o el `colorTexto` libre del bloque, ver más abajo).
+Cada bloque es un componente registrado por tipo. El super admin arma la página agregando, quitando y reordenando bloques de este catálogo en el Builder — **ningún bloque es obligatorio para todos los negocios**: si un negocio no vende productos, no agrega ese bloque; si otro sí, lo agrega. Reglas comunes: ancho máximo 1200 px centrado, relleno vertical 64 px (40 px en celular), título de sección en 30-36 px peso 700 según pantalla (o el `colorTexto` libre del bloque, ver más abajo).
 
 | Bloque | Diseño |
 | --- | --- |
@@ -189,8 +191,8 @@ Igual de detallado que la ventana de reserva (sección 3), porque esta plantilla
 **`portada`**
 - Foto de fondo con `object-fit: cover` (nunca se deforma) dentro de un contenedor de **`aspect-ratio` fijo** por tamaño de pantalla — `4/5` en celular, `16/9` desde tablet, `21/9` desde escritorio grande —, con un piso de altura mínima (520/420/380 px) para que nunca quede demasiado bajo. Así el recorte de la foto es consistente entre pantallas, no depende del alto variable del viewport como antes. Degradado de legibilidad de la sección 1 encima. Contenido anclado **abajo** a la izquierda (no arriba), en una sola columna sobre la foto (no 2 columnas):
   1. Insignia en píldora semitransparente con el tipo de negocio (`Negocio.tipo`, nunca un campo escrito a mano — así siempre coincide con el negocio real), 14 px.
-  2. Título mayúsculas muy grande (56-72 px) y negrita — el tamaño más grande del sistema.
-  3. Fila de ubicación (ícono `map-pin` 20 px + `direccion`, ya existente) y horario (ícono `clock` 20 px + `horarioHoy`, texto libre que escribe el super admin — **no se calcula solo todavía**, no hay un endpoint de horario de atención del negocio hoy; construirlo es una tarea aparte), 16-18 px.
+  2. Título mayúsculas muy grande (72-128 px) y negrita — el tamaño más grande del sistema.
+  3. Fila de ubicación (ícono `map-pin` 20 px + `direccion`, ya existente) y horario (ícono `clock` 20 px + `horarioHoy`, texto libre que escribe el super admin — **no se calcula solo todavía**, no hay un endpoint de horario de atención del negocio hoy; construirlo es una tarea aparte), 18-20 px.
   4. Descripción (máx. 500 px de ancho, opacidad 90 %, 16-18 px).
   5. 2 botones (`Boton principal` "Reservar cita" + `Boton contorno` con ícono `play` "Ver video", opcional).
   6. Fila de hasta 4 íconos de 36 px con etiqueta de 14 px debajo.
@@ -218,8 +220,10 @@ Igual de detallado que la ventana de reserva (sección 3), porque esta plantilla
 - Cuadrícula de fotos cuadradas, 2 columnas en celular, 4 en escritorio, con vista ampliada al tocar.
 
 **`tarjetas`**
-- Genérico y manual (servicios destacados, pasos de un proceso, lo que el negocio necesite) — no se ata a ningún modelo de datos. Cada tarjeta: imagen arriba (relación 4:3, solo `--radio-tarjeta` en la imagen) + título opcional + descripción corta, **centrados** debajo de la imagen — **sin** el contenedor `Tarjeta` (sin fondo blanco, sombra ni radio en un recuadro propio): la imagen y el texto quedan directo sobre el fondo de la sección.
+- Genérico y manual (servicios destacados, pasos de un proceso, lo que el negocio necesite) — no se ata a ningún modelo de datos. Cada tarjeta: imagen arriba (relación 1:1, solo `--radio-boton` en la imagen — menos pronunciado que `--radio-tarjeta` a propósito, para que la foto se sienta más grande y menos "enmarcada") + título opcional + descripción corta, **centrados** debajo de la imagen — **sin** el contenedor `Tarjeta` (sin fondo blanco, sombra ni radio en un recuadro propio): la imagen y el texto quedan directo sobre el fondo de la sección.
 - El super admin elige 1, 2 o 3 columnas para escritorio y agrega/quita tarjetas libremente (máximo 9).
+- Separación generosa entre tarjetas (no el `gap-4` por defecto del resto de cuadrículas de bloques): 48 px horizontal, 40 px vertical, para que no se sientan pegadas.
+- Título de cada tarjeta en 18 px peso 700 (más grueso y grande que el `font-semibold` sin tamaño explícito del resto de tarjetas genéricas del sistema); la descripción se mantiene en 14 px.
 - **Celular**: siempre 1 columna, sin importar cuántas se eligieron para escritorio; el centrado se mantiene igual.
 
 **`banner_oferta`**
