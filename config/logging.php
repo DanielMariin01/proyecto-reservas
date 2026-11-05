@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Logging\AgregarContextoObservabilidad;
+use Monolog\Formatter\JsonFormatter;
 use Monolog\Handler\NullHandler;
 use Monolog\Handler\StreamHandler;
 use Monolog\Handler\SyslogUdpHandler;
@@ -65,6 +67,9 @@ return [
             'path' => storage_path('logs/laravel.log'),
             'level' => env('LOG_LEVEL', 'debug'),
             'replace_placeholders' => true,
+            // RNF-OBS-02: negocio_id/usuario_id/id_peticion en cada línea, en JSON.
+            'tap' => [AgregarContextoObservabilidad::class],
+            'formatter' => JsonFormatter::class,
         ],
 
         'daily' => [
@@ -73,6 +78,8 @@ return [
             'level' => env('LOG_LEVEL', 'debug'),
             'days' => env('LOG_DAILY_DAYS', 14),
             'replace_placeholders' => true,
+            'tap' => [AgregarContextoObservabilidad::class],
+            'formatter' => JsonFormatter::class,
         ],
 
         'slack' => [
