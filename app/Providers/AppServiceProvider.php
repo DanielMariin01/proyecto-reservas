@@ -16,6 +16,7 @@ use App\Models\PagoSuscripcion;
 use App\Models\Profesional;
 use App\Models\Servicio;
 use App\Models\Usuario;
+use App\Observabilidad\ContextoObservabilidad;
 use App\Policies\PoliticaCategoriaServicio;
 use App\Policies\PoliticaCita;
 use App\Policies\PoliticaNegocio;
@@ -39,6 +40,8 @@ class AppServiceProvider extends ServiceProvider
             new ReglaAvisoMinimo,
             new ReglaVentanaMaxima,
         ]));
+
+        $this->app->singleton(ContextoObservabilidad::class);
     }
 
     /**
