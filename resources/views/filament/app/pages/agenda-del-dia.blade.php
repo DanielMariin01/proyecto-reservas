@@ -44,9 +44,12 @@
                                 >
                                     <div class="flex items-center justify-between">
                                         <span class="text-sm font-semibold">{{ \App\Support\Hora::formatear($cita->inicio, $negocio->zona_horaria) }}</span>
-                                        <x-filament::badge :color="$cita->estado->getColor()">
-                                            {{ $cita->estado->getLabel() }}
-                                        </x-filament::badge>
+                                        <div class="flex items-center gap-1">
+                                            <x-filament::badge :color="$cita->estado->getColor()">
+                                                {{ $cita->estado->getLabel() }}
+                                            </x-filament::badge>
+                                            {{ $this->accionesPara($cita) }}
+                                        </div>
                                     </div>
                                     <p class="mt-1 text-sm">{{ $cita->cliente->nombre }}</p>
                                     <p class="text-xs text-gray-500">{{ $cita->servicio->nombre }}</p>

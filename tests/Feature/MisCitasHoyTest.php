@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Actions\CrearProfesional;
 use App\DatosTransferencia\DatosNuevoProfesional;
 use App\Enums\EstadoCitaValor;
+use App\Enums\MetodoPago;
 use App\Enums\RolNegocio;
 use App\Filament\App\Pages\MisCitasHoy;
 use App\Models\Cita;
@@ -79,7 +80,7 @@ test('el profesional ve solo sus citas de hoy, no las de otro dia ni las de otro
     expect($citasVisibles->pluck('id')->all())->toBe([$citaDeHoy->id]);
 });
 
-test('marcar en atencion y despues completada actualiza el estado', function (): void {
+test('marcar en atencion y despues completar con pago actualiza el estado y registra el pago', function (): void {
     $negocio = Negocio::factory()->create();
     $usuarioProfesional = crearUsuarioConRol($negocio, RolNegocio::Profesional);
 
@@ -95,6 +96,7 @@ test('marcar en atencion y despues completada actualiza el estado', function ():
         'servicio_id' => $servicio->id,
         'cliente_id' => $cliente->id,
         'estado' => EstadoCitaValor::Confirmada,
+        'precio' => 30000,
     ]);
 
     Filament::setCurrentPanel(Filament::getPanel('app'));
@@ -106,11 +108,30 @@ test('marcar en atencion y despues completada actualiza el estado', function ():
 
     expect($cita->refresh()->estado)->toBe(EstadoCitaValor::EnAtencion);
 
+    // marcarCompletada no completa de una: abre el formulario de pago.
     Livewire::actingAs($usuarioProfesional)
         ->test(MisCitasHoy::class)
-        ->call('marcarCompletada', $cita->id);
+        ->call('marcarCompletada', $cita->id)
+        ->assertSet('citaPendientePagoId', $cita->id)
+        ->assertSet('valorPago', 30000);
 
-    expect($cita->refresh()->estado)->toBe(EstadoCitaValor::Completada);
+    expect($cita->refresh()->estado)->toBe(EstadoCitaValor::EnAtencion);
+
+    Livewire::actingAs($usuarioProfesional)
+        ->test(MisCitasHoy::class)
+        ->call('marcarCompletada', $cita->id)
+        ->set('metodoPago', MetodoPago::Nequi->value)
+        ->set('propinaPago', 2000)
+        ->call('confirmarPago');
+
+    $cita->refresh();
+    expect($cita->estado)->toBe(EstadoCitaValor::Completada);
+
+    $pago = $cita->pagoActivo();
+    expect($pago)->not->toBeNull();
+    expect($pago->metodo)->toBe(MetodoPago::Nequi);
+    expect($pago->valor)->toBe(30000);
+    expect($pago->propina)->toBe(2000);
 });
 
 test('un profesional no puede cambiar el estado de la cita de otro profesional', function (): void {

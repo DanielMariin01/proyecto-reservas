@@ -13,6 +13,7 @@ use Database\Factories\CitaFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 final class Cita extends Model
 {
@@ -79,6 +80,23 @@ final class Cita extends Model
     public function cliente(): BelongsTo
     {
         return $this->belongsTo(Cliente::class);
+    }
+
+    /**
+     * @return HasMany<Pago, $this>
+     */
+    public function pagos(): HasMany
+    {
+        return $this->hasMany(Pago::class);
+    }
+
+    /**
+     * Sección 4.8 (RF-PAG-01): si el pago se anula y se registra uno nuevo,
+     * solo el más reciente sin anular cuenta como el pago vigente.
+     */
+    public function pagoActivo(): ?Pago
+    {
+        return $this->pagos()->whereNull('anulado_en')->latest()->first();
     }
 
     public function obtenerEstado(): EstadoCita

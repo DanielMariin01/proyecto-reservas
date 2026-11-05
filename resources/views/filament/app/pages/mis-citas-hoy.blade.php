@@ -37,7 +37,7 @@
                             </x-filament::button>
                         @endif
 
-                        @if ($estado->puedeTransicionarA(\App\Enums\EstadoCitaValor::Completada))
+                        @if ($estado->puedeTransicionarA(\App\Enums\EstadoCitaValor::Completada) && $this->citaPendientePagoId !== $cita->id)
                             <x-filament::button size="sm" color="success" wire:click="marcarCompletada({{ $cita->id }})">
                                 Completada
                             </x-filament::button>
@@ -49,6 +49,34 @@
                             </x-filament::button>
                         @endif
                     </div>
+
+                    @if ($this->citaPendientePagoId === $cita->id)
+                        <div class="mt-4 space-y-3 rounded-lg border border-gray-200 p-4 dark:border-gray-700">
+                            <p class="text-sm font-medium">Registrar pago para completar</p>
+
+                            <select wire:model="metodoPago" class="fi-input block w-full rounded-lg border-gray-300 text-sm dark:border-gray-600 dark:bg-gray-800">
+                                <option value="">Elige el método</option>
+                                @foreach ($this->metodosDePago() as $metodo)
+                                    <option value="{{ $metodo['value'] }}">{{ $metodo['label'] }}</option>
+                                @endforeach
+                            </select>
+
+                            <input type="number" min="0" wire:model="valorPago" placeholder="Valor"
+                                class="fi-input block w-full rounded-lg border-gray-300 text-sm dark:border-gray-600 dark:bg-gray-800" />
+
+                            <input type="number" min="0" wire:model="propinaPago" placeholder="Propina (opcional)"
+                                class="fi-input block w-full rounded-lg border-gray-300 text-sm dark:border-gray-600 dark:bg-gray-800" />
+
+                            <div class="flex gap-2">
+                                <x-filament::button size="sm" color="success" wire:click="confirmarPago">
+                                    Confirmar pago
+                                </x-filament::button>
+                                <x-filament::button size="sm" color="gray" wire:click="cancelarPago">
+                                    Cancelar
+                                </x-filament::button>
+                            </div>
+                        </div>
+                    @endif
                 </x-filament::card>
             @endforeach
         </div>

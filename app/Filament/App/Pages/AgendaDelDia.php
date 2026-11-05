@@ -5,14 +5,18 @@ declare(strict_types=1);
 namespace App\Filament\App\Pages;
 
 use App\Enums\Permiso;
+use App\Filament\App\Resources\Citas\AccionesDeCita;
 use App\Models\Cita;
 use App\Models\Negocio;
 use App\Models\Profesional;
 use BackedEnum;
 use Carbon\CarbonImmutable;
+use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
 use Filament\Facades\Filament;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use UnitEnum;
 
@@ -87,5 +91,71 @@ final class AgendaDelDia extends Page
                     ->orderBy('inicio')
                     ->get(),
             ]);
+    }
+
+    /**
+     * Las mismas acciones de `CitasTable` (completar con pago, cambiar
+     * estado, reprogramar, cancelar, anular pago), vinculadas a esta
+     * cita con `->record()` en vez de depender de una tabla — ninguna
+     * lógica nueva, solo otra puerta de entrada a la misma.
+     */
+    public function accionesPara(Cita $cita): ActionGroup
+    {
+        return ActionGroup::make([
+            AccionesDeCita::completarConPago()->record($cita),
+            AccionesDeCita::cambiarEstado()->record($cita),
+            AccionesDeCita::reprogramar()->record($cita),
+            AccionesDeCita::cancelar()->record($cita),
+            AccionesDeCita::anularPago()->record($cita),
+        ])
+            ->label('Acciones')
+            ->hiddenLabel()
+            ->icon(Heroicon::OutlinedEllipsisVertical)
+            ->color('gray')
+            ->size('sm');
+    }
+
+    /**
+     * Esta página no tiene tabla, así que Filament no resuelve la acción
+     * montada contra un registro por sí sola: necesita un método del
+     * mismo nombre que la acción (de ahí los métodos de abajo). `record()`
+     * en `accionesPara()` hace que Filament incluya el id de la cita como
+     * `recordKey` en el contexto del botón (`Action::getContext()`); aquí
+     * lo leemos de vuelta para reconstruir la cita en el servidor.
+     */
+    public function getDefaultActionRecord(Action $action): ?Model
+    {
+        $citaId = $this->mountedActions[$action->getNestingIndex() ?? -1]['context']['recordKey'] ?? null;
+
+        if (! is_int($citaId) && ! is_string($citaId)) {
+            return null;
+        }
+
+        return Cita::query()->whereKey($citaId)->first();
+    }
+
+    public function completarConPagoAction(): Action
+    {
+        return AccionesDeCita::completarConPago();
+    }
+
+    public function cambiarEstadoAction(): Action
+    {
+        return AccionesDeCita::cambiarEstado();
+    }
+
+    public function reprogramarAction(): Action
+    {
+        return AccionesDeCita::reprogramar();
+    }
+
+    public function cancelarAction(): Action
+    {
+        return AccionesDeCita::cancelar();
+    }
+
+    public function anularPagoAction(): Action
+    {
+        return AccionesDeCita::anularPago();
     }
 }
