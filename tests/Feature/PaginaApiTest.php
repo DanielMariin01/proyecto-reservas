@@ -10,6 +10,7 @@ use App\Enums\TipoNegocio;
 use App\Models\Negocio;
 use App\Models\Pagina;
 use App\Models\PaletaMarca;
+use App\Models\Resena;
 use App\Models\Usuario;
 
 function negocioConPaginaBorradorYPublicada(): array
@@ -133,6 +134,27 @@ test('la api traduce la imagen de cada tarjeta a una url completa', function ():
 
     $url = $respuesta->json('data.bloques.0.datos.tarjetas.0.imagen');
     expect($url)->toContain('/storage/paginas/paso1.jpg');
+});
+
+test('con fuente sistema, el bloque testimonios muestra las reseñas reales publicadas', function (): void {
+    $negocio = Negocio::factory()->create();
+    Resena::factory()->create(['negocio_id' => $negocio->id, 'calificacion' => 5, 'comentario' => 'Reseña publicada visible']);
+    Resena::factory()->oculta()->create(['negocio_id' => $negocio->id, 'calificacion' => 1, 'comentario' => 'Reseña oculta, no debería salir']);
+
+    $pagina = Pagina::factory()->create([
+        'negocio_id' => $negocio->id,
+        'bloques' => [[
+            'type' => TipoBloque::Testimonios->value,
+            'data' => ['fuente' => 'sistema'],
+        ]],
+    ]);
+    app(PublicarPagina::class)->ejecutar($pagina);
+
+    $respuesta = $this->getJson("/api/publico/{$negocio->slug}/pagina");
+
+    $respuesta->assertJsonCount(1, 'data.bloques.0.datos.testimonios');
+    $respuesta->assertJsonPath('data.bloques.0.datos.testimonios.0.cita', 'Reseña publicada visible');
+    $respuesta->assertJsonPath('data.bloques.0.datos.testimonios.0.estrellas', 5);
 });
 
 test('la api expone la etiqueta legible del tipo de negocio', function (): void {

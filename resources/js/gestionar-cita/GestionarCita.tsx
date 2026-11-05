@@ -1,9 +1,16 @@
 import { useState } from 'react';
 import type { ReactElement } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { cancelarCitaPorToken, esErrorDeGestionCita, obtenerCitaPorToken, reprogramarCitaPorToken } from './api/clienteGestionCita';
+import {
+    cancelarCitaPorToken,
+    dejarResenaPorToken,
+    esErrorDeGestionCita,
+    obtenerCitaPorToken,
+    reprogramarCitaPorToken,
+} from './api/clienteGestionCita';
 import FormularioCancelar from './FormularioCancelar';
 import FormularioReprogramar from './FormularioReprogramar';
+import FormularioResena from './FormularioResena';
 import ResumenCitaPorToken from './ResumenCitaPorToken';
 
 interface PropiedadesGestionarCita {
@@ -11,7 +18,7 @@ interface PropiedadesGestionarCita {
     token: string;
 }
 
-type Paso = 'resumen' | 'cancelar' | 'reprogramar';
+type Paso = 'resumen' | 'cancelar' | 'reprogramar' | 'resena';
 
 export default function GestionarCita({ slug, token }: PropiedadesGestionarCita): ReactElement {
     const [paso, setPaso] = useState<Paso>('resumen');
@@ -37,6 +44,15 @@ export default function GestionarCita({ slug, token }: PropiedadesGestionarCita)
         },
     });
 
+    const mutacionResena = useMutation({
+        mutationFn: ({ calificacion, comentario }: { calificacion: number; comentario: string }) =>
+            dejarResenaPorToken(slug, token, calificacion, comentario),
+        onSuccess: () => {
+            citaQuery.refetch();
+            setPaso('resumen');
+        },
+    });
+
     return (
         <main className="flex min-h-screen items-center justify-center p-4">
             {citaQuery.isLoading && <p className="text-sm text-texto-suave">Cargando tu cita...</p>}
@@ -52,6 +68,7 @@ export default function GestionarCita({ slug, token }: PropiedadesGestionarCita)
                     cita={citaQuery.data}
                     onCancelar={() => setPaso('cancelar')}
                     onReprogramar={() => setPaso('reprogramar')}
+                    onDejarResena={() => setPaso('resena')}
                 />
             )}
 
@@ -71,6 +88,15 @@ export default function GestionarCita({ slug, token }: PropiedadesGestionarCita)
                     enviando={mutacionReprogramar.isPending}
                     error={mensajeDeError(mutacionReprogramar.error)}
                     onConfirmar={(inicio) => mutacionReprogramar.mutate(inicio)}
+                    onVolver={() => setPaso('resumen')}
+                />
+            )}
+
+            {citaQuery.data && paso === 'resena' && (
+                <FormularioResena
+                    enviando={mutacionResena.isPending}
+                    error={mensajeDeError(mutacionResena.error)}
+                    onConfirmar={(calificacion, comentario) => mutacionResena.mutate({ calificacion, comentario })}
                     onVolver={() => setPaso('resumen')}
                 />
             )}

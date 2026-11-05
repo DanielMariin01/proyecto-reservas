@@ -20,9 +20,11 @@ final class SolicitudGestionCitaPorToken extends FormRequest
     public function rules(): array
     {
         return [
-            'accion' => ['required', Rule::in(['cancelar', 'reprogramar'])],
+            'accion' => ['required', Rule::in(['cancelar', 'reprogramar', 'resena'])],
             'motivo' => ['nullable', 'string', 'max:500'],
             'inicio' => ['required_if:accion,reprogramar', 'date'],
+            'calificacion' => ['required_if:accion,resena', 'integer', 'between:1,5'],
+            'comentario' => ['required_if:accion,resena', 'string', 'min:10', 'max:500'],
         ];
     }
 }

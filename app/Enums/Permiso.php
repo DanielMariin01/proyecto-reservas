@@ -13,6 +13,7 @@ enum Permiso: string
     case GestionarCitasTodas = 'gestionar_citas_todas';
     case GestionarPagos = 'gestionar_pagos';
     case GestionarClientes = 'gestionar_clientes';
+    case GestionarResenas = 'gestionar_resenas';
     case VerReportes = 'ver_reportes';
     case GestionarCursosProductos = 'gestionar_cursos_productos';
 }

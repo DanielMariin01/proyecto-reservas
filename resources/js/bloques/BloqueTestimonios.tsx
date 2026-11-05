@@ -1,5 +1,6 @@
 import { Star } from 'lucide-react';
 import type { ReactElement } from 'react';
+import AvatarIniciales from '@/componentes/AvatarIniciales';
 import Tarjeta from '@/componentes/Tarjeta';
 import { obtenerEstiloColor } from './colorLibre';
 import type { PropiedadesBloque } from './tipos';
@@ -55,7 +56,11 @@ export default function BloqueTestimonios({ datos }: PropiedadesBloque): ReactEl
                                 {cita && <p className="text-sm text-tinta">&ldquo;{cita}&rdquo;</p>}
 
                                 <div className="mt-4 flex items-center gap-3">
-                                    {foto && <img src={foto} alt="" className="h-10 w-10 rounded-full object-cover" />}
+                                    {foto ? (
+                                        <img src={foto} alt="" className="h-10 w-10 rounded-full object-cover" />
+                                    ) : (
+                                        nombre && <AvatarIniciales nombre={nombre} />
+                                    )}
                                     {nombre && <p className="text-sm font-semibold text-tinta">{nombre}</p>}
                                 </div>
                             </Tarjeta>

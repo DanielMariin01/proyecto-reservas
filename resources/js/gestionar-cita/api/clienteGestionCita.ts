@@ -43,3 +43,7 @@ export function cancelarCitaPorToken(slug: string, token: string, motivo: string
 export function reprogramarCitaPorToken(slug: string, token: string, inicio: string): Promise<CitaPorToken> {
     return gestionar(slug, token, { accion: 'reprogramar', inicio });
 }
+
+export function dejarResenaPorToken(slug: string, token: string, calificacion: number, comentario: string): Promise<CitaPorToken> {
+    return gestionar(slug, token, { accion: 'resena', calificacion, comentario });
+}

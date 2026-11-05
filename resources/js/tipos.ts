@@ -67,6 +67,12 @@ export interface PaginaPublica {
     esVistaPrevia: boolean;
 }
 
+export interface ResenaDeCita {
+    calificacion: number;
+    comentario: string;
+    respuestaTexto: string | null;
+}
+
 export interface CitaPorToken {
     servicioId: number;
     profesionalId: number;
@@ -84,6 +90,8 @@ export interface CitaPorToken {
     enlaceActivo: boolean;
     puedeCancelar: boolean;
     puedeReprogramar: boolean;
+    puedeDejarResena: boolean;
+    resena: ResenaDeCita | null;
 }
 
 export interface DatosDelCliente {

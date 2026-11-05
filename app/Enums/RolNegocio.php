@@ -32,6 +32,7 @@ enum RolNegocio: string
                 Permiso::GestionarCitasTodas,
                 Permiso::GestionarPagos,
                 Permiso::GestionarClientes,
+                Permiso::GestionarResenas,
                 Permiso::VerReportes,
                 Permiso::GestionarCursosProductos,
             ],

@@ -49,4 +49,12 @@ final class Cliente extends Model
     {
         return $this->hasMany(Cita::class);
     }
+
+    /**
+     * @return HasMany<Resena, $this>
+     */
+    public function resenas(): HasMany
+    {
+        return $this->hasMany(Resena::class);
+    }
 }

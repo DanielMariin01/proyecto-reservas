@@ -61,6 +61,8 @@ final class Negocio extends Model implements HasName
         'confirmacion_manual',
         'minutos_tolerancia_inasistencia',
         'permite_editar_pagina',
+        'promedio_calificacion',
+        'total_resenas',
     ];
 
     /**
@@ -78,6 +80,7 @@ final class Negocio extends Model implements HasName
             'cancelado_desde' => 'datetime',
             'confirmacion_manual' => 'boolean',
             'permite_editar_pagina' => 'boolean',
+            'promedio_calificacion' => 'float',
         ];
     }
 
@@ -111,6 +114,14 @@ final class Negocio extends Model implements HasName
     public function registrosAuditoria(): HasMany
     {
         return $this->hasMany(RegistroAuditoria::class);
+    }
+
+    /**
+     * @return HasMany<Resena, $this>
+     */
+    public function resenas(): HasMany
+    {
+        return $this->hasMany(Resena::class);
     }
 
     public function getFilamentName(): string
