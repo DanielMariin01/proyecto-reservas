@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 final class Cita extends Model
 {
@@ -88,6 +89,14 @@ final class Cita extends Model
     public function pagos(): HasMany
     {
         return $this->hasMany(Pago::class);
+    }
+
+    /**
+     * @return HasOne<Resena, $this>
+     */
+    public function resena(): HasOne
+    {
+        return $this->hasOne(Resena::class);
     }
 
     /**

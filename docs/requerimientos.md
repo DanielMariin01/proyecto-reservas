@@ -810,3 +810,18 @@ El proyecto arranca con Laravel 12 sobre PHP 8.2/8.3 y MariaDB, para trabajar co
 | Hosting | Hostinger Business, servidor us-phx, Composer 2.9 y Git 2.43 disponibles por SSH | Sin Node en el servidor: React se compila en local o en GitHub Actions |
 | Colas | Driver `database` con cron cada minuto | Hosting compartido sin procesos permanentes |
 | Actualización | Pasar a Laravel 13 antes de febrero de 2027, con PHP 8.3+ en local | Laravel 12 deja de recibir parches de seguridad en esa fecha |
+
+## 17. Reseñas y calificaciones (T10, tarea nueva fuera del MVP, 5 nov 2026)
+
+El sistema real de reseñas quedó descartado de T6/T8 a propósito: el bloque `testimonios` de la página pública se dejó preparado desde entonces (`App\Enums\FuenteTestimonios`) para conectarlo aquí sin rehacerlo. Esta sección no estaba en el documento original; se definió y aprobó en esta tarea.
+
+- **RF-RES-01** Solo puede dejar una reseña el cliente de una cita en estado `completada`, identificado por el mismo token de un solo uso del correo (`citas.token_cancelacion`), sin necesitar una cuenta. Una reseña por cita.
+- **RF-RES-02** El enlace para reseñar deja de aceptar reseñas 60 días después de que la cita quedó completada (`App\Resenas\ReglaDentroDeVentanaDeResena`).
+- **RF-RES-03** La reseña se publica directo, sin moderación previa. El dueño (o el super admin) puede ocultarla después si es inapropiada — nunca se borra, solo se oculta — y puede responderle públicamente.
+- **RF-RES-04** Cada reseña cuenta a la vez para el negocio y para el profesional de la cita (`resenas.negocio_id` y `resenas.profesional_id`).
+- **RF-RES-05** El promedio de calificación y el total de reseñas se guardan cacheados en `negocios` y `profesionales` (`promedio_calificacion`, `total_resenas`), recalculados por un listener cuando se crea u oculta una reseña. Sin reseñas publicadas, el promedio queda en `null` (nunca en 0) y la interfaz debe mostrar "Sin reseñas todavía".
+- **RF-RES-06** Nunca se le pide al cliente una foto de perfil: junto a su nombre siempre se muestra un avatar con sus iniciales (`AvatarIniciales`), tanto en una reseña real como en un testimonio manual sin foto.
+- **RF-RES-07** Al completar una cita (`CambiarEstadoCita` → `EstadoCitaValor::Completada`) se envía un correo nuevo (`InvitacionADejarResena`) invitando a reseñar, con el mismo enlace del correo de confirmación.
+- **RF-RES-08** El bloque `testimonios` admite una fuente `sistema` (además de la `manual` ya existente): en ese caso `RecursoPaginaPublica` lo resuelve con las reseñas reales y publicadas del negocio (hasta 6, mejor calificación primero) con la misma forma que un testimonio manual, sin cambiar el componente de React.
+
+**Patrones usados**: Acciones (`CrearResena`, `ResponderResena`, `CambiarVisibilidadResena`), DTO (`DatosNuevaResena`), Cadena de reglas (`App\Resenas`, igual que `App\Disponibilidad`), Observador con eventos (`ResenaCreada`/`ResenaCambioDeVisibilidad` → `ActualizarPromedioDeCalificaciones`), Política (`PoliticaResena`, mismo esquema que `PoliticaCita`).

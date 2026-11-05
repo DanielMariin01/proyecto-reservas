@@ -14,6 +14,7 @@ use App\Models\Negocio;
 use App\Models\Pago;
 use App\Models\PagoSuscripcion;
 use App\Models\Profesional;
+use App\Models\Resena;
 use App\Models\Servicio;
 use App\Models\Usuario;
 use App\Observabilidad\ContextoObservabilidad;
@@ -23,8 +24,13 @@ use App\Policies\PoliticaNegocio;
 use App\Policies\PoliticaPago;
 use App\Policies\PoliticaPagoSuscripcion;
 use App\Policies\PoliticaProfesional;
+use App\Policies\PoliticaResena;
 use App\Policies\PoliticaServicio;
 use App\Policies\PoliticaUsuario;
+use App\Resenas\CadenaReglasResena;
+use App\Resenas\ReglaCitaCompletada;
+use App\Resenas\ReglaDentroDeVentanaDeResena;
+use App\Resenas\ReglaSinResenaPrevia;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
@@ -42,6 +48,12 @@ class AppServiceProvider extends ServiceProvider
         ]));
 
         $this->app->singleton(ContextoObservabilidad::class);
+
+        $this->app->singleton(CadenaReglasResena::class, fn (): CadenaReglasResena => new CadenaReglasResena([
+            new ReglaCitaCompletada,
+            new ReglaSinResenaPrevia,
+            new ReglaDentroDeVentanaDeResena,
+        ]));
     }
 
     /**
@@ -57,5 +69,6 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Profesional::class, PoliticaProfesional::class);
         Gate::policy(Cita::class, PoliticaCita::class);
         Gate::policy(Pago::class, PoliticaPago::class);
+        Gate::policy(Resena::class, PoliticaResena::class);
     }
 }

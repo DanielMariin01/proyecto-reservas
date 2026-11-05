@@ -44,6 +44,8 @@ final class Profesional extends Model
         'color',
         'activo',
         'google_calendar_id',
+        'promedio_calificacion',
+        'total_resenas',
     ];
 
     /**
@@ -53,6 +55,7 @@ final class Profesional extends Model
     {
         return [
             'activo' => 'boolean',
+            'promedio_calificacion' => 'float',
         ];
     }
 
@@ -89,6 +92,14 @@ final class Profesional extends Model
     public function bloqueos(): HasMany
     {
         return $this->hasMany(Bloqueo::class);
+    }
+
+    /**
+     * @return HasMany<Resena, $this>
+     */
+    public function resenas(): HasMany
+    {
+        return $this->hasMany(Resena::class);
     }
 
     /**

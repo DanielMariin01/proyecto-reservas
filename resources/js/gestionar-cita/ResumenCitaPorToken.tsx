@@ -1,4 +1,4 @@
-import { Banknote, Building2, Calendar, MessageCircle, Scissors, User } from 'lucide-react';
+import { Banknote, Building2, Calendar, MessageCircle, Scissors, Star, User } from 'lucide-react';
 import type { ReactElement } from 'react';
 import Boton from '@/componentes/Boton';
 import Insignia from '@/componentes/Insignia';
@@ -7,6 +7,7 @@ import Tarjeta from '@/componentes/Tarjeta';
 import type { CitaPorToken } from '@/tipos';
 
 const ESTADOS_CON_INSIGNIA = ['confirmada', 'pendiente', 'cancelada', 'no_asistio'] as const;
+const MAXIMO_ESTRELLAS = 5;
 
 function esEstadoConInsignia(estado: string): estado is (typeof ESTADOS_CON_INSIGNIA)[number] {
     return (ESTADOS_CON_INSIGNIA as readonly string[]).includes(estado);
@@ -16,9 +17,10 @@ interface PropiedadesResumenCitaPorToken {
     cita: CitaPorToken;
     onCancelar: () => void;
     onReprogramar: () => void;
+    onDejarResena: () => void;
 }
 
-export default function ResumenCitaPorToken({ cita, onCancelar, onReprogramar }: PropiedadesResumenCitaPorToken): ReactElement {
+export default function ResumenCitaPorToken({ cita, onCancelar, onReprogramar, onDejarResena }: PropiedadesResumenCitaPorToken): ReactElement {
     const enlaceWhatsapp = cita.whatsapp
         ? `https://wa.me/${cita.whatsapp.replace(/\D/g, '')}?text=${encodeURIComponent(
               `Hola, tengo una cita de ${cita.servicio} el ${cita.fechaVisible} a las ${cita.horaVisible} y necesito ayuda.`,
@@ -56,6 +58,11 @@ export default function ResumenCitaPorToken({ cita, onCancelar, onReprogramar }:
                             Cancelar cita
                         </Boton>
                     )}
+                    {cita.puedeDejarResena && (
+                        <Boton variante="contorno" onClick={onDejarResena} className="w-full">
+                            Dejar mi reseña
+                        </Boton>
+                    )}
                     {(!cita.puedeCancelar || !cita.puedeReprogramar) && enlaceWhatsapp && (
                         <a href={enlaceWhatsapp} target="_blank" rel="noreferrer">
                             <Boton variante="contorno" className="w-full">
@@ -64,6 +71,29 @@ export default function ResumenCitaPorToken({ cita, onCancelar, onReprogramar }:
                                 </span>
                             </Boton>
                         </a>
+                    )}
+                </div>
+            )}
+
+            {cita.resena && (
+                <div className="mt-6 border-t border-gris-claro pt-4">
+                    <p className="text-sm font-semibold text-tinta">Tu reseña</p>
+                    <div className="mt-2 flex gap-1">
+                        {Array.from({ length: MAXIMO_ESTRELLAS }, (_valor, indice) => (
+                            <Star
+                                key={indice}
+                                size={16}
+                                strokeWidth={1.75}
+                                className={indice < cita.resena!.calificacion ? 'fill-secundario text-secundario' : 'text-gris-claro'}
+                            />
+                        ))}
+                    </div>
+                    <p className="mt-2 text-sm text-texto-suave">&ldquo;{cita.resena.comentario}&rdquo;</p>
+                    {cita.resena.respuestaTexto && (
+                        <div className="mt-3 rounded-boton bg-fondo-panel p-3">
+                            <p className="text-xs font-semibold text-tinta">Respuesta de {cita.nombreNegocio}</p>
+                            <p className="mt-1 text-sm text-texto-suave">{cita.resena.respuestaTexto}</p>
+                        </div>
                     )}
                 </div>
             )}

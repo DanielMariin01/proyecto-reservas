@@ -7,8 +7,10 @@ namespace App\Http\Resources\Publico;
 use App\Models\Cita;
 use App\Models\Negocio;
 use App\Models\Profesional;
+use App\Models\Resena;
 use App\Models\Servicio;
 use App\Services\ServicioEnlaceCita;
+use App\Services\ServicioResenas;
 use App\Support\Fecha;
 use App\Support\Hora;
 use Illuminate\Http\Request;
@@ -22,6 +24,7 @@ final class RecursoCitaPorToken extends JsonResource
     public function __construct(
         Cita $cita,
         private readonly ServicioEnlaceCita $servicioEnlaceCita,
+        private readonly ServicioResenas $servicioResenas,
     ) {
         parent::__construct($cita);
     }
@@ -33,6 +36,7 @@ final class RecursoCitaPorToken extends JsonResource
     {
         /** @var Negocio $negocio */
         $negocio = $request->route('negocio');
+        $resena = Resena::query()->where('cita_id', $this->id)->first();
 
         return [
             'servicioId' => $this->servicio_id,
@@ -51,6 +55,12 @@ final class RecursoCitaPorToken extends JsonResource
             'enlaceActivo' => $this->servicioEnlaceCita->enlaceActivo($this->resource),
             'puedeCancelar' => $this->servicioEnlaceCita->puedeCancelar($this->resource),
             'puedeReprogramar' => $this->servicioEnlaceCita->puedeReprogramar($this->resource),
+            'puedeDejarResena' => $resena === null && $this->servicioResenas->puedeDejarResena($this->resource),
+            'resena' => $resena === null ? null : [
+                'calificacion' => $resena->calificacion,
+                'comentario' => $resena->comentario,
+                'respuestaTexto' => $resena->respuesta_texto,
+            ],
         ];
     }
 }

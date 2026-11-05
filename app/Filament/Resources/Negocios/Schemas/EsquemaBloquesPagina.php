@@ -13,7 +13,6 @@ use App\Services\CalculadoraContraste;
 use Filament\Forms\Components\Builder\Block;
 use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -170,9 +169,18 @@ final class EsquemaBloquesPagina
                 ->label(TipoBloque::Testimonios->etiqueta())
                 ->icon(Heroicon::OutlinedChatBubbleLeftRight)
                 ->schema([
-                    Hidden::make('fuente')->default(FuenteTestimonios::Manual->value),
+                    Select::make('fuente')
+                        ->label('Origen de los testimonios')
+                        ->options([
+                            FuenteTestimonios::Manual->value => 'Elegidos a mano',
+                            FuenteTestimonios::Sistema->value => 'Reseñas reales de clientes',
+                        ])
+                        ->default(FuenteTestimonios::Manual->value)
+                        ->required()
+                        ->live(),
                     Repeater::make('testimonios')
                         ->label('Testimonios')
+                        ->visible(fn (Get $get): bool => $get('fuente') === FuenteTestimonios::Manual->value)
                         ->schema([
                             Textarea::make('cita')->required()->rows(3)->maxLength(500),
                             TextInput::make('nombre')->required()->maxLength(255),

@@ -4,8 +4,13 @@ declare(strict_types=1);
 
 namespace App\Http\Resources\Publico;
 
+use App\Enums\EstadoResenaValor;
+use App\Enums\FuenteTestimonios;
+use App\Enums\TipoBloque;
+use App\Models\Cliente;
 use App\Models\Negocio;
 use App\Models\Pagina;
+use App\Models\Resena;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Storage;
@@ -55,12 +60,44 @@ final class RecursoPaginaPublica extends JsonResource
     private function traducirBloques(array $bloquesCrudos): array
     {
         return array_values(array_map(
-            fn (array $bloque): array => [
-                'tipo' => $bloque['type'] ?? '',
-                'datos' => $this->traducirRutasDeArchivo($bloque['data'] ?? []),
-            ],
+            function (array $bloque): array {
+                $tipo = $bloque['type'] ?? '';
+                $datos = $this->traducirRutasDeArchivo($bloque['data'] ?? []);
+
+                if ($tipo === TipoBloque::Testimonios->value && ($datos['fuente'] ?? null) === FuenteTestimonios::Sistema->value) {
+                    $datos['testimonios'] = $this->testimoniosDelSistema();
+                }
+
+                return ['tipo' => $tipo, 'datos' => $datos];
+            },
             $bloquesCrudos,
         ));
+    }
+
+    /**
+     * Resuelve el bloque `testimonios` con fuente 'sistema' (App\Enums\
+     * FuenteTestimonios) a partir de las reseñas reales y publicadas del
+     * negocio: misma forma que un testimonio manual (cita, nombre, foto,
+     * estrellas), así React no distingue el origen.
+     *
+     * @return list<array{cita: string, nombre: string, foto: null, estrellas: int}>
+     */
+    private function testimoniosDelSistema(): array
+    {
+        $resenas = Resena::query()
+            ->where('negocio_id', $this->negocio->id)
+            ->where('estado', EstadoResenaValor::Publicada)
+            ->orderByDesc('calificacion')
+            ->orderByDesc('created_at')
+            ->limit(6)
+            ->get();
+
+        return array_values($resenas->map(fn (Resena $resena): array => [
+            'cita' => $resena->comentario,
+            'nombre' => Cliente::findOrFail($resena->cliente_id)->nombre,
+            'foto' => null,
+            'estrellas' => $resena->calificacion,
+        ])->all());
     }
 
     /**
