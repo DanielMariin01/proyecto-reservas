@@ -15,7 +15,7 @@ export default function BloqueUbicacion({ datos, pagina }: PropiedadesBloque): R
     return (
         <section style={obtenerEstiloColor(datos)}>
             <div className="mx-auto max-w-5xl px-4 py-10 sm:py-16">
-                <h2 className="mb-6 text-2xl font-bold sm:text-3xl">Ubicación</h2>
+                <h2 className="mb-6 text-3xl font-bold sm:text-4xl">Ubicación</h2>
 
                 <div className="grid gap-4 sm:grid-cols-2">
                     <iframe

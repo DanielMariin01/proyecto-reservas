@@ -64,7 +64,7 @@ export default function BloqueBannerOferta({ datos }: PropiedadesBloque): ReactE
                             {etiqueta}
                         </p>
                     )}
-                    {titulo && <h2 className="text-2xl font-extrabold sm:text-3xl">{titulo}</h2>}
+                    {titulo && <h2 className="text-3xl font-extrabold sm:text-4xl">{titulo}</h2>}
                     {descripcion && <p className="mt-2 max-w-[450px] text-sm opacity-80 sm:text-base">{descripcion}</p>}
 
                     {textoBoton && (

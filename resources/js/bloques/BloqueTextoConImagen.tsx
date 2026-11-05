@@ -30,7 +30,7 @@ export default function BloqueTextoConImagen({ datos }: PropiedadesBloque): Reac
 
                 <div className="md:w-1/2">
                     {etiqueta && <p className="mb-3 text-xs font-semibold uppercase tracking-widest opacity-80">{etiqueta}</p>}
-                    {titulo && <h2 className="mb-4 text-2xl font-bold sm:text-3xl">{titulo}</h2>}
+                    {titulo && <h2 className="mb-4 text-3xl font-bold sm:text-4xl">{titulo}</h2>}
 
                     {motivos.length > 0 ? (
                         <div className="grid grid-cols-2 gap-6">

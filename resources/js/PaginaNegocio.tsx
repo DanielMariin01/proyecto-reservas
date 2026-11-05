@@ -53,7 +53,7 @@ export default function PaginaNegocio({ slug }: PropiedadesPaginaNegocio): React
     } as CSSProperties;
 
     return (
-        <main className="min-h-screen bg-blanco" style={estiloMarca}>
+        <main className="fuente-publica min-h-screen bg-blanco" style={estiloMarca}>
             {pagina.esVistaPrevia && (
                 <div className="bg-acento p-2 text-center text-sm font-semibold text-blanco">
                     Vista previa — esto todavía no está publicado

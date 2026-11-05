@@ -13,6 +13,17 @@ body {
     color: var(--color-tinta);
 }
 
+/*
+ * Excepción puntual a Asap (skill diseno-reservas, sección 1): solo la
+ * página pública usa la pila de fuentes del sistema. Se aplica en el
+ * <main> de PaginaNegocio.tsx, que envuelve todos los bloques y el flujo
+ * de reserva. Los paneles de Filament (admin/app) no usan esta clase y
+ * siguen con Asap vía su propio ->font() en los Panel providers.
+ */
+.fuente-publica {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
 /* Scrollbar del flujo de reserva en los tokens del proyecto (sección 1 de la skill diseno-reservas), no un gris suelto del navegador. */
 .scroll-primario {
     scrollbar-color: var(--color-primario) var(--color-gris-claro);

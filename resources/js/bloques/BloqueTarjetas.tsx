@@ -31,7 +31,7 @@ export default function BloqueTarjetas({ datos }: PropiedadesBloque): ReactEleme
     return (
         <section style={obtenerEstiloColor(datos)}>
             <div className="mx-auto max-w-5xl px-4 py-10 sm:py-16">
-                <div className={`grid grid-cols-1 gap-4 ${CLASES_COLUMNAS[columnas] ?? CLASES_COLUMNAS[2]}`}>
+                <div className={`grid grid-cols-1 gap-x-12 gap-y-10 ${CLASES_COLUMNAS[columnas] ?? CLASES_COLUMNAS[2]}`}>
                     {tarjetas.map((tarjeta, indice) => {
                         const imagen = typeof tarjeta.imagen === 'string' ? tarjeta.imagen : null;
                         const titulo = typeof tarjeta.titulo === 'string' ? tarjeta.titulo : '';
@@ -39,8 +39,8 @@ export default function BloqueTarjetas({ datos }: PropiedadesBloque): ReactEleme
 
                         return (
                             <div key={indice} className="text-center">
-                                {imagen && <img src={imagen} alt="" className="mb-3 aspect-[4/3] w-full rounded-tarjeta object-cover" />}
-                                {titulo && <p className="font-semibold">{titulo}</p>}
+                                {imagen && <img src={imagen} alt="" className="mb-3 aspect-square w-full rounded-boton object-cover" />}
+                                {titulo && <p className="text-lg font-bold">{titulo}</p>}
                                 {descripcion && <p className="mt-1 text-sm opacity-80">{descripcion}</p>}
                             </div>
                         );

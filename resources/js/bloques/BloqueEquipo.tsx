@@ -16,7 +16,7 @@ export default function BloqueEquipo({ datos, slug, onReservar }: PropiedadesBlo
     return (
         <section style={obtenerEstiloColor(datos)}>
             <div className="mx-auto max-w-5xl px-4 py-10 sm:py-16">
-                <h2 className="mb-6 text-2xl font-bold sm:text-3xl">Nuestro equipo</h2>
+                <h2 className="mb-6 text-3xl font-bold sm:text-4xl">Nuestro equipo</h2>
 
                 {profesionalesQuery.isLoading && (
                     <div className="grid gap-4 sm:grid-cols-3" aria-label="Cargando equipo">

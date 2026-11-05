@@ -51,10 +51,10 @@ export default function BloquePortada({ datos, pagina, onReservar }: Propiedades
                             {pagina.tipoEtiqueta}
                         </span>
 
-                        <h1 className="mt-4 max-w-3xl text-5xl font-extrabold uppercase leading-[1.05] sm:text-6xl md:text-7xl">{titulo}</h1>
+                        <h1 className="mt-4 max-w-3xl text-7xl font-extrabold uppercase leading-[1.05] sm:text-8xl md:text-9xl">{titulo}</h1>
 
                         {(pagina.direccion || horarioHoy) && (
-                            <div className="mt-5 flex flex-col gap-2 text-base opacity-90 sm:flex-row sm:items-center sm:gap-6 sm:text-lg">
+                            <div className="mt-5 flex flex-col gap-2 text-lg opacity-90 sm:flex-row sm:items-center sm:gap-6 sm:text-xl">
                                 {pagina.direccion && (
                                     <span className="flex items-center gap-2">
                                         <MapPin size={20} strokeWidth={1.75} />
