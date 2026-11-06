@@ -1,6 +1,7 @@
-import { CalendarPlus, CheckCircle2, MapPin, MessageCircle } from 'lucide-react';
+import { Banknote, Building2, Calendar, CalendarPlus, CheckCircle2, MapPin, MessageCircle, Scissors, User } from 'lucide-react';
 import type { ReactElement } from 'react';
 import Boton from '@/componentes/Boton';
+import LineaDetalle from '@/componentes/LineaDetalle';
 import Tarjeta from '@/componentes/Tarjeta';
 import type { CitaCreada } from '@/tipos';
 
@@ -52,14 +53,13 @@ export default function PantallaExito({ cita, onCerrar }: PropiedadesPantallaExi
             </div>
             <h2 className="text-xl font-semibold text-tinta">¡Tu cita quedó reservada!</h2>
 
-            <div className="mt-4 rounded-tarjeta bg-fondo-panel p-4 text-left">
-                <p className="font-semibold text-tinta">{cita.servicio}</p>
-                <p className="text-sm text-texto-suave">con {cita.profesional}</p>
-                <p className="mt-2 text-sm text-tinta">
-                    {cita.fechaVisible}, {cita.horaVisible}
-                </p>
-                {cita.direccion && <p className="text-sm text-texto-suave">{cita.direccion}</p>}
-                <p className="mt-2 text-lg font-bold text-tinta">${cita.precio.toLocaleString('es-CO')}</p>
+            <div className="mt-4 space-y-2 rounded-tarjeta bg-fondo-panel p-4 text-left">
+                <p className="font-semibold text-tinta">{cita.nombreNegocio}</p>
+                <LineaDetalle icono={Scissors} texto={cita.servicio} />
+                <LineaDetalle icono={User} texto={cita.profesional} />
+                <LineaDetalle icono={Calendar} texto={`${cita.fechaVisible}, ${cita.horaVisible}`} />
+                {cita.direccion && <LineaDetalle icono={Building2} texto={cita.direccion} />}
+                <LineaDetalle icono={Banknote} texto={`$${cita.precio.toLocaleString('es-CO')}`} />
             </div>
 
             <div className="mt-4 flex flex-col gap-2">

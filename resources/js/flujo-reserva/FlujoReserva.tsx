@@ -197,6 +197,7 @@ export default function FlujoReserva({ slug, direccion, servicioInicial, profesi
             {paso === 'confirmar' && servicio && horaSeleccionada && datosDelCliente && (
                 <ConfirmarResumen
                     nombreProfesional={nombrePorId(horaSeleccionada.profesionalId)}
+                    fechaVisible={horaSeleccionada.fechaVisible}
                     horaVisible={horaSeleccionada.horaVisible}
                     nombreServicio={servicio.nombre}
                     precio={servicio.precio}

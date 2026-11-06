@@ -1,4 +1,4 @@
-import { Banknote, Clock, Scissors, User } from 'lucide-react';
+import { Banknote, Calendar, Clock, Scissors, User } from 'lucide-react';
 import type { ReactElement } from 'react';
 import Boton from '@/componentes/Boton';
 import LineaDetalle from '@/componentes/LineaDetalle';
@@ -6,6 +6,7 @@ import Tarjeta from '@/componentes/Tarjeta';
 
 interface PropiedadesConfirmarResumen {
     nombreProfesional: string;
+    fechaVisible: string;
     horaVisible: string;
     nombreServicio: string;
     precio: number;
@@ -17,6 +18,7 @@ interface PropiedadesConfirmarResumen {
 
 export default function ConfirmarResumen({
     nombreProfesional,
+    fechaVisible,
     horaVisible,
     nombreServicio,
     precio,
@@ -31,6 +33,7 @@ export default function ConfirmarResumen({
 
             <div className="mt-4 space-y-3">
                 <LineaDetalle icono={User} texto={nombreProfesional} />
+                <LineaDetalle icono={Calendar} texto={fechaVisible} />
                 <LineaDetalle icono={Clock} texto={horaVisible} />
                 <LineaDetalle icono={Scissors} texto={nombreServicio} />
                 <LineaDetalle icono={Banknote} texto={`$${precio.toLocaleString('es-CO')}`} />
