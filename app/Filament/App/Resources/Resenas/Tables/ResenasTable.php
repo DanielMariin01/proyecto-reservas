@@ -8,11 +8,11 @@ use App\Enums\EstadoResenaValor;
 use App\Enums\Permiso;
 use App\Filament\App\Resources\Resenas\AccionesDeResena;
 use App\Models\Resena;
-use Filament\Facades\Filament;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth;
 
 class ResenasTable
 {
@@ -58,7 +58,7 @@ class ResenasTable
      */
     private static function aplicarAlcanceDelUsuario(Builder $query): Builder
     {
-        $usuario = Filament::auth()->user();
+        $usuario = Auth::guard('web')->user();
 
         if ($usuario !== null && ($usuario->es_super_admin || $usuario->can(Permiso::GestionarResenas->value))) {
             return $query;

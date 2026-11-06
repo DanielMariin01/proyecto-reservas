@@ -9,10 +9,13 @@ interface Enlace {
 }
 
 /**
- * El ícono de iniciar sesión solo enlaza a /ingresar, sin verificar si
- * ya hay una sesión activa (simple a propósito). Los enlaces de
+ * El ícono de usuario lleva a /mi-cuenta (login de clientes con Google,
+ * T11), sin verificar si ya hay una sesión activa (simple a propósito).
+ * El login de dueños/profesionales (/ingresar) vive aparte, en un enlace
+ * discreto del pie de página (BloquePieDePagina) — este ícono del
+ * encabezado es para los clientes, no para el negocio. Los enlaces de
  * navegación se ocultan en celular (sin menú hamburguesa en este
- * alcance) — logo e ícono de iniciar sesión se quedan siempre visibles.
+ * alcance) — logo e ícono se quedan siempre visibles.
  */
 export default function BloqueEncabezado({ datos, pagina }: PropiedadesBloque): ReactElement {
     const enlaces = Array.isArray(datos.enlaces) ? (datos.enlaces as Enlace[]) : [];
@@ -41,7 +44,7 @@ export default function BloqueEncabezado({ datos, pagina }: PropiedadesBloque): 
                     </nav>
                 )}
 
-                <a href="/ingresar" aria-label="Iniciar sesión" className="flex items-center">
+                <a href="/mi-cuenta" aria-label="Mi cuenta" className="flex items-center">
                     <UserCircle size={24} strokeWidth={1.75} />
                 </a>
             </div>

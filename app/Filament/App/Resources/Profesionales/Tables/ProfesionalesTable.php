@@ -9,13 +9,13 @@ use App\Models\Profesional;
 use App\Models\Usuario;
 use Filament\Actions\Action;
 use Filament\Actions\EditAction;
-use Filament\Facades\Filament;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Auth;
 
 class ProfesionalesTable
 {
@@ -49,7 +49,7 @@ class ProfesionalesTable
             ])
             ->action(function (Profesional $record, array $data): void {
                 /** @var Usuario $invitadoPor */
-                $invitadoPor = Filament::auth()->user();
+                $invitadoPor = Auth::guard('web')->user();
 
                 app(VincularUsuarioAProfesional::class)->ejecutar(
                     $record,

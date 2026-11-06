@@ -8,7 +8,6 @@ use App\Enums\Permiso;
 use App\Models\Negocio;
 use App\Models\Profesional;
 use App\Models\Servicio;
-use Filament\Facades\Filament;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -17,6 +16,7 @@ use Filament\Forms\Components\TimePicker;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use Illuminate\Support\Facades\Auth;
 
 class CitaForm
 {
@@ -69,7 +69,7 @@ class CitaForm
 
     private static function puedeForzar(): bool
     {
-        $usuario = Filament::auth()->user();
+        $usuario = Auth::guard('web')->user();
 
         return $usuario !== null && ($usuario->es_super_admin || $usuario->can(Permiso::GestionarCitasTodas->value));
     }

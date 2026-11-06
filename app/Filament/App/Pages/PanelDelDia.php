@@ -13,10 +13,10 @@ use App\Models\Pago;
 use App\Models\Profesional;
 use BackedEnum;
 use Carbon\CarbonImmutable;
-use Filament\Facades\Filament;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use UnitEnum;
 
 /**
@@ -39,7 +39,7 @@ final class PanelDelDia extends Page
 
     public static function canAccess(): bool
     {
-        $usuario = Filament::auth()->user();
+        $usuario = Auth::guard('web')->user();
 
         return $usuario !== null && ($usuario->es_super_admin || $usuario->can(Permiso::GestionarCitasTodas->value));
     }

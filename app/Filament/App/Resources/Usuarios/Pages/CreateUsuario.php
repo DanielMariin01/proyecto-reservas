@@ -10,9 +10,9 @@ use App\Enums\RolNegocio;
 use App\Filament\App\Resources\Usuarios\UsuarioResource;
 use App\Models\Negocio;
 use App\Models\Usuario;
-use Filament\Facades\Filament;
 use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 
 class CreateUsuario extends CreateRecord
 {
@@ -21,7 +21,7 @@ class CreateUsuario extends CreateRecord
     protected function handleRecordCreation(array $data): Model
     {
         /** @var Usuario $invitadoPor */
-        $invitadoPor = Filament::auth()->user();
+        $invitadoPor = Auth::guard('web')->user();
 
         return app(InvitarUsuarioANegocio::class)->ejecutar(new DatosInvitacionUsuario(
             negocio: Negocio::actual(),

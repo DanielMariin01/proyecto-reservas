@@ -94,6 +94,17 @@ export interface CitaPorToken {
     resena: ResenaDeCita | null;
 }
 
+export interface CuentaCliente {
+    nombre: string;
+    correo: string;
+}
+
+export interface CitaDeCuenta extends CitaPorToken {
+    id: number;
+    negocioSlug: string;
+    esProxima: boolean;
+}
+
 export interface DatosDelCliente {
     nombre: string;
     celular: string;

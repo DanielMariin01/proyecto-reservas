@@ -9,9 +9,9 @@ use App\DatosTransferencia\DatosNuevoProfesional;
 use App\Filament\App\Resources\Profesionales\ProfesionalResource;
 use App\Models\Negocio;
 use App\Models\Usuario;
-use Filament\Facades\Filament;
 use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 
 class CreateProfesional extends CreateRecord
 {
@@ -20,7 +20,7 @@ class CreateProfesional extends CreateRecord
     protected function handleRecordCreation(array $data): Model
     {
         /** @var Usuario $creadoPor */
-        $creadoPor = Filament::auth()->user();
+        $creadoPor = Auth::guard('web')->user();
 
         return app(CrearProfesional::class)->ejecutar(
             new DatosNuevoProfesional(

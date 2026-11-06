@@ -8,6 +8,7 @@ use App\Models\Concerns\PerteneceANegocio;
 use Database\Factories\ClienteFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 final class Cliente extends Model
@@ -24,6 +25,7 @@ final class Cliente extends Model
      */
     protected $fillable = [
         'negocio_id',
+        'cuenta_cliente_id',
         'nombre',
         'celular',
         'correo',
@@ -56,5 +58,13 @@ final class Cliente extends Model
     public function resenas(): HasMany
     {
         return $this->hasMany(Resena::class);
+    }
+
+    /**
+     * @return BelongsTo<CuentaCliente, $this>
+     */
+    public function cuentaCliente(): BelongsTo
+    {
+        return $this->belongsTo(CuentaCliente::class);
     }
 }

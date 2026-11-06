@@ -18,7 +18,6 @@ use App\Models\Negocio;
 use App\Models\Pago;
 use Carbon\CarbonImmutable;
 use Filament\Actions\Action;
-use Filament\Facades\Filament;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -28,6 +27,7 @@ use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Support\Exceptions\Halt;
 use Filament\Support\Icons\Heroicon;
+use Illuminate\Support\Facades\Auth;
 use Throwable;
 
 /**
@@ -53,7 +53,7 @@ final class AccionesDeCita
             ->color('success')
             ->visible(fn (Cita $record): bool => self::puedeGestionar($record)
                 && $record->obtenerEstado()->puedeTransicionarA(EstadoCitaValor::Completada)
-                && Filament::auth()->user()?->can('create', [Pago::class, $record]))
+                && Auth::guard('web')->user()?->can('create', [Pago::class, $record]))
             ->schema(fn (Cita $record): array => [
                 Select::make('metodo')
                     ->label('Método de pago')
@@ -73,7 +73,7 @@ final class AccionesDeCita
             ])
             ->action(function (Cita $record, array $data): void {
                 self::ejecutarOFallar(function () use ($record, $data): void {
-                    $usuario = Filament::auth()->user();
+                    $usuario = Auth::guard('web')->user();
                     app(CambiarEstadoCita::class)->ejecutar($record, EstadoCitaValor::Completada, $usuario);
                     app(RegistrarPagoDeCita::class)->ejecutar(
                         cita: $record,
@@ -94,7 +94,7 @@ final class AccionesDeCita
             ->icon(Heroicon::OutlinedXCircle)
             ->requiresConfirmation()
             ->visible(fn (Cita $record): bool => $record->pagoActivo() !== null
-                && Filament::auth()->user()?->can('anular', $record->pagoActivo()))
+                && Auth::guard('web')->user()?->can('anular', $record->pagoActivo()))
             ->schema([
                 Textarea::make('motivo')->label('Motivo')->required(),
             ])
@@ -102,7 +102,7 @@ final class AccionesDeCita
                 self::ejecutarOFallar(function () use ($record, $data): void {
                     $pago = $record->pagoActivo();
                     abort_if($pago === null, 404);
-                    app(AnularPago::class)->ejecutar($pago, $data['motivo'], Filament::auth()->user());
+                    app(AnularPago::class)->ejecutar($pago, $data['motivo'], Auth::guard('web')->user());
                 }, 'Pago anulado');
             });
     }
@@ -122,7 +122,7 @@ final class AccionesDeCita
             ])
             ->action(function (Cita $record, array $data): void {
                 self::ejecutarOFallar(function () use ($record, $data): void {
-                    app(CambiarEstadoCita::class)->ejecutar($record, EstadoCitaValor::from($data['estado']), Filament::auth()->user());
+                    app(CambiarEstadoCita::class)->ejecutar($record, EstadoCitaValor::from($data['estado']), Auth::guard('web')->user());
                 }, 'Estado actualizado');
             });
     }
@@ -140,7 +140,7 @@ final class AccionesDeCita
             ])
             ->action(function (Cita $record, array $data): void {
                 self::ejecutarOFallar(function () use ($record, $data): void {
-                    app(CancelarCita::class)->ejecutar($record, $data['motivo'], Filament::auth()->user());
+                    app(CancelarCita::class)->ejecutar($record, $data['motivo'], Auth::guard('web')->user());
                 }, 'Cita cancelada');
             });
     }
@@ -173,7 +173,7 @@ final class AccionesDeCita
                     app(ReprogramarCita::class)->ejecutar(new DatosReprogramacion(
                         cita: $record,
                         nuevoInicio: $nuevoInicio,
-                        reprogramadaPor: Filament::auth()->user(),
+                        reprogramadaPor: Auth::guard('web')->user(),
                         forzar: (bool) ($data['forzar'] ?? false),
                     ));
                 }, 'Cita reprogramada');
@@ -205,14 +205,14 @@ final class AccionesDeCita
 
     private static function puedeGestionar(Cita $cita): bool
     {
-        $usuario = Filament::auth()->user();
+        $usuario = Auth::guard('web')->user();
 
         return $usuario !== null && $usuario->can('update', $cita);
     }
 
     private static function puedeForzar(): bool
     {
-        $usuario = Filament::auth()->user();
+        $usuario = Auth::guard('web')->user();
 
         return $usuario !== null && ($usuario->es_super_admin || $usuario->can(Permiso::GestionarCitasTodas->value));
     }

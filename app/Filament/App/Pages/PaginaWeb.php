@@ -10,10 +10,10 @@ use App\Enums\TipoBloque;
 use App\Models\Negocio;
 use App\Models\Pagina;
 use BackedEnum;
-use Filament\Facades\Filament;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithFileUploads;
@@ -79,7 +79,7 @@ final class PaginaWeb extends Page
 
     public static function canAccess(): bool
     {
-        $usuario = Filament::auth()->user();
+        $usuario = Auth::guard('web')->user();
 
         if ($usuario === null) {
             return false;
@@ -136,7 +136,7 @@ final class PaginaWeb extends Page
 
         $pagina->update(['bloques' => $bloques]);
 
-        app(PublicarPagina::class)->ejecutar($pagina->refresh(), Filament::auth()->user());
+        app(PublicarPagina::class)->ejecutar($pagina->refresh(), Auth::guard('web')->user());
 
         $this->bloques = $bloques;
         $this->fotosNuevasPorIndice = [];

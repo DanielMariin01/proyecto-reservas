@@ -2,6 +2,10 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Cliente\AreaClienteController;
+use App\Http\Controllers\Cliente\CitasClienteController;
+use App\Http\Controllers\Cliente\GoogleAuthController;
+use App\Http\Controllers\Cliente\SesionClienteController;
 use App\Http\Controllers\ElegirNegocioController;
 use App\Http\Controllers\EstadoController;
 use App\Http\Controllers\GestionarCitaVistaController;
@@ -42,6 +46,25 @@ Route::middleware('auth')->group(function (): void {
 // reprogramar una cita. Va antes del comodín de un solo segmento de abajo.
 Route::get('/{negocio:slug}/reservas/{token}', [GestionarCitaVistaController::class, 'mostrar'])
     ->name('gestionar-cita');
+
+// T11: panel de cuenta del cliente. Es global (cruza negocios), por eso no
+// vive bajo ningún {negocio:slug}; también va antes del comodín de abajo.
+Route::get('/mi-cuenta', [AreaClienteController::class, 'mostrar'])->name('mi-cuenta');
+
+Route::get('/mi-cuenta/google/redirect', [GoogleAuthController::class, 'redirigir'])->name('mi-cuenta.google.redirect');
+Route::get('/mi-cuenta/google/callback', [GoogleAuthController::class, 'callback'])->name('mi-cuenta.google.callback');
+
+Route::prefix('mi-cuenta/api')->group(function (): void {
+    Route::get('/yo', [SesionClienteController::class, 'mostrar']);
+
+    Route::middleware('auth:cliente')->group(function (): void {
+        Route::post('/salir', [SesionClienteController::class, 'salir']);
+        Route::get('/citas', [CitasClienteController::class, 'index']);
+        Route::post('/citas/{cita}/cancelar', [CitasClienteController::class, 'cancelar']);
+        Route::post('/citas/{cita}/reprogramar', [CitasClienteController::class, 'reprogramar']);
+        Route::post('/citas/{cita}/resena', [CitasClienteController::class, 'resena']);
+    });
+});
 
 // RF-DOM-01: la página pública de cada negocio. Debe quedar al final del
 // archivo: es un comodín de un solo segmento que, si se registrara antes,
