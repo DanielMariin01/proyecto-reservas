@@ -9,9 +9,9 @@ use App\DatosTransferencia\DatosNuevoNegocio;
 use App\Enums\TipoNegocio;
 use App\Filament\Resources\Negocios\NegocioResource;
 use App\Models\Usuario;
-use Filament\Facades\Filament;
 use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 
 class CreateNegocio extends CreateRecord
 {
@@ -20,7 +20,7 @@ class CreateNegocio extends CreateRecord
     protected function handleRecordCreation(array $data): Model
     {
         /** @var Usuario $creadoPor */
-        $creadoPor = Filament::auth()->user();
+        $creadoPor = Auth::guard('web')->user();
 
         return app(CrearNegocio::class)->ejecutar(
             new DatosNuevoNegocio(

@@ -8,11 +8,11 @@ use App\Actions\RestablecerContrasenaUsuario;
 use App\Models\Usuario;
 use Filament\Actions\Action;
 use Filament\Actions\EditAction;
-use Filament\Facades\Filament;
 use Filament\Notifications\Notification;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Auth;
 
 class UsuariosTable
 {
@@ -41,7 +41,7 @@ class UsuariosTable
             ->modalDescription('Se le enviará un correo para que elija una nueva contraseña.')
             ->action(function (Usuario $record): void {
                 /** @var Usuario $superAdmin */
-                $superAdmin = Filament::auth()->user();
+                $superAdmin = Auth::guard('web')->user();
 
                 app(RestablecerContrasenaUsuario::class)->ejecutar($record, $superAdmin);
 

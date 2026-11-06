@@ -10,13 +10,13 @@ use App\Models\Negocio;
 use App\Models\Resena;
 use App\Models\Usuario;
 use Filament\Actions\Action;
-use Filament\Facades\Filament;
 use Filament\Notifications\Notification;
 use Filament\Support\Exceptions\Halt;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Auth;
 use Throwable;
 
 class ResenasTable
@@ -83,7 +83,7 @@ class ResenasTable
 
     private static function usuarioActual(): Usuario
     {
-        $usuario = Filament::auth()->user();
+        $usuario = Auth::guard('web')->user();
         abort_if($usuario === null, 403);
 
         return $usuario;

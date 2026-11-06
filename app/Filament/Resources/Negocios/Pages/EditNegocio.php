@@ -11,10 +11,10 @@ use App\Models\Pagina;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\ViewAction;
-use Filament\Facades\Filament;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
 use Filament\Support\Icons\Heroicon;
+use Illuminate\Support\Facades\Auth;
 
 class EditNegocio extends EditRecord
 {
@@ -61,7 +61,7 @@ class EditNegocio extends EditRecord
                     return;
                 }
 
-                app(PublicarPagina::class)->ejecutar($pagina, Filament::auth()->user());
+                app(PublicarPagina::class)->ejecutar($pagina, Auth::guard('web')->user());
                 Notification::make()->success()->title('Página publicada')->send();
             });
     }

@@ -16,11 +16,11 @@ use App\Models\Profesional;
 use App\Models\Usuario;
 use BackedEnum;
 use Carbon\CarbonImmutable;
-use Filament\Facades\Filament;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 
 /**
  * CU-04: el profesional ve solo sus citas de hoy, ordenadas, y cambia de
@@ -107,7 +107,7 @@ final class MisCitasHoy extends Page
         }
 
         try {
-            $usuario = Filament::auth()->user();
+            $usuario = Auth::guard('web')->user();
             app(CambiarEstadoCita::class)->ejecutar($cita, EstadoCitaValor::Completada, $usuario);
             app(RegistrarPagoDeCita::class)->ejecutar(
                 cita: $cita,
@@ -153,7 +153,7 @@ final class MisCitasHoy extends Page
         $cita = Cita::query()->where('profesional_id', $profesional->id)->findOrFail($citaId);
 
         try {
-            app(CambiarEstadoCita::class)->ejecutar($cita, $destino, Filament::auth()->user());
+            app(CambiarEstadoCita::class)->ejecutar($cita, $destino, Auth::guard('web')->user());
             Notification::make()->success()->title('Cita actualizada')->send();
         } catch (TransicionDeEstadoInvalidaException $excepcion) {
             Notification::make()->danger()->title($excepcion->getMessage())->send();
@@ -163,7 +163,7 @@ final class MisCitasHoy extends Page
     private static function profesionalActual(): ?Profesional
     {
         /** @var Usuario|null $usuario */
-        $usuario = Filament::auth()->user();
+        $usuario = Auth::guard('web')->user();
 
         return $usuario?->profesional;
     }

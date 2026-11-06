@@ -10,11 +10,11 @@ use App\Enums\EstadoResenaValor;
 use App\Models\Resena;
 use App\Models\Usuario;
 use Filament\Actions\Action;
-use Filament\Facades\Filament;
 use Filament\Forms\Components\Textarea;
 use Filament\Notifications\Notification;
 use Filament\Support\Exceptions\Halt;
 use Filament\Support\Icons\Heroicon;
+use Illuminate\Support\Facades\Auth;
 use Throwable;
 
 /**
@@ -76,7 +76,7 @@ final class AccionesDeResena
 
     private static function puedeGestionar(Resena $resena): bool
     {
-        $usuario = Filament::auth()->user();
+        $usuario = Auth::guard('web')->user();
 
         return $usuario !== null && $usuario->can('update', $resena);
     }
@@ -88,7 +88,7 @@ final class AccionesDeResena
      */
     private static function usuarioActual(): Usuario
     {
-        $usuario = Filament::auth()->user();
+        $usuario = Auth::guard('web')->user();
         abort_if($usuario === null, 403);
 
         return $usuario;

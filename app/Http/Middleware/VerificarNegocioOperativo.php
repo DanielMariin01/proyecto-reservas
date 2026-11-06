@@ -9,6 +9,7 @@ use App\Models\Usuario;
 use Closure;
 use Filament\Facades\Filament;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
 final class VerificarNegocioOperativo
@@ -26,7 +27,7 @@ final class VerificarNegocioOperativo
         }
 
         /** @var Usuario|null $usuario */
-        $usuario = Filament::auth()->user();
+        $usuario = Auth::guard('web')->user();
 
         if ($usuario?->estaSuplantandoA($negocio)) {
             return $next($request);

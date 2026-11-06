@@ -25,6 +25,7 @@ use Filament\Support\Enums\Width;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
 
 class NegociosTable
 {
@@ -65,7 +66,7 @@ class NegociosTable
             ->icon('heroicon-o-arrow-right-end-on-rectangle')
             ->action(function (Negocio $negocio) {
                 /** @var Usuario $superAdmin */
-                $superAdmin = Filament::auth()->user();
+                $superAdmin = Auth::guard('web')->user();
 
                 app(SuplantarNegocio::class)->ejecutar($negocio, $superAdmin);
 
@@ -99,7 +100,7 @@ class NegociosTable
             ])
             ->action(function (Negocio $negocio, array $data): void {
                 /** @var Usuario $usuario */
-                $usuario = Filament::auth()->user();
+                $usuario = Auth::guard('web')->user();
 
                 app(RegistrarPagoSuscripcion::class)->ejecutar(new DatosPagoSuscripcion(
                     negocio: $negocio,
@@ -136,7 +137,7 @@ class NegociosTable
             ])
             ->action(function (Negocio $negocio, array $data): void {
                 /** @var Usuario $usuario */
-                $usuario = Filament::auth()->user();
+                $usuario = Auth::guard('web')->user();
 
                 app(CambiarEstadoNegocio::class)->ejecutar(new DatosCambioEstadoNegocio(
                     negocio: $negocio,

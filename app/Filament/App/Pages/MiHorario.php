@@ -15,7 +15,6 @@ use App\Models\Usuario;
 use BackedEnum;
 use Carbon\CarbonImmutable;
 use Filament\Actions\Action;
-use Filament\Facades\Filament;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\TimePicker;
@@ -24,6 +23,7 @@ use Filament\Pages\Page;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 
 /**
  * RF-DIS-03: bloqueos rápidos desde el celular del profesional
@@ -137,7 +137,7 @@ final class MiHorario extends Page
     private static function profesionalActual(): ?Profesional
     {
         /** @var Usuario|null $usuario */
-        $usuario = Filament::auth()->user();
+        $usuario = Auth::guard('web')->user();
 
         return $usuario?->profesional;
     }
