@@ -57,6 +57,15 @@ export default function BloquePieDePagina({ datos, pagina }: PropiedadesBloque):
                 <p className="mt-10 text-center text-xs text-gris-claro">
                     © {anio} {pagina.nombreNegocio}
                 </p>
+
+                {/* Enlace discreto para el dueño/profesional, no para el cliente final
+                    (que entra por /mi-cuenta desde el ícono del encabezado): mismo tamaño
+                    y color apagado que la línea de copyright, sin competir con ella. */}
+                <p className="mt-2 text-center text-xs text-gris-claro">
+                    <a href="/ingresar" className="underline-offset-2 hover:underline">
+                        ¿Tienes un negocio? Inicia sesión aquí
+                    </a>
+                </p>
             </div>
         </footer>
     );

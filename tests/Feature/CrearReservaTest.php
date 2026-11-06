@@ -11,6 +11,7 @@ use App\Events\CitaCreada;
 use App\Exceptions\HoraInvalidaException;
 use App\Models\Cita;
 use App\Models\Cliente;
+use App\Models\CuentaCliente;
 use App\Models\HorarioTrabajo;
 use App\Models\Negocio;
 use App\Models\Profesional;
@@ -87,6 +88,43 @@ test('reutiliza el cliente existente con el mismo celular en vez de duplicarlo',
 
     expect(Cliente::query()->where('negocio_id', $negocio->id)->where('celular', '3001234567')->count())->toBe(1);
     expect($cita->cliente_id)->toBe($clienteExistente->id);
+});
+
+test('T11: si el correo ya tiene una cuenta de cliente, el cliente nuevo queda enlazado de una vez', function (): void {
+    ['negocio' => $negocio, 'profesional' => $profesional, 'servicio' => $servicio, 'fecha' => $fecha] = negocioConHorarioMartes();
+    $cuenta = CuentaCliente::factory()->create(['correo' => 'ana@example.com']);
+
+    $cita = app(CrearReserva::class)->ejecutar(new DatosReserva(
+        negocio: $negocio,
+        servicio: $servicio,
+        nombreCliente: 'Ana',
+        celularCliente: '3001234567',
+        correoCliente: 'ana@example.com',
+        inicio: $fecha->copy()->setTime(10, 0)->utc(),
+        origen: OrigenCita::Web,
+        profesional: $profesional,
+    ));
+
+    $cliente = Cliente::findOrFail($cita->cliente_id);
+    expect($cliente->cuenta_cliente_id)->toBe($cuenta->id);
+});
+
+test('T11: sin una cuenta de cliente para ese correo, el cliente nuevo queda sin enlazar', function (): void {
+    ['negocio' => $negocio, 'profesional' => $profesional, 'servicio' => $servicio, 'fecha' => $fecha] = negocioConHorarioMartes();
+
+    $cita = app(CrearReserva::class)->ejecutar(new DatosReserva(
+        negocio: $negocio,
+        servicio: $servicio,
+        nombreCliente: 'Ana',
+        celularCliente: '3001234567',
+        correoCliente: 'ana@example.com',
+        inicio: $fecha->copy()->setTime(10, 0)->utc(),
+        origen: OrigenCita::Web,
+        profesional: $profesional,
+    ));
+
+    $cliente = Cliente::findOrFail($cita->cliente_id);
+    expect($cliente->cuenta_cliente_id)->toBeNull();
 });
 
 test('con cualquier profesional asigna al que tenga menos citas ese dia', function (): void {

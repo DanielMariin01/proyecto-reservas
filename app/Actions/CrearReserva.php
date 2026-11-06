@@ -13,6 +13,7 @@ use App\Exceptions\HoraInvalidaException;
 use App\Exceptions\HoraYaTomadaException;
 use App\Models\Cita;
 use App\Models\Cliente;
+use App\Models\CuentaCliente;
 use App\Models\Profesional;
 use App\Services\ServicioDisponibilidad;
 use App\Services\ServicioReservas;
@@ -56,15 +57,36 @@ final class CrearReserva
 
     private function resolverCliente(DatosReserva $datos): Cliente
     {
-        return Cliente::query()
+        $clienteExistente = Cliente::query()
             ->where('negocio_id', $datos->negocio->id)
             ->where('celular', $datos->celularCliente)
-            ->first() ?? Cliente::create([
-                'negocio_id' => $datos->negocio->id,
-                'nombre' => $datos->nombreCliente,
-                'celular' => $datos->celularCliente,
-                'correo' => $datos->correoCliente,
-            ]);
+            ->first();
+
+        if ($clienteExistente !== null) {
+            return $clienteExistente;
+        }
+
+        return Cliente::create([
+            'negocio_id' => $datos->negocio->id,
+            'cuenta_cliente_id' => $this->cuentaClienteParaCorreo($datos->correoCliente),
+            'nombre' => $datos->nombreCliente,
+            'celular' => $datos->celularCliente,
+            'correo' => $datos->correoCliente,
+        ]);
+    }
+
+    /**
+     * T11: si el correo de una reserva nueva (sin cuenta) ya tiene una
+     * CuentaCliente, el Cliente que se crea ahora queda enlazado de una
+     * vez, sin esperar a que esa persona vuelva a entrar con Google.
+     */
+    private function cuentaClienteParaCorreo(?string $correo): ?int
+    {
+        if ($correo === null) {
+            return null;
+        }
+
+        return CuentaCliente::query()->where('correo', $correo)->value('id');
     }
 
     /**

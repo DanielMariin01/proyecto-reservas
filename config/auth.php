@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Models\CuentaCliente;
 use App\Models\Usuario;
 
 return [
@@ -44,6 +45,16 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
+
+        /*
+         * Guard separado para las cuentas de cliente (T11): una cuenta es
+         * global entre negocios, a diferencia de Usuario, que pertenece a
+         * uno. Nunca se usa en los paneles de Filament.
+         */
+        'cliente' => [
+            'driver' => 'session',
+            'provider' => 'cuentas_cliente',
+        ],
     ],
 
     /*
@@ -73,6 +84,11 @@ return [
         //     'driver' => 'database',
         //     'table' => 'users',
         // ],
+
+        'cuentas_cliente' => [
+            'driver' => 'eloquent',
+            'model' => CuentaCliente::class,
+        ],
     ],
 
     /*
