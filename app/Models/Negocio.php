@@ -7,6 +7,7 @@ namespace App\Models;
 use App\Enums\EstadoSuscripcion;
 use App\Enums\RolNegocio;
 use App\Enums\TipoNegocio;
+use App\Negocios\ContextoNegocioActual;
 use Carbon\Carbon;
 use Database\Factories\NegocioFactory;
 use Filament\Facades\Filament;
@@ -130,19 +131,36 @@ final class Negocio extends Model implements HasName
     }
 
     /**
-     * El negocio (tenant) activo en el panel app. Solo se usa en puntos del
-     * código que únicamente se ejecutan dentro de una ruta ya resuelta a un
-     * tenant, donde Filament garantiza que siempre hay uno.
+     * El negocio (tenant) activo en la petición actual. Solo se usa en
+     * puntos del código que únicamente se ejecutan dentro de una ruta ya
+     * resuelta a un tenant. Se lee primero de ContextoNegocioActual (las
+     * rutas propias, y el panel `app` de Filament desde que su middleware
+     * lo fija ahí también) y, mientras Filament siga activo, se cae a
+     * Filament::getTenant() para las pruebas y flujos que manipulan el
+     * tenant de Filament directamente sin pasar por ese middleware.
      */
     public static function actual(): self
     {
-        $tenant = Filament::getTenant();
+        $negocio = self::actualOSinNegocio();
 
-        if (! $tenant instanceof self) {
+        if (! $negocio instanceof self) {
             throw new RuntimeException('No hay un negocio activo en el panel.');
         }
 
-        return $tenant;
+        return $negocio;
+    }
+
+    public static function actualOSinNegocio(): ?self
+    {
+        $negocio = app(ContextoNegocioActual::class)->actual();
+
+        if ($negocio instanceof self) {
+            return $negocio;
+        }
+
+        $tenant = Filament::getTenant();
+
+        return $tenant instanceof self ? $tenant : null;
     }
 
     public function estaOperativo(): bool

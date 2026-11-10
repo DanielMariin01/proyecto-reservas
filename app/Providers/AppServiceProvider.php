@@ -17,6 +17,7 @@ use App\Models\Profesional;
 use App\Models\Resena;
 use App\Models\Servicio;
 use App\Models\Usuario;
+use App\Negocios\ContextoNegocioActual;
 use App\Observabilidad\ContextoObservabilidad;
 use App\Policies\PoliticaCategoriaServicio;
 use App\Policies\PoliticaCita;
@@ -48,6 +49,8 @@ class AppServiceProvider extends ServiceProvider
         ]));
 
         $this->app->singleton(ContextoObservabilidad::class);
+
+        $this->app->singleton(ContextoNegocioActual::class);
 
         $this->app->singleton(CadenaReglasResena::class, fn (): CadenaReglasResena => new CadenaReglasResena([
             new ReglaCitaCompletada,

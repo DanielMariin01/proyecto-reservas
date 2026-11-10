@@ -7,7 +7,6 @@ namespace App\Policies;
 use App\Enums\Permiso;
 use App\Models\Negocio;
 use App\Models\Usuario;
-use Filament\Facades\Filament;
 
 final class PoliticaUsuario
 {
@@ -42,7 +41,7 @@ final class PoliticaUsuario
             return true;
         }
 
-        $negocioActual = Filament::getTenant();
+        $negocioActual = Negocio::actualOSinNegocio();
 
         if (! $negocioActual instanceof Negocio) {
             return false;
