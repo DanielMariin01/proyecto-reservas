@@ -2,7 +2,14 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Admin\NegocioOpcionesController;
+use App\Http\Controllers\Admin\PaginaRegistroAuditoriaController;
+use App\Http\Controllers\Admin\PaginaRegistroErrorController;
+use App\Http\Controllers\Admin\PaginaTrabajoFallidoController;
 use App\Http\Controllers\Admin\PanelAdminController;
+use App\Http\Controllers\Admin\RegistroAuditoriaController;
+use App\Http\Controllers\Admin\RegistroErrorController;
+use App\Http\Controllers\Admin\TrabajoFallidoController;
 use App\Http\Controllers\App\PanelNegocioController;
 use App\Http\Controllers\Cliente\AreaClienteController;
 use App\Http\Controllers\Cliente\CitasClienteController;
@@ -44,13 +51,27 @@ Route::middleware('auth')->group(function (): void {
     Route::get('/elegir-negocio', [ElegirNegocioController::class, 'mostrar'])->name('elegir-negocio');
     Route::get('/elegir-negocio/{negocio}', [ElegirNegocioController::class, 'elegir'])->name('elegir-negocio.entrar');
     Route::get('/suplantacion/salir', [SuplantacionController::class, 'salir'])->name('suplantacion.salir');
+});
 
+Route::middleware(['auth', VerificarSuperAdmin::class])->group(function (): void {
     // T12 (migracion de Filament): raiz del panel admin, reemplaza el
     // Dashboard por defecto de Filament. El resto de recursos siguen en
     // /admin/* bajo Filament mientras se migran uno por uno.
-    Route::get('/admin', [PanelAdminController::class, 'mostrar'])
-        ->middleware(VerificarSuperAdmin::class)
-        ->name('admin.panel');
+    Route::get('/admin', [PanelAdminController::class, 'mostrar'])->name('admin.panel');
+
+    // T15 (migracion de Filament): primeras pantallas migradas (solo
+    // lectura), en el mismo path que usaban sus resources de Filament.
+    Route::get('/admin/registro-auditorias', [PaginaRegistroAuditoriaController::class, 'mostrar'])->name('admin.registro-auditorias');
+    Route::get('/admin/registro-errores', [PaginaRegistroErrorController::class, 'mostrar'])->name('admin.registro-errores');
+    Route::get('/admin/trabajos-fallidos', [PaginaTrabajoFallidoController::class, 'mostrar'])->name('admin.trabajos-fallidos');
+
+    Route::prefix('admin/api')->group(function (): void {
+        Route::get('/registro-auditorias', [RegistroAuditoriaController::class, 'index']);
+        Route::get('/registro-errores', [RegistroErrorController::class, 'index']);
+        Route::get('/negocios-opciones', [NegocioOpcionesController::class, 'mostrar']);
+        Route::get('/trabajos-fallidos', [TrabajoFallidoController::class, 'index']);
+        Route::post('/trabajos-fallidos/{trabajo}/reintentar', [TrabajoFallidoController::class, 'reintentar']);
+    });
 });
 
 // CU-02: la pantalla que abre el enlace del correo para ver, cancelar o
