@@ -3,23 +3,15 @@
 declare(strict_types=1);
 
 use App\Actions\RegistrarErrorSistema;
-use App\Filament\Resources\RegistroErrores\Pages\ListRegistroErrores;
-use App\Filament\Resources\TrabajosFallidos\Pages\ListTrabajosFallidos;
-use App\Models\Negocio;
-use App\Models\RegistroError;
-use App\Models\TrabajoFallido;
 use App\Models\Usuario;
 use App\Notifications\AlertaColaDetenida;
 use App\Notifications\AlertaErrorRepetido;
 use App\Notifications\AlertaTareaSuscripcionesFallo;
 use App\Services\ServicioSaludDelSistema;
-use Filament\Facades\Filament;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
-use Illuminate\Support\Str;
-use Livewire\Livewire;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 test('el estado del sistema responde ok cuando todo esta bien', function (): void {
@@ -109,66 +101,10 @@ test('verificar salud programada avisa cuando la cola esta detenida', function (
     Notification::assertSentToTimes($superAdmin, AlertaColaDetenida::class, 1);
 });
 
-test('el recurso de errores filtra por negocio', function (): void {
-    $superAdmin = Usuario::factory()->superAdmin()->create();
-    $negocioA = Negocio::factory()->create();
-    $negocioB = Negocio::factory()->create();
-
-    $errorA = RegistroError::create([
-        'negocio_id' => $negocioA->id,
-        'codigo_referencia' => 'REF-AAAAAAAA',
-        'clase_excepcion' => RuntimeException::class,
-        'mensaje' => 'Error del negocio A',
-        'ruta' => 'ruta-a',
-        'metodo_http' => 'GET',
-        'estado_http' => 500,
-    ]);
-    $errorB = RegistroError::create([
-        'negocio_id' => $negocioB->id,
-        'codigo_referencia' => 'REF-BBBBBBBB',
-        'clase_excepcion' => RuntimeException::class,
-        'mensaje' => 'Error del negocio B',
-        'ruta' => 'ruta-b',
-        'metodo_http' => 'GET',
-        'estado_http' => 500,
-    ]);
-
-    Filament::setCurrentPanel(Filament::getPanel('admin'));
-
-    Livewire::actingAs($superAdmin)
-        ->test(ListRegistroErrores::class)
-        ->assertCanSeeTableRecords([$errorA, $errorB])
-        ->filterTable('negocio_id', $negocioA->id)
-        ->assertCanSeeTableRecords([$errorA])
-        ->assertCanNotSeeTableRecords([$errorB]);
-});
-
-test('reintentar un trabajo fallido lo vuelve a poner en la cola', function (): void {
-    $uuid = (string) Str::uuid();
-
-    DB::table('failed_jobs')->insert([
-        'uuid' => $uuid,
-        'connection' => 'database',
-        'queue' => 'default',
-        'payload' => json_encode(['displayName' => 'App\\Notifications\\AlertaColaDetenida']),
-        'exception' => 'Excepción de prueba',
-        'failed_at' => now(),
-    ]);
-
-    $trabajo = TrabajoFallido::query()->where('uuid', $uuid)->firstOrFail();
-
-    expect($trabajo->tipo)->toBe('Otro');
-
-    $superAdmin = Usuario::factory()->superAdmin()->create();
-    Filament::setCurrentPanel(Filament::getPanel('admin'));
-
-    Livewire::actingAs($superAdmin)
-        ->test(ListTrabajosFallidos::class)
-        ->callTableAction('reintentar', $trabajo);
-
-    expect(DB::table('failed_jobs')->where('uuid', $uuid)->exists())->toBeFalse();
-    expect(DB::table('jobs')->count())->toBe(1);
-});
+// El filtro por negocio de Registro de errores y el reintento de
+// Trabajos fallidos se movieron a RegistroErrorControllerTest y
+// TrabajoFallidoControllerTest (T15: migracion de Filament — estas dos
+// pantallas ya no viven en Filament, se prueban por HTTP, no por Livewire).
 
 test('la tarea diaria de suscripciones no avisa de fallo cuando termina bien', function (): void {
     Notification::fake();
