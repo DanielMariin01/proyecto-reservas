@@ -7,11 +7,13 @@ use App\Http\Controllers\Admin\PaginaPaletaMarcaController;
 use App\Http\Controllers\Admin\PaginaRegistroAuditoriaController;
 use App\Http\Controllers\Admin\PaginaRegistroErrorController;
 use App\Http\Controllers\Admin\PaginaTrabajoFallidoController;
+use App\Http\Controllers\Admin\PaginaUsuarioController;
 use App\Http\Controllers\Admin\PaletaMarcaController;
 use App\Http\Controllers\Admin\PanelAdminController;
 use App\Http\Controllers\Admin\RegistroAuditoriaController;
 use App\Http\Controllers\Admin\RegistroErrorController;
 use App\Http\Controllers\Admin\TrabajoFallidoController;
+use App\Http\Controllers\Admin\UsuarioController;
 use App\Http\Controllers\App\PanelNegocioController;
 use App\Http\Controllers\Cliente\AreaClienteController;
 use App\Http\Controllers\Cliente\CitasClienteController;
@@ -72,6 +74,11 @@ Route::middleware(['auth', VerificarSuperAdmin::class])->group(function (): void
     Route::get('/admin/paleta-marcas/create', [PaginaPaletaMarcaController::class, 'create'])->name('admin.paleta-marcas.create');
     Route::get('/admin/paleta-marcas/{paleta}/edit', [PaginaPaletaMarcaController::class, 'edit'])->name('admin.paleta-marcas.edit');
 
+    // T17 (migracion de Filament): usuarios super admin.
+    Route::get('/admin/usuarios', [PaginaUsuarioController::class, 'index'])->name('admin.usuarios.index');
+    Route::get('/admin/usuarios/create', [PaginaUsuarioController::class, 'create'])->name('admin.usuarios.create');
+    Route::get('/admin/usuarios/{usuario}/edit', [PaginaUsuarioController::class, 'edit'])->name('admin.usuarios.edit');
+
     Route::prefix('admin/api')->group(function (): void {
         Route::get('/registro-auditorias', [RegistroAuditoriaController::class, 'index']);
         Route::get('/registro-errores', [RegistroErrorController::class, 'index']);
@@ -83,6 +90,12 @@ Route::middleware(['auth', VerificarSuperAdmin::class])->group(function (): void
         Route::post('/paleta-marcas', [PaletaMarcaController::class, 'store']);
         Route::put('/paleta-marcas/{paleta}', [PaletaMarcaController::class, 'update']);
         Route::delete('/paleta-marcas/{paleta}', [PaletaMarcaController::class, 'destroy']);
+
+        Route::get('/usuarios', [UsuarioController::class, 'index']);
+        Route::post('/usuarios', [UsuarioController::class, 'store']);
+        Route::put('/usuarios/{usuario}', [UsuarioController::class, 'update']);
+        Route::delete('/usuarios/{usuario}', [UsuarioController::class, 'destroy']);
+        Route::post('/usuarios/{usuario}/restablecer-contrasena', [UsuarioController::class, 'restablecerContrasena']);
     });
 });
 
