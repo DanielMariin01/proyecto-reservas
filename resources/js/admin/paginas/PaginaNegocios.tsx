@@ -2,6 +2,7 @@ import type { ReactElement } from 'react';
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Boton from '@/componentes/Boton';
+import TablaPaginada from '@/componentes/TablaPaginada';
 import {
     cambiarEstadoNegocio,
     type DatosCambiarEstado,
@@ -11,7 +12,6 @@ import {
     obtenerNegocios,
     registrarPagoSuscripcion,
 } from '../api/negocios';
-import TablaPaginada from '../componentes/TablaPaginada';
 import LayoutAdmin from '../LayoutAdmin';
 import ModalCambiarEstado from './ModalCambiarEstado';
 import ModalRegistrarPago from './ModalRegistrarPago';

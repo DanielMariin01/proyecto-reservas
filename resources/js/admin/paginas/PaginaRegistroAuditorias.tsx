@@ -2,8 +2,8 @@ import type { ReactElement } from 'react';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import CampoTexto from '@/componentes/CampoTexto';
+import TablaPaginada from '@/componentes/TablaPaginada';
 import { obtenerRegistrosAuditoria } from '../api/registroAuditorias';
-import TablaPaginada from '../componentes/TablaPaginada';
 import LayoutAdmin from '../LayoutAdmin';
 
 interface Propiedades {

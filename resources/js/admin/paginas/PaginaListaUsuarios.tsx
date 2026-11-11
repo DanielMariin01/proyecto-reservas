@@ -3,8 +3,8 @@ import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { KeyRound } from 'lucide-react';
 import Boton from '@/componentes/Boton';
+import TablaPaginada from '@/componentes/TablaPaginada';
 import { eliminarUsuario, obtenerUsuarios, restablecerContrasenaUsuario } from '../api/usuarios';
-import TablaPaginada from '../componentes/TablaPaginada';
 import LayoutAdmin from '../LayoutAdmin';
 
 interface Propiedades {

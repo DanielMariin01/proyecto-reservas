@@ -5,9 +5,9 @@ import { Banknote, Building2 } from 'lucide-react';
 import Boton from '@/componentes/Boton';
 import LineaDetalle from '@/componentes/LineaDetalle';
 import Tarjeta from '@/componentes/Tarjeta';
+import TablaPaginada from '@/componentes/TablaPaginada';
 import { obtenerNegocio, obtenerPagosSuscripcion } from '../api/negocios';
 import { obtenerRegistrosAuditoria } from '../api/registroAuditorias';
-import TablaPaginada from '../componentes/TablaPaginada';
 import LayoutAdmin from '../LayoutAdmin';
 
 interface Propiedades {
