@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\PaginaRegistroErrorController;
 use App\Http\Controllers\Admin\PaginaResenaController;
 use App\Http\Controllers\Admin\PaginaTrabajoFallidoController;
 use App\Http\Controllers\Admin\PaginaUsuarioController;
+use App\Http\Controllers\Admin\PaginaWebController;
 use App\Http\Controllers\Admin\PagoSuscripcionController;
 use App\Http\Controllers\Admin\PaletaMarcaController;
 use App\Http\Controllers\Admin\PanelAdminController;
@@ -126,6 +127,12 @@ Route::middleware(['auth', VerificarSuperAdmin::class])->group(function (): void
         Route::post('/negocios/{negocio:slug}/registrar-pago', [NegocioController::class, 'registrarPago']);
         Route::post('/negocios/{negocio:slug}/cambiar-estado', [NegocioController::class, 'cambiarEstado']);
         Route::get('/negocios/{negocio:slug}/pagos-suscripcion', [PagoSuscripcionController::class, 'index']);
+
+        // T20 (migracion de Filament): Builder de bloques de la pagina web.
+        Route::get('/negocios/{negocio:slug}/pagina', [PaginaWebController::class, 'show']);
+        Route::put('/negocios/{negocio:slug}/pagina', [PaginaWebController::class, 'update']);
+        Route::post('/negocios/{negocio:slug}/pagina/publicar', [PaginaWebController::class, 'publicar']);
+        Route::post('/negocios/{negocio:slug}/pagina/imagenes', [PaginaWebController::class, 'subirImagen']);
     });
 });
 

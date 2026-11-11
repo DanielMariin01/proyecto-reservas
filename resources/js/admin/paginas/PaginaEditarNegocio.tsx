@@ -4,6 +4,7 @@ import Boton from '@/componentes/Boton';
 import { actualizarNegocio, type DatosCrearNegocio, type DatosNegocio, eliminarNegocio, obtenerNegocio } from '../api/negocios';
 import FormularioNegocio from './FormularioNegocio';
 import LayoutAdmin from '../LayoutAdmin';
+import SeccionPaginaWeb from './SeccionPaginaWeb';
 
 interface Propiedades {
     urlSalir: string;
@@ -64,6 +65,8 @@ export default function PaginaEditarNegocio({ urlSalir, tokenCsrf, slug }: Propi
                         onGuardar={(datos: DatosNegocio | DatosCrearNegocio) => mutacion.mutateAsync(datos as DatosNegocio)}
                     />
                 )}
+
+                <SeccionPaginaWeb slug={slug} />
             </div>
         </LayoutAdmin>
     );
