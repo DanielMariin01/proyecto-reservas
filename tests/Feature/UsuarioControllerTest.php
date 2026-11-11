@@ -25,7 +25,7 @@ test('el super admin ve las 3 pantallas de usuarios', function (): void {
 });
 
 test('la api lista los usuarios ordenados por nombre', function (): void {
-    $superAdmin = Usuario::factory()->superAdmin()->create();
+    $superAdmin = Usuario::factory()->superAdmin()->create(['nombre' => 'Super Admin']);
     Usuario::factory()->create(['nombre' => 'Zeta']);
     Usuario::factory()->create(['nombre' => 'Alfa']);
 
