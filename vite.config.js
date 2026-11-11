@@ -12,6 +12,7 @@ export default defineConfig({
                 'resources/js/pagina-negocio.tsx',
                 'resources/js/gestionar-cita.tsx',
                 'resources/js/mi-cuenta.tsx',
+                'resources/js/admin.tsx',
                 'resources/js/panel-negocio.tsx',
                 'resources/css/filament/admin/theme.css',
                 'resources/css/filament/app/theme.css',
