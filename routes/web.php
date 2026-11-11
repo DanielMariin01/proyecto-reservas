@@ -23,8 +23,10 @@ use App\Http\Controllers\Admin\UsuarioController;
 use App\Http\Controllers\App\CategoriaServicioController;
 use App\Http\Controllers\App\PaginaCategoriaServicioController;
 use App\Http\Controllers\App\PaginaServicioController;
+use App\Http\Controllers\App\PaginaUsuarioController as PaginaUsuarioAppController;
 use App\Http\Controllers\App\PanelNegocioController;
 use App\Http\Controllers\App\ServicioController;
+use App\Http\Controllers\App\UsuarioController as UsuarioAppController;
 use App\Http\Controllers\Cliente\AreaClienteController;
 use App\Http\Controllers\Cliente\CitasClienteController;
 use App\Http\Controllers\Cliente\GoogleAuthController;
@@ -168,6 +170,11 @@ Route::middleware(['auth', ResolverNegocioDesdeRuta::class])->prefix('app/{negoc
     Route::get('/categorias-servicio/{categoriaServicio}/edit', [PaginaCategoriaServicioController::class, 'edit'])
         ->name('app.categorias-servicio.edit');
 
+    // T22 (migracion de Filament): usuarios del negocio (staff).
+    Route::get('/usuarios', [PaginaUsuarioAppController::class, 'index'])->name('app.usuarios.index');
+    Route::get('/usuarios/create', [PaginaUsuarioAppController::class, 'create'])->name('app.usuarios.create');
+    Route::get('/usuarios/{usuario}/edit', [PaginaUsuarioAppController::class, 'edit'])->name('app.usuarios.edit');
+
     Route::prefix('api')->group(function (): void {
         Route::get('/servicios', [ServicioController::class, 'index']);
         Route::post('/servicios', [ServicioController::class, 'store']);
@@ -181,6 +188,11 @@ Route::middleware(['auth', ResolverNegocioDesdeRuta::class])->prefix('app/{negoc
         Route::put('/categorias-servicio/{categoriaServicio}', [CategoriaServicioController::class, 'update']);
         Route::delete('/categorias-servicio/{categoriaServicio}', [CategoriaServicioController::class, 'destroy']);
         Route::post('/categorias-servicio/reordenar', [CategoriaServicioController::class, 'reordenar']);
+
+        Route::get('/usuarios', [UsuarioAppController::class, 'index']);
+        Route::post('/usuarios', [UsuarioAppController::class, 'store']);
+        Route::put('/usuarios/{usuario}', [UsuarioAppController::class, 'update']);
+        Route::delete('/usuarios/{usuario}', [UsuarioAppController::class, 'destroy']);
     });
 });
 
