@@ -3,9 +3,11 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\Admin\NegocioOpcionesController;
+use App\Http\Controllers\Admin\PaginaPaletaMarcaController;
 use App\Http\Controllers\Admin\PaginaRegistroAuditoriaController;
 use App\Http\Controllers\Admin\PaginaRegistroErrorController;
 use App\Http\Controllers\Admin\PaginaTrabajoFallidoController;
+use App\Http\Controllers\Admin\PaletaMarcaController;
 use App\Http\Controllers\Admin\PanelAdminController;
 use App\Http\Controllers\Admin\RegistroAuditoriaController;
 use App\Http\Controllers\Admin\RegistroErrorController;
@@ -65,12 +67,22 @@ Route::middleware(['auth', VerificarSuperAdmin::class])->group(function (): void
     Route::get('/admin/registro-errores', [PaginaRegistroErrorController::class, 'mostrar'])->name('admin.registro-errores');
     Route::get('/admin/trabajos-fallidos', [PaginaTrabajoFallidoController::class, 'mostrar'])->name('admin.trabajos-fallidos');
 
+    // T16 (migracion de Filament): primer CRUD completo migrado.
+    Route::get('/admin/paleta-marcas', [PaginaPaletaMarcaController::class, 'index'])->name('admin.paleta-marcas.index');
+    Route::get('/admin/paleta-marcas/create', [PaginaPaletaMarcaController::class, 'create'])->name('admin.paleta-marcas.create');
+    Route::get('/admin/paleta-marcas/{paleta}/edit', [PaginaPaletaMarcaController::class, 'edit'])->name('admin.paleta-marcas.edit');
+
     Route::prefix('admin/api')->group(function (): void {
         Route::get('/registro-auditorias', [RegistroAuditoriaController::class, 'index']);
         Route::get('/registro-errores', [RegistroErrorController::class, 'index']);
         Route::get('/negocios-opciones', [NegocioOpcionesController::class, 'mostrar']);
         Route::get('/trabajos-fallidos', [TrabajoFallidoController::class, 'index']);
         Route::post('/trabajos-fallidos/{trabajo}/reintentar', [TrabajoFallidoController::class, 'reintentar']);
+
+        Route::get('/paleta-marcas', [PaletaMarcaController::class, 'index']);
+        Route::post('/paleta-marcas', [PaletaMarcaController::class, 'store']);
+        Route::put('/paleta-marcas/{paleta}', [PaletaMarcaController::class, 'update']);
+        Route::delete('/paleta-marcas/{paleta}', [PaletaMarcaController::class, 'destroy']);
     });
 });
 
