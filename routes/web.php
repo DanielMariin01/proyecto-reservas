@@ -6,12 +6,14 @@ use App\Http\Controllers\Admin\NegocioOpcionesController;
 use App\Http\Controllers\Admin\PaginaPaletaMarcaController;
 use App\Http\Controllers\Admin\PaginaRegistroAuditoriaController;
 use App\Http\Controllers\Admin\PaginaRegistroErrorController;
+use App\Http\Controllers\Admin\PaginaResenaController;
 use App\Http\Controllers\Admin\PaginaTrabajoFallidoController;
 use App\Http\Controllers\Admin\PaginaUsuarioController;
 use App\Http\Controllers\Admin\PaletaMarcaController;
 use App\Http\Controllers\Admin\PanelAdminController;
 use App\Http\Controllers\Admin\RegistroAuditoriaController;
 use App\Http\Controllers\Admin\RegistroErrorController;
+use App\Http\Controllers\Admin\ResenaController;
 use App\Http\Controllers\Admin\TrabajoFallidoController;
 use App\Http\Controllers\Admin\UsuarioController;
 use App\Http\Controllers\App\PanelNegocioController;
@@ -79,6 +81,9 @@ Route::middleware(['auth', VerificarSuperAdmin::class])->group(function (): void
     Route::get('/admin/usuarios/create', [PaginaUsuarioController::class, 'create'])->name('admin.usuarios.create');
     Route::get('/admin/usuarios/{usuario}/edit', [PaginaUsuarioController::class, 'edit'])->name('admin.usuarios.edit');
 
+    // T18 (migracion de Filament): listado de resenas con acciones de visibilidad.
+    Route::get('/admin/resenas', [PaginaResenaController::class, 'index'])->name('admin.resenas.index');
+
     Route::prefix('admin/api')->group(function (): void {
         Route::get('/registro-auditorias', [RegistroAuditoriaController::class, 'index']);
         Route::get('/registro-errores', [RegistroErrorController::class, 'index']);
@@ -96,6 +101,10 @@ Route::middleware(['auth', VerificarSuperAdmin::class])->group(function (): void
         Route::put('/usuarios/{usuario}', [UsuarioController::class, 'update']);
         Route::delete('/usuarios/{usuario}', [UsuarioController::class, 'destroy']);
         Route::post('/usuarios/{usuario}/restablecer-contrasena', [UsuarioController::class, 'restablecerContrasena']);
+
+        Route::get('/resenas', [ResenaController::class, 'index']);
+        Route::post('/resenas/{resena}/ocultar', [ResenaController::class, 'ocultar']);
+        Route::post('/resenas/{resena}/mostrar', [ResenaController::class, 'mostrar']);
     });
 });
 

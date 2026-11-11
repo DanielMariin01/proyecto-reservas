@@ -22,6 +22,7 @@ export default defineConfig({
                 'resources/js/admin-usuarios.tsx',
                 'resources/js/admin-usuarios-crear.tsx',
                 'resources/js/admin-usuarios-editar.tsx',
+                'resources/js/admin-resenas.tsx',
                 'resources/js/panel-negocio.tsx',
                 'resources/css/filament/admin/theme.css',
                 'resources/css/filament/app/theme.css',
