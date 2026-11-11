@@ -44,6 +44,8 @@ export default defineConfig({
                 'resources/js/panel-negocio-profesionales-editar.tsx',
                 'resources/js/panel-negocio-agenda-del-dia.tsx',
                 'resources/js/panel-negocio-mis-citas-hoy.tsx',
+                'resources/js/panel-negocio-citas.tsx',
+                'resources/js/panel-negocio-citas-crear.tsx',
                 'resources/css/filament/admin/theme.css',
                 'resources/css/filament/app/theme.css',
             ],

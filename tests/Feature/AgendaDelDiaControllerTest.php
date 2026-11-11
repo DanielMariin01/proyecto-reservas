@@ -95,7 +95,7 @@ test('el dueno puede cancelar una cita desde la agenda', function (): void {
         'estado' => EstadoCitaValor::Pendiente,
     ]);
 
-    $respuesta = $this->actingAs($dueno)->postJson("/app/{$negocio->slug}/api/agenda/citas/{$cita->id}/cancelar", [
+    $respuesta = $this->actingAs($dueno)->postJson("/app/{$negocio->slug}/api/citas/{$cita->id}/cancelar", [
         'motivo' => 'El cliente no puede asistir',
     ]);
 
@@ -119,7 +119,7 @@ test('el dueno puede completar una cita con pago desde la agenda', function (): 
         'precio' => 30000,
     ]);
 
-    $respuesta = $this->actingAs($dueno)->postJson("/app/{$negocio->slug}/api/agenda/citas/{$cita->id}/completar-con-pago", [
+    $respuesta = $this->actingAs($dueno)->postJson("/app/{$negocio->slug}/api/citas/{$cita->id}/completar-con-pago", [
         'metodo' => 'efectivo',
         'valor' => 30000,
         'propina' => 0,
@@ -145,7 +145,7 @@ test('cambiar a un estado invalido devuelve un error y no cambia nada', function
         'estado' => EstadoCitaValor::Cancelada,
     ]);
 
-    $respuesta = $this->actingAs($dueno)->postJson("/app/{$negocio->slug}/api/agenda/citas/{$cita->id}/cambiar-estado", [
+    $respuesta = $this->actingAs($dueno)->postJson("/app/{$negocio->slug}/api/citas/{$cita->id}/cambiar-estado", [
         'estado' => 'confirmada',
     ]);
 
@@ -170,7 +170,7 @@ test('el dueno puede anular el pago de una cita completada', function (): void {
     ]);
     $pago = Pago::factory()->create(['negocio_id' => $negocio->id, 'cita_id' => $cita->id]);
 
-    $respuesta = $this->actingAs($dueno)->postJson("/app/{$negocio->slug}/api/agenda/citas/{$cita->id}/anular-pago", [
+    $respuesta = $this->actingAs($dueno)->postJson("/app/{$negocio->slug}/api/citas/{$cita->id}/anular-pago", [
         'motivo' => 'Se registró dos veces',
     ]);
 
@@ -194,7 +194,7 @@ test('un dueno no puede actuar sobre la cita de otro negocio aunque adivine el i
         'estado' => EstadoCitaValor::Pendiente,
     ]);
 
-    $this->actingAs($duenoA)->postJson("/app/{$negocioA->slug}/api/agenda/citas/{$citaB->id}/cancelar", [
+    $this->actingAs($duenoA)->postJson("/app/{$negocioA->slug}/api/citas/{$citaB->id}/cancelar", [
         'motivo' => 'intento ajeno',
     ])->assertNotFound();
 

@@ -14,13 +14,15 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
- * Fila de la agenda del día (RF-RES-07). Como RecursoCitaDelDia, es un
- * recorte deliberado: el recurso completo de una cita vive en la futura
- * migración de CitaResource.
+ * Una cita, con las acciones disponibles para el usuario actual
+ * (ServicioAccionesCita). Compartido entre la lista general de citas
+ * (CitaController, RF-RES-06) y la agenda del día agrupada por
+ * profesional (AgendaDelDiaController, RF-RES-07) — misma forma, para
+ * poder reutilizar los mismos modales de acciones en React.
  *
  * @mixin Cita
  */
-final class RecursoCitaAgenda extends JsonResource
+final class RecursoCita extends JsonResource
 {
     public function __construct(
         Cita $cita,
@@ -38,18 +40,23 @@ final class RecursoCitaAgenda extends JsonResource
         /** @var Cita $cita */
         $cita = $this->resource;
         $zonaHoraria = Negocio::actual()->zona_horaria;
+        $inicioLocal = $cita->inicio->setTimezone($zonaHoraria);
 
         return [
             'id' => $cita->id,
+            'inicioVisible' => $inicioLocal->format('d/m/Y H:i'),
             'hora' => Hora::formatear($cita->inicio, $zonaHoraria),
             'clienteNombre' => $cita->cliente?->nombre,
             'servicioNombre' => $cita->servicio?->nombre,
+            'profesionalNombre' => $cita->profesional?->nombre,
             'notas' => $cita->notas,
             'estado' => $cita->estado->value,
             'estadoEtiqueta' => $cita->estado->etiqueta(),
+            'origen' => $cita->origen->value,
+            'origenEtiqueta' => $cita->origen->etiqueta(),
             'precio' => $cita->precio,
-            'fecha' => $cita->inicio->setTimezone($zonaHoraria)->toDateString(),
-            'horaHM' => $cita->inicio->setTimezone($zonaHoraria)->format('H:i'),
+            'fecha' => $inicioLocal->toDateString(),
+            'horaHM' => $inicioLocal->format('H:i'),
             'acciones' => [
                 'puedeCompletarConPago' => $this->servicioAccionesCita->puedeCompletarConPago($cita, $this->usuario),
                 'puedeCambiarEstado' => $this->servicioAccionesCita->puedeCambiarEstado($cita, $this->usuario),
