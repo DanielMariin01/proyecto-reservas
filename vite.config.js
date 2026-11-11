@@ -37,6 +37,7 @@ export default defineConfig({
                 'resources/js/panel-negocio-usuarios.tsx',
                 'resources/js/panel-negocio-usuarios-crear.tsx',
                 'resources/js/panel-negocio-usuarios-editar.tsx',
+                'resources/js/panel-negocio-resenas.tsx',
                 'resources/css/filament/admin/theme.css',
                 'resources/css/filament/app/theme.css',
             ],
