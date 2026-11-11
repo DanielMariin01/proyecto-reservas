@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Admin\PanelAdminController;
 use App\Http\Controllers\Cliente\AreaClienteController;
 use App\Http\Controllers\Cliente\CitasClienteController;
 use App\Http\Controllers\Cliente\GoogleAuthController;
@@ -14,6 +15,7 @@ use App\Http\Controllers\RestablecimientoContrasenaController;
 use App\Http\Controllers\SesionController;
 use App\Http\Controllers\SuplantacionController;
 use App\Http\Middleware\VerificarNegocioAceptaReservas;
+use App\Http\Middleware\VerificarSuperAdmin;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -40,6 +42,13 @@ Route::middleware('auth')->group(function (): void {
     Route::get('/elegir-negocio', [ElegirNegocioController::class, 'mostrar'])->name('elegir-negocio');
     Route::get('/elegir-negocio/{negocio}', [ElegirNegocioController::class, 'elegir'])->name('elegir-negocio.entrar');
     Route::get('/suplantacion/salir', [SuplantacionController::class, 'salir'])->name('suplantacion.salir');
+
+    // T12 (migracion de Filament): raiz del panel admin, reemplaza el
+    // Dashboard por defecto de Filament. El resto de recursos siguen en
+    // /admin/* bajo Filament mientras se migran uno por uno.
+    Route::get('/admin', [PanelAdminController::class, 'mostrar'])
+        ->middleware(VerificarSuperAdmin::class)
+        ->name('admin.panel');
 });
 
 // CU-02: la pantalla que abre el enlace del correo para ver, cancelar o
