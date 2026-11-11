@@ -21,9 +21,13 @@ interface RespuestaApi<T> {
     meta: { current_page: number; last_page: number };
 }
 
-export async function obtenerRegistrosAuditoria(pagina: number, buscar: string): Promise<RespuestaPaginada<RegistroAuditoria>> {
+export async function obtenerRegistrosAuditoria(
+    pagina: number,
+    buscar: string,
+    negocioId?: number,
+): Promise<RespuestaPaginada<RegistroAuditoria>> {
     const respuesta = await axios.get<RespuestaApi<RegistroAuditoria>>('/admin/api/registro-auditorias', {
-        params: { page: pagina, buscar: buscar || undefined },
+        params: { page: pagina, buscar: buscar || undefined, negocioId },
     });
 
     return {

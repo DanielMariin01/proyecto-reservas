@@ -2,13 +2,16 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Admin\NegocioController;
 use App\Http\Controllers\Admin\NegocioOpcionesController;
+use App\Http\Controllers\Admin\PaginaNegocioController as PaginaNegocioAdminController;
 use App\Http\Controllers\Admin\PaginaPaletaMarcaController;
 use App\Http\Controllers\Admin\PaginaRegistroAuditoriaController;
 use App\Http\Controllers\Admin\PaginaRegistroErrorController;
 use App\Http\Controllers\Admin\PaginaResenaController;
 use App\Http\Controllers\Admin\PaginaTrabajoFallidoController;
 use App\Http\Controllers\Admin\PaginaUsuarioController;
+use App\Http\Controllers\Admin\PagoSuscripcionController;
 use App\Http\Controllers\Admin\PaletaMarcaController;
 use App\Http\Controllers\Admin\PanelAdminController;
 use App\Http\Controllers\Admin\RegistroAuditoriaController;
@@ -84,6 +87,14 @@ Route::middleware(['auth', VerificarSuperAdmin::class])->group(function (): void
     // T18 (migracion de Filament): listado de resenas con acciones de visibilidad.
     Route::get('/admin/resenas', [PaginaResenaController::class, 'index'])->name('admin.resenas.index');
 
+    // T19 (migracion de Filament): CRUD basico de negocios. El Builder de
+    // bloques de pagina se migra aparte (T20), por eso el formulario de
+    // edicion todavia no lo incluye.
+    Route::get('/admin/negocios', [PaginaNegocioAdminController::class, 'index'])->name('admin.negocios.index');
+    Route::get('/admin/negocios/create', [PaginaNegocioAdminController::class, 'create'])->name('admin.negocios.create');
+    Route::get('/admin/negocios/{negocio:slug}', [PaginaNegocioAdminController::class, 'show'])->name('admin.negocios.show');
+    Route::get('/admin/negocios/{negocio:slug}/edit', [PaginaNegocioAdminController::class, 'edit'])->name('admin.negocios.edit');
+
     Route::prefix('admin/api')->group(function (): void {
         Route::get('/registro-auditorias', [RegistroAuditoriaController::class, 'index']);
         Route::get('/registro-errores', [RegistroErrorController::class, 'index']);
@@ -105,6 +116,16 @@ Route::middleware(['auth', VerificarSuperAdmin::class])->group(function (): void
         Route::get('/resenas', [ResenaController::class, 'index']);
         Route::post('/resenas/{resena}/ocultar', [ResenaController::class, 'ocultar']);
         Route::post('/resenas/{resena}/mostrar', [ResenaController::class, 'mostrar']);
+
+        Route::get('/negocios', [NegocioController::class, 'index']);
+        Route::get('/negocios/{negocio:slug}', [NegocioController::class, 'show']);
+        Route::post('/negocios', [NegocioController::class, 'store']);
+        Route::put('/negocios/{negocio:slug}', [NegocioController::class, 'update']);
+        Route::delete('/negocios/{negocio:slug}', [NegocioController::class, 'destroy']);
+        Route::post('/negocios/{negocio:slug}/entrar', [NegocioController::class, 'entrarComoNegocio']);
+        Route::post('/negocios/{negocio:slug}/registrar-pago', [NegocioController::class, 'registrarPago']);
+        Route::post('/negocios/{negocio:slug}/cambiar-estado', [NegocioController::class, 'cambiarEstado']);
+        Route::get('/negocios/{negocio:slug}/pagos-suscripcion', [PagoSuscripcionController::class, 'index']);
     });
 });
 
