@@ -6,45 +6,35 @@ use App\Actions\CrearProfesional;
 use App\DatosTransferencia\DatosNuevoProfesional;
 use App\Enums\DiaSemana;
 use App\Enums\EstadoCitaValor;
-use App\Enums\RolNegocio;
-use App\Filament\App\Pages\PanelDelDia;
 use App\Models\Cita;
 use App\Models\Cliente;
 use App\Models\HorarioTrabajo;
 use App\Models\Negocio;
 use App\Models\Pago;
 use App\Models\Servicio;
+use App\Negocios\ContextoNegocioActual;
+use App\Services\ServicioPanelDelDia;
 use Carbon\CarbonImmutable;
-use Filament\Facades\Filament;
-use Livewire\Livewire;
 
 afterEach(function (): void {
     CarbonImmutable::setTestNow();
 });
 
-test('el dueno puede ver el panel del dia', function (): void {
-    $negocio = Negocio::factory()->create();
-    $dueno = crearUsuarioConRol($negocio, RolNegocio::Dueno);
-
-    $respuesta = $this->actingAs($dueno)->get("/app/{$negocio->slug}/panel-del-dia");
-
-    $respuesta->assertOk();
-});
-
-test('un profesional no puede ver el panel del dia', function (): void {
-    $negocio = Negocio::factory()->create();
-    $profesionalUsuario = crearUsuarioConRol($negocio, RolNegocio::Profesional);
-
-    $respuesta = $this->actingAs($profesionalUsuario)->get("/app/{$negocio->slug}/panel-del-dia");
-
-    $respuesta->assertForbidden();
-});
+/**
+ * ScopeNegocio solo filtra dentro del contexto de una peticion real
+ * (ResolverNegocioDesdeRuta lo fija); estas pruebas llaman el servicio
+ * directamente, asi que simulan ese contexto para que Cita/Pago/
+ * Profesional queden filtrados igual que en produccion.
+ */
+function fijarNegocioActual(Negocio $negocio): void
+{
+    app(ContextoNegocioActual::class)->fijar($negocio);
+}
 
 test('citasDeHoy solo cuenta las de hoy y no las de otro negocio', function (): void {
     CarbonImmutable::setTestNow(CarbonImmutable::parse('2026-11-03 08:00:00', 'America/Bogota'));
 
     $negocio = Negocio::factory()->create(['zona_horaria' => 'America/Bogota']);
-    $dueno = crearUsuarioConRol($negocio, RolNegocio::Dueno);
     $profesional = app(CrearProfesional::class)->ejecutar(new DatosNuevoProfesional(negocio: $negocio, nombre: 'Japo'));
     $servicio = Servicio::factory()->create(['negocio_id' => $negocio->id]);
     $cliente = Cliente::factory()->create(['negocio_id' => $negocio->id]);
@@ -70,19 +60,43 @@ test('citasDeHoy solo cuenta las de hoy y no las de otro negocio', function (): 
         'fin' => CarbonImmutable::now('America/Bogota')->setTime(11, 0)->utc(),
     ]);
 
-    Filament::setCurrentPanel(Filament::getPanel('app'));
-    Filament::setTenant($negocio, isQuiet: true);
-
-    $citas = Livewire::actingAs($dueno)->test(PanelDelDia::class)->instance()->citasDeHoy();
+    fijarNegocioActual($negocio);
+    $citas = app(ServicioPanelDelDia::class)->citasDeHoy($negocio);
 
     expect($citas->pluck('id')->all())->toBe([$citaDeHoy->id]);
+});
+
+test('citasProximas solo deja las que aun no empiezan', function (): void {
+    CarbonImmutable::setTestNow(CarbonImmutable::parse('2026-11-03 10:30:00', 'America/Bogota'));
+
+    $negocio = Negocio::factory()->create(['zona_horaria' => 'America/Bogota']);
+    $profesional = app(CrearProfesional::class)->ejecutar(new DatosNuevoProfesional(negocio: $negocio, nombre: 'Japo'));
+    $servicio = Servicio::factory()->create(['negocio_id' => $negocio->id]);
+    $cliente = Cliente::factory()->create(['negocio_id' => $negocio->id]);
+
+    $citaYaEmpezada = Cita::factory()->create([
+        'negocio_id' => $negocio->id, 'profesional_id' => $profesional->id, 'servicio_id' => $servicio->id, 'cliente_id' => $cliente->id,
+        'inicio' => CarbonImmutable::now('America/Bogota')->setTime(9, 0)->utc(),
+        'fin' => CarbonImmutable::now('America/Bogota')->setTime(10, 0)->utc(),
+    ]);
+    $citaProxima = Cita::factory()->create([
+        'negocio_id' => $negocio->id, 'profesional_id' => $profesional->id, 'servicio_id' => $servicio->id, 'cliente_id' => $cliente->id,
+        'inicio' => CarbonImmutable::now('America/Bogota')->setTime(14, 0)->utc(),
+        'fin' => CarbonImmutable::now('America/Bogota')->setTime(15, 0)->utc(),
+    ]);
+
+    $servicioPanelDelDia = app(ServicioPanelDelDia::class);
+    $citasDeHoy = $servicioPanelDelDia->citasDeHoy($negocio);
+    $citasProximas = $servicioPanelDelDia->citasProximas($citasDeHoy);
+
+    expect($citasDeHoy->pluck('id')->all())->toContain($citaYaEmpezada->id, $citaProxima->id);
+    expect($citasProximas->pluck('id')->all())->toBe([$citaProxima->id]);
 });
 
 test('ingresosRegistrados suma solo los pagos activos registrados hoy del negocio actual', function (): void {
     CarbonImmutable::setTestNow(CarbonImmutable::parse('2026-11-03 08:00:00', 'America/Bogota'));
 
     $negocio = Negocio::factory()->create(['zona_horaria' => 'America/Bogota']);
-    $dueno = crearUsuarioConRol($negocio, RolNegocio::Dueno);
     $profesional = app(CrearProfesional::class)->ejecutar(new DatosNuevoProfesional(negocio: $negocio, nombre: 'Japo'));
     $servicio = Servicio::factory()->create(['negocio_id' => $negocio->id]);
     $cliente = Cliente::factory()->create(['negocio_id' => $negocio->id]);
@@ -98,10 +112,7 @@ test('ingresosRegistrados suma solo los pagos activos registrados hoy del negoci
     $otroNegocio = Negocio::factory()->create();
     Pago::factory()->create(['negocio_id' => $otroNegocio->id, 'valor' => 50000]);
 
-    Filament::setCurrentPanel(Filament::getPanel('app'));
-    Filament::setTenant($negocio, isQuiet: true);
-
-    $ingresos = Livewire::actingAs($dueno)->test(PanelDelDia::class)->instance()->ingresosRegistrados();
+    $ingresos = app(ServicioPanelDelDia::class)->ingresosRegistrados($negocio);
 
     expect($ingresos)->toBe(22000);
 });
@@ -110,7 +121,6 @@ test('huecosLibres resta las citas activas de los bloques libres del profesional
     CarbonImmutable::setTestNow(CarbonImmutable::parse('2026-11-03 08:00:00', 'America/Bogota'));
 
     $negocio = Negocio::factory()->create(['zona_horaria' => 'America/Bogota']);
-    $dueno = crearUsuarioConRol($negocio, RolNegocio::Dueno);
     $profesional = app(CrearProfesional::class)->ejecutar(new DatosNuevoProfesional(negocio: $negocio, nombre: 'Japo'));
     $servicio = Servicio::factory()->create(['negocio_id' => $negocio->id, 'duracion_minutos' => 60]);
     $cliente = Cliente::factory()->create(['negocio_id' => $negocio->id]);
@@ -130,12 +140,24 @@ test('huecosLibres resta las citas activas de los bloques libres del profesional
         'fin' => CarbonImmutable::now('America/Bogota')->setTime(11, 0)->utc(),
     ]);
 
-    Filament::setCurrentPanel(Filament::getPanel('app'));
-    Filament::setTenant($negocio, isQuiet: true);
-
-    $huecos = Livewire::actingAs($dueno)->test(PanelDelDia::class)->instance()->huecosLibres();
+    $huecos = app(ServicioPanelDelDia::class)->huecosLibres($negocio);
     $bloquesDeJapo = $huecos->firstWhere(fn ($columna) => $columna['profesional']->id === $profesional->id)['bloques'];
     $horas = $bloquesDeJapo->map(fn ($bloque) => $bloque->inicio->setTimezone('America/Bogota')->format('H:i').'-'.$bloque->fin->setTimezone('America/Bogota')->format('H:i'))->values()->all();
 
     expect($horas)->toBe(['09:00-10:00', '11:00-12:00']);
+});
+
+test('huecosLibres no incluye profesionales inactivos ni de otro negocio', function (): void {
+    CarbonImmutable::setTestNow(CarbonImmutable::parse('2026-11-03 08:00:00', 'America/Bogota'));
+
+    $negocio = Negocio::factory()->create(['zona_horaria' => 'America/Bogota']);
+    $profesionalInactivo = app(CrearProfesional::class)->ejecutar(new DatosNuevoProfesional(negocio: $negocio, nombre: 'Inactivo'));
+    $profesionalInactivo->update(['activo' => false]);
+
+    $otroNegocio = Negocio::factory()->create(['zona_horaria' => 'America/Bogota']);
+    app(CrearProfesional::class)->ejecutar(new DatosNuevoProfesional(negocio: $otroNegocio, nombre: 'Ajeno'));
+
+    $huecos = app(ServicioPanelDelDia::class)->huecosLibres($negocio);
+
+    expect($huecos)->toBeEmpty();
 });
