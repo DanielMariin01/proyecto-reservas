@@ -21,6 +21,10 @@ final class RegistroAuditoriaController extends Controller
                 $request->filled('buscar'),
                 fn (Builder $query): Builder => $query->where('accion', 'like', '%'.$request->string('buscar').'%'),
             )
+            ->when(
+                $request->filled('negocioId'),
+                fn (Builder $query): Builder => $query->where('negocio_id', $request->integer('negocioId')),
+            )
             ->orderByDesc('created_at')
             ->paginate(25);
 
