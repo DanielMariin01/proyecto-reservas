@@ -20,9 +20,13 @@ use App\Http\Controllers\Admin\RegistroErrorController;
 use App\Http\Controllers\Admin\ResenaController;
 use App\Http\Controllers\Admin\TrabajoFallidoController;
 use App\Http\Controllers\Admin\UsuarioController;
+use App\Http\Controllers\App\AgendaDelDiaController;
 use App\Http\Controllers\App\BloqueoController;
 use App\Http\Controllers\App\CategoriaServicioController;
+use App\Http\Controllers\App\MisCitasHoyController;
+use App\Http\Controllers\App\PaginaAgendaDelDiaController;
 use App\Http\Controllers\App\PaginaCategoriaServicioController;
+use App\Http\Controllers\App\PaginaMisCitasHoyController;
 use App\Http\Controllers\App\PaginaProfesionalController;
 use App\Http\Controllers\App\PaginaResenaController as PaginaResenaAppController;
 use App\Http\Controllers\App\PaginaServicioController;
@@ -193,6 +197,14 @@ Route::middleware(['auth', ResolverNegocioDesdeRuta::class])->prefix('app/{negoc
     Route::get('/profesionales/{profesional}', [PaginaProfesionalController::class, 'show'])->name('app.profesionales.show');
     Route::get('/profesionales/{profesional}/edit', [PaginaProfesionalController::class, 'edit'])->name('app.profesionales.edit');
 
+    // T27 (migracion de Filament): agenda visual del dueno (RF-RES-07) y
+    // mis citas de hoy, el autoservicio del profesional (CU-04). Las
+    // acciones sobre cada cita reutilizan los mismos Actions de dominio
+    // que CitaResource (Filament, aun no migrado): nunca duplicar esa
+    // logica cuando se migre.
+    Route::get('/agenda', [PaginaAgendaDelDiaController::class, 'mostrar'])->name('app.agenda');
+    Route::get('/mis-citas-hoy', [PaginaMisCitasHoyController::class, 'mostrar'])->name('app.mis-citas-hoy');
+
     Route::prefix('api')->group(function (): void {
         Route::get('/servicios', [ServicioController::class, 'index']);
         Route::post('/servicios', [ServicioController::class, 'store']);
@@ -233,6 +245,18 @@ Route::middleware(['auth', ResolverNegocioDesdeRuta::class])->prefix('app/{negoc
         Route::post('/profesionales/{profesional}/servicios', [ProfesionalServicioController::class, 'store']);
         Route::put('/profesionales/{profesional}/servicios/{servicio}', [ProfesionalServicioController::class, 'update']);
         Route::delete('/profesionales/{profesional}/servicios/{servicio}', [ProfesionalServicioController::class, 'destroy']);
+
+        Route::get('/agenda', [AgendaDelDiaController::class, 'mostrar']);
+        Route::post('/agenda/citas/{cita}/cambiar-estado', [AgendaDelDiaController::class, 'cambiarEstado']);
+        Route::post('/agenda/citas/{cita}/completar-con-pago', [AgendaDelDiaController::class, 'completarConPago']);
+        Route::post('/agenda/citas/{cita}/cancelar', [AgendaDelDiaController::class, 'cancelar']);
+        Route::post('/agenda/citas/{cita}/reprogramar', [AgendaDelDiaController::class, 'reprogramar']);
+        Route::post('/agenda/citas/{cita}/anular-pago', [AgendaDelDiaController::class, 'anularPago']);
+
+        Route::get('/mis-citas-hoy', [MisCitasHoyController::class, 'mostrar']);
+        Route::post('/mis-citas-hoy/citas/{cita}/marcar-en-atencion', [MisCitasHoyController::class, 'marcarEnAtencion']);
+        Route::post('/mis-citas-hoy/citas/{cita}/marcar-no-asistio', [MisCitasHoyController::class, 'marcarNoAsistio']);
+        Route::post('/mis-citas-hoy/citas/{cita}/completar-con-pago', [MisCitasHoyController::class, 'completarConPago']);
     });
 });
 
