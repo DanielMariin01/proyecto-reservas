@@ -11,6 +11,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
+/**
+ * @property-read ProfesionalServicio|null $pivot Solo presente cuando se carga a traves de Profesional::servicios().
+ */
 final class Servicio extends Model
 {
     /** @use HasFactory<ServicioFactory> */
