@@ -20,12 +20,16 @@ use App\Http\Controllers\Admin\RegistroErrorController;
 use App\Http\Controllers\Admin\ResenaController;
 use App\Http\Controllers\Admin\TrabajoFallidoController;
 use App\Http\Controllers\Admin\UsuarioController;
+use App\Http\Controllers\App\BloqueoController;
 use App\Http\Controllers\App\CategoriaServicioController;
 use App\Http\Controllers\App\PaginaCategoriaServicioController;
+use App\Http\Controllers\App\PaginaProfesionalController;
 use App\Http\Controllers\App\PaginaResenaController as PaginaResenaAppController;
 use App\Http\Controllers\App\PaginaServicioController;
 use App\Http\Controllers\App\PaginaUsuarioController as PaginaUsuarioAppController;
 use App\Http\Controllers\App\PanelNegocioController;
+use App\Http\Controllers\App\ProfesionalController;
+use App\Http\Controllers\App\ProfesionalServicioController;
 use App\Http\Controllers\App\ResenaController as ResenaAppController;
 use App\Http\Controllers\App\ServicioController;
 use App\Http\Controllers\App\UsuarioController as UsuarioAppController;
@@ -180,6 +184,15 @@ Route::middleware(['auth', ResolverNegocioDesdeRuta::class])->prefix('app/{negoc
     // T23 (migracion de Filament): resenas del negocio (sin crear/editar/eliminar).
     Route::get('/resenas', [PaginaResenaAppController::class, 'index'])->name('app.resenas.index');
 
+    // T24 (migracion de Filament): profesionales, con bloqueos y servicios
+    // vinculados. El editor de horario semanal y la vista previa de
+    // disponibilidad se migran aparte (T25, MiHorario): hoy estas paginas
+    // no los incluyen todavia.
+    Route::get('/profesionales', [PaginaProfesionalController::class, 'index'])->name('app.profesionales.index');
+    Route::get('/profesionales/create', [PaginaProfesionalController::class, 'create'])->name('app.profesionales.create');
+    Route::get('/profesionales/{profesional}', [PaginaProfesionalController::class, 'show'])->name('app.profesionales.show');
+    Route::get('/profesionales/{profesional}/edit', [PaginaProfesionalController::class, 'edit'])->name('app.profesionales.edit');
+
     Route::prefix('api')->group(function (): void {
         Route::get('/servicios', [ServicioController::class, 'index']);
         Route::post('/servicios', [ServicioController::class, 'store']);
@@ -203,6 +216,23 @@ Route::middleware(['auth', ResolverNegocioDesdeRuta::class])->prefix('app/{negoc
         Route::post('/resenas/{resena}/responder', [ResenaAppController::class, 'responder']);
         Route::post('/resenas/{resena}/ocultar', [ResenaAppController::class, 'ocultar']);
         Route::post('/resenas/{resena}/mostrar', [ResenaAppController::class, 'mostrar']);
+
+        Route::get('/profesionales', [ProfesionalController::class, 'index']);
+        Route::post('/profesionales', [ProfesionalController::class, 'store']);
+        Route::put('/profesionales/{profesional}', [ProfesionalController::class, 'update']);
+        Route::delete('/profesionales/{profesional}', [ProfesionalController::class, 'destroy']);
+        Route::post('/profesionales/imagenes', [ProfesionalController::class, 'subirImagen']);
+        Route::post('/profesionales/{profesional}/vincular-usuario', [ProfesionalController::class, 'vincularUsuario']);
+
+        Route::get('/profesionales/{profesional}/bloqueos', [BloqueoController::class, 'index']);
+        Route::post('/profesionales/{profesional}/bloqueos', [BloqueoController::class, 'store']);
+        Route::put('/profesionales/{profesional}/bloqueos/{bloqueo}', [BloqueoController::class, 'update']);
+        Route::delete('/profesionales/{profesional}/bloqueos/{bloqueo}', [BloqueoController::class, 'destroy']);
+
+        Route::get('/profesionales/{profesional}/servicios', [ProfesionalServicioController::class, 'index']);
+        Route::post('/profesionales/{profesional}/servicios', [ProfesionalServicioController::class, 'store']);
+        Route::put('/profesionales/{profesional}/servicios/{servicio}', [ProfesionalServicioController::class, 'update']);
+        Route::delete('/profesionales/{profesional}/servicios/{servicio}', [ProfesionalServicioController::class, 'destroy']);
     });
 });
 
