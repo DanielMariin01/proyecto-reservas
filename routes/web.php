@@ -20,7 +20,11 @@ use App\Http\Controllers\Admin\RegistroErrorController;
 use App\Http\Controllers\Admin\ResenaController;
 use App\Http\Controllers\Admin\TrabajoFallidoController;
 use App\Http\Controllers\Admin\UsuarioController;
+use App\Http\Controllers\App\CategoriaServicioController;
+use App\Http\Controllers\App\PaginaCategoriaServicioController;
+use App\Http\Controllers\App\PaginaServicioController;
 use App\Http\Controllers\App\PanelNegocioController;
+use App\Http\Controllers\App\ServicioController;
 use App\Http\Controllers\Cliente\AreaClienteController;
 use App\Http\Controllers\Cliente\CitasClienteController;
 use App\Http\Controllers\Cliente\GoogleAuthController;
@@ -147,6 +151,38 @@ Route::get('/{negocio:slug}/reservas/{token}', [GestionarCitaVistaController::cl
 Route::get('/app/{negocio:slug}', [PanelNegocioController::class, 'mostrar'])
     ->middleware(['auth', ResolverNegocioDesdeRuta::class])
     ->name('app.panel');
+
+// T21 (migracion de Filament): primeros resources del panel app migrados
+// (catalogo), ya con tenancy real activa via ResolverNegocioDesdeRuta.
+// Los {servicio}/{categoriaServicio} de las rutas de abajo son ids simples
+// (sin binding implicito de Eloquent): el controlador los resuelve el
+// mismo dentro del metodo, ya con el ScopeNegocio activo, para no
+// depender del orden relativo entre SubstituteBindings y este middleware.
+Route::middleware(['auth', ResolverNegocioDesdeRuta::class])->prefix('app/{negocio:slug}')->group(function (): void {
+    Route::get('/servicios', [PaginaServicioController::class, 'index'])->name('app.servicios.index');
+    Route::get('/servicios/create', [PaginaServicioController::class, 'create'])->name('app.servicios.create');
+    Route::get('/servicios/{servicio}/edit', [PaginaServicioController::class, 'edit'])->name('app.servicios.edit');
+
+    Route::get('/categorias-servicio', [PaginaCategoriaServicioController::class, 'index'])->name('app.categorias-servicio.index');
+    Route::get('/categorias-servicio/create', [PaginaCategoriaServicioController::class, 'create'])->name('app.categorias-servicio.create');
+    Route::get('/categorias-servicio/{categoriaServicio}/edit', [PaginaCategoriaServicioController::class, 'edit'])
+        ->name('app.categorias-servicio.edit');
+
+    Route::prefix('api')->group(function (): void {
+        Route::get('/servicios', [ServicioController::class, 'index']);
+        Route::post('/servicios', [ServicioController::class, 'store']);
+        Route::put('/servicios/{servicio}', [ServicioController::class, 'update']);
+        Route::delete('/servicios/{servicio}', [ServicioController::class, 'destroy']);
+        Route::post('/servicios/reordenar', [ServicioController::class, 'reordenar']);
+        Route::post('/servicios/imagenes', [ServicioController::class, 'subirImagen']);
+
+        Route::get('/categorias-servicio', [CategoriaServicioController::class, 'index']);
+        Route::post('/categorias-servicio', [CategoriaServicioController::class, 'store']);
+        Route::put('/categorias-servicio/{categoriaServicio}', [CategoriaServicioController::class, 'update']);
+        Route::delete('/categorias-servicio/{categoriaServicio}', [CategoriaServicioController::class, 'destroy']);
+        Route::post('/categorias-servicio/reordenar', [CategoriaServicioController::class, 'reordenar']);
+    });
+});
 
 // T11: panel de cuenta del cliente. Es global (cruza negocios), por eso no
 // vive bajo ningún {negocio:slug}; también va antes del comodín de abajo.

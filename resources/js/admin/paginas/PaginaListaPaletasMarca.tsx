@@ -3,8 +3,8 @@ import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Boton from '@/componentes/Boton';
 import CampoTexto from '@/componentes/CampoTexto';
+import TablaPaginada from '@/componentes/TablaPaginada';
 import { eliminarPaletaMarca, obtenerPaletasMarca } from '../api/paletasMarca';
-import TablaPaginada from '../componentes/TablaPaginada';
 import LayoutAdmin from '../LayoutAdmin';
 
 interface Propiedades {

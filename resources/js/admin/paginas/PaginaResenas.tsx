@@ -2,9 +2,9 @@ import type { ReactElement } from 'react';
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Boton from '@/componentes/Boton';
+import TablaPaginada from '@/componentes/TablaPaginada';
 import { obtenerOpcionesNegocio } from '../api/registroErrores';
 import { mostrarResena, obtenerResenas, ocultarResena } from '../api/resenas';
-import TablaPaginada from '../componentes/TablaPaginada';
 import LayoutAdmin from '../LayoutAdmin';
 
 interface Propiedades {
