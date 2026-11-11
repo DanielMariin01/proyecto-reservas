@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\Admin\PanelAdminController;
+use App\Http\Controllers\App\PanelNegocioController;
 use App\Http\Controllers\Cliente\AreaClienteController;
 use App\Http\Controllers\Cliente\CitasClienteController;
 use App\Http\Controllers\Cliente\GoogleAuthController;
@@ -14,6 +15,7 @@ use App\Http\Controllers\PaginaNegocioController;
 use App\Http\Controllers\RestablecimientoContrasenaController;
 use App\Http\Controllers\SesionController;
 use App\Http\Controllers\SuplantacionController;
+use App\Http\Middleware\ResolverNegocioDesdeRuta;
 use App\Http\Middleware\VerificarNegocioAceptaReservas;
 use App\Http\Middleware\VerificarSuperAdmin;
 use Illuminate\Support\Facades\Route;
@@ -55,6 +57,13 @@ Route::middleware('auth')->group(function (): void {
 // reprogramar una cita. Va antes del comodín de un solo segmento de abajo.
 Route::get('/{negocio:slug}/reservas/{token}', [GestionarCitaVistaController::class, 'mostrar'])
     ->name('gestionar-cita');
+
+// T14 (migracion de Filament): raiz del panel app, reemplaza el Dashboard
+// por defecto de Filament. El resto de recursos siguen en /app/{slug}/*
+// bajo Filament mientras se migran uno por uno.
+Route::get('/app/{negocio:slug}', [PanelNegocioController::class, 'mostrar'])
+    ->middleware(['auth', ResolverNegocioDesdeRuta::class])
+    ->name('app.panel');
 
 // T11: panel de cuenta del cliente. Es global (cruza negocios), por eso no
 // vive bajo ningún {negocio:slug}; también va antes del comodín de abajo.
