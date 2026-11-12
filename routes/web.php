@@ -20,17 +20,29 @@ use App\Http\Controllers\Admin\RegistroErrorController;
 use App\Http\Controllers\Admin\ResenaController;
 use App\Http\Controllers\Admin\TrabajoFallidoController;
 use App\Http\Controllers\Admin\UsuarioController;
+use App\Http\Controllers\App\AgendaDelDiaController;
 use App\Http\Controllers\App\BloqueoController;
 use App\Http\Controllers\App\CategoriaServicioController;
+use App\Http\Controllers\App\CitaAccionesController;
+use App\Http\Controllers\App\CitaController;
+use App\Http\Controllers\App\MiHorarioController;
+use App\Http\Controllers\App\MisCitasHoyController;
+use App\Http\Controllers\App\PaginaAgendaDelDiaController;
 use App\Http\Controllers\App\PaginaCategoriaServicioController;
+use App\Http\Controllers\App\PaginaCitaController;
+use App\Http\Controllers\App\PaginaMiHorarioController;
+use App\Http\Controllers\App\PaginaMisCitasHoyController;
 use App\Http\Controllers\App\PaginaPaginaWebController;
+use App\Http\Controllers\App\PaginaPanelDelDiaController;
 use App\Http\Controllers\App\PaginaProfesionalController;
 use App\Http\Controllers\App\PaginaResenaController as PaginaResenaAppController;
 use App\Http\Controllers\App\PaginaServicioController;
 use App\Http\Controllers\App\PaginaUsuarioController as PaginaUsuarioAppController;
 use App\Http\Controllers\App\PaginaWebController as PaginaWebAppController;
+use App\Http\Controllers\App\PanelDelDiaController;
 use App\Http\Controllers\App\PanelNegocioController;
 use App\Http\Controllers\App\ProfesionalController;
+use App\Http\Controllers\App\ProfesionalHorarioController;
 use App\Http\Controllers\App\ProfesionalServicioController;
 use App\Http\Controllers\App\ResenaController as ResenaAppController;
 use App\Http\Controllers\App\ServicioController;
@@ -187,13 +199,35 @@ Route::middleware(['auth', ResolverNegocioDesdeRuta::class])->prefix('app/{negoc
     Route::get('/resenas', [PaginaResenaAppController::class, 'index'])->name('app.resenas.index');
 
     // T24 (migracion de Filament): profesionales, con bloqueos y servicios
-    // vinculados. El editor de horario semanal y la vista previa de
-    // disponibilidad se migran aparte (T25, MiHorario): hoy estas paginas
-    // no los incluyen todavia.
+    // vinculados.
     Route::get('/profesionales', [PaginaProfesionalController::class, 'index'])->name('app.profesionales.index');
     Route::get('/profesionales/create', [PaginaProfesionalController::class, 'create'])->name('app.profesionales.create');
     Route::get('/profesionales/{profesional}', [PaginaProfesionalController::class, 'show'])->name('app.profesionales.show');
     Route::get('/profesionales/{profesional}/edit', [PaginaProfesionalController::class, 'edit'])->name('app.profesionales.edit');
+
+    // T25 (migracion de Filament): "Mi horario" (CU-03/CU-04), el
+    // autoservicio del profesional sobre su propio horario y bloqueos
+    // rapidos. El editor de horario semanal y la vista previa de
+    // disponibilidad del perfil del profesional (vista del dueno,
+    // diferidos en T24) tambien quedan aqui.
+    Route::get('/mi-horario', [PaginaMiHorarioController::class, 'mostrar'])->name('app.mi-horario');
+
+    // T26 (migracion de Filament): panel del dia (RF-REP-01), el tablero
+    // del dueno con las citas de hoy, ingresos registrados y huecos
+    // libres por profesional.
+    Route::get('/panel-del-dia', [PaginaPanelDelDiaController::class, 'mostrar'])->name('app.panel-del-dia');
+
+    // T27 (migracion de Filament): agenda visual del dueno (RF-RES-07) y
+    // mis citas de hoy, el autoservicio del profesional (CU-04). Las
+    // acciones sobre cada cita viven en CitaAccionesController (T28),
+    // compartidas con la lista general de citas: nunca duplicar esa logica.
+    Route::get('/agenda', [PaginaAgendaDelDiaController::class, 'mostrar'])->name('app.agenda');
+    Route::get('/mis-citas-hoy', [PaginaMisCitasHoyController::class, 'mostrar'])->name('app.mis-citas-hoy');
+
+    // T28 (migracion de Filament): lista general de citas (RF-RES-06) y
+    // creacion manual de una cita desde el panel.
+    Route::get('/citas', [PaginaCitaController::class, 'index'])->name('app.citas.index');
+    Route::get('/citas/create', [PaginaCitaController::class, 'create'])->name('app.citas.create');
 
     // T29 (migracion de Filament): el dueno edita el texto y las fotos de
     // los bloques que el super admin ya armo en el Builder (admin, T20),
@@ -241,6 +275,36 @@ Route::middleware(['auth', ResolverNegocioDesdeRuta::class])->prefix('app/{negoc
         Route::post('/profesionales/{profesional}/servicios', [ProfesionalServicioController::class, 'store']);
         Route::put('/profesionales/{profesional}/servicios/{servicio}', [ProfesionalServicioController::class, 'update']);
         Route::delete('/profesionales/{profesional}/servicios/{servicio}', [ProfesionalServicioController::class, 'destroy']);
+
+        Route::get('/profesionales/{profesional}/horario', [ProfesionalHorarioController::class, 'mostrar']);
+        Route::put('/profesionales/{profesional}/horario', [ProfesionalHorarioController::class, 'actualizar']);
+        Route::get('/profesionales/{profesional}/vista-previa-disponibilidad', [ProfesionalHorarioController::class, 'vistaPreviaDisponibilidad']);
+
+        Route::get('/mi-horario', [MiHorarioController::class, 'mostrar']);
+        Route::post('/mi-horario/bloqueos', [MiHorarioController::class, 'crearBloqueo']);
+        Route::delete('/mi-horario/bloqueos/{bloqueo}', [MiHorarioController::class, 'eliminarBloqueo']);
+        Route::get('/mi-horario/vista-previa-disponibilidad', [MiHorarioController::class, 'vistaPreviaDisponibilidad']);
+
+        Route::get('/panel-del-dia', [PanelDelDiaController::class, 'mostrar']);
+
+        Route::get('/agenda', [AgendaDelDiaController::class, 'mostrar']);
+
+        Route::get('/mis-citas-hoy', [MisCitasHoyController::class, 'mostrar']);
+        Route::post('/mis-citas-hoy/citas/{cita}/marcar-en-atencion', [MisCitasHoyController::class, 'marcarEnAtencion']);
+        Route::post('/mis-citas-hoy/citas/{cita}/marcar-no-asistio', [MisCitasHoyController::class, 'marcarNoAsistio']);
+        Route::post('/mis-citas-hoy/citas/{cita}/completar-con-pago', [MisCitasHoyController::class, 'completarConPago']);
+
+        Route::get('/citas', [CitaController::class, 'index']);
+        Route::post('/citas', [CitaController::class, 'store']);
+
+        // Compartidas entre la agenda, la lista general de citas y mis
+        // citas de hoy (las 3 solo difieren en que muestran y filtran, no
+        // en como actuan sobre una cita puntual).
+        Route::post('/citas/{cita}/cambiar-estado', [CitaAccionesController::class, 'cambiarEstado']);
+        Route::post('/citas/{cita}/completar-con-pago', [CitaAccionesController::class, 'completarConPago']);
+        Route::post('/citas/{cita}/cancelar', [CitaAccionesController::class, 'cancelar']);
+        Route::post('/citas/{cita}/reprogramar', [CitaAccionesController::class, 'reprogramar']);
+        Route::post('/citas/{cita}/anular-pago', [CitaAccionesController::class, 'anularPago']);
 
         Route::get('/pagina', [PaginaWebAppController::class, 'show']);
         Route::post('/pagina/guardar-y-publicar', [PaginaWebAppController::class, 'guardarYPublicar']);
