@@ -1,8 +1,13 @@
 import type { ReactElement } from 'react';
+import { useState } from 'react';
+import { useMutation } from '@tanstack/react-query';
 import Boton from '@/componentes/Boton';
 import Tarjeta from '@/componentes/Tarjeta';
+import { actualizarHorarioSemanal, type DiasHorario, obtenerVistaPreviaDisponibilidad } from '../api/horarioSemanal';
 import type { Profesional } from '../api/profesionales';
 import LayoutPanelNegocio from '../LayoutPanelNegocio';
+import ModalEditarHorarioSemanal from './ModalEditarHorarioSemanal';
+import ModalVistaPreviaDisponibilidad from './ModalVistaPreviaDisponibilidad';
 import SeccionBloqueos from './SeccionBloqueos';
 import SeccionServiciosVinculados from './SeccionServiciosVinculados';
 
@@ -15,12 +20,28 @@ interface Propiedades {
 }
 
 export default function PaginaVerProfesional({ negocioNombre, negocioSlug, urlSalir, tokenCsrf, profesional }: Propiedades): ReactElement {
+    const [modalHorarioAbierto, setModalHorarioAbierto] = useState(false);
+    const [modalVistaPreviaAbierto, setModalVistaPreviaAbierto] = useState(false);
+
+    const mutacionGuardarHorario = useMutation({
+        mutationFn: (dias: DiasHorario) => actualizarHorarioSemanal(negocioSlug, profesional.id, dias),
+        onSuccess: () => setModalHorarioAbierto(false),
+    });
+
     return (
         <LayoutPanelNegocio negocioNombre={negocioNombre} negocioSlug={negocioSlug} urlSalir={urlSalir} tokenCsrf={tokenCsrf}>
             <div className="space-y-6">
-                <div className="flex items-center justify-between gap-4">
+                <div className="flex flex-wrap items-center justify-between gap-4">
                     <h2 className="text-lg font-semibold text-tinta">{profesional.nombre}</h2>
-                    <Boton onClick={() => (window.location.href = `/app/${negocioSlug}/profesionales/${profesional.id}/edit`)}>Editar</Boton>
+                    <div className="flex flex-wrap gap-2">
+                        <Boton variante="contorno" onClick={() => setModalVistaPreviaAbierto(true)}>
+                            Vista previa de disponibilidad
+                        </Boton>
+                        <Boton variante="contorno" onClick={() => setModalHorarioAbierto(true)}>
+                            Editar horario
+                        </Boton>
+                        <Boton onClick={() => (window.location.href = `/app/${negocioSlug}/profesionales/${profesional.id}/edit`)}>Editar</Boton>
+                    </div>
                 </div>
 
                 <Tarjeta className="grid gap-4 sm:grid-cols-2">
@@ -56,6 +77,24 @@ export default function PaginaVerProfesional({ negocioNombre, negocioSlug, urlSa
                 <SeccionServiciosVinculados slug={negocioSlug} profesionalId={profesional.id} />
                 <SeccionBloqueos slug={negocioSlug} profesionalId={profesional.id} />
             </div>
+
+            {modalHorarioAbierto && (
+                <ModalEditarHorarioSemanal
+                    slug={negocioSlug}
+                    profesionalId={profesional.id}
+                    enviando={mutacionGuardarHorario.isPending}
+                    onGuardar={(dias) => mutacionGuardarHorario.mutateAsync(dias)}
+                    onCerrar={() => setModalHorarioAbierto(false)}
+                />
+            )}
+
+            {modalVistaPreviaAbierto && (
+                <ModalVistaPreviaDisponibilidad
+                    slug={negocioSlug}
+                    onConsultar={(servicioId, fecha) => obtenerVistaPreviaDisponibilidad(negocioSlug, profesional.id, servicioId, fecha)}
+                    onCerrar={() => setModalVistaPreviaAbierto(false)}
+                />
+            )}
         </LayoutPanelNegocio>
     );
 }

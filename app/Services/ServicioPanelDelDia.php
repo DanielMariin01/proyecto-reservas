@@ -2,22 +2,16 @@
 
 declare(strict_types=1);
 
-namespace App\Filament\App\Pages;
+namespace App\Services;
 
 use App\Disponibilidad\BloqueLibre;
 use App\Disponibilidad\IntervalosOcupadosPorCitas;
-use App\Enums\Permiso;
 use App\Models\Cita;
 use App\Models\Negocio;
 use App\Models\Pago;
 use App\Models\Profesional;
-use BackedEnum;
 use Carbon\CarbonImmutable;
-use Filament\Pages\Page;
-use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
-use UnitEnum;
 
 /**
  * RF-REP-01: citas de hoy, próximas, ingresos registrados y huecos libres.
@@ -25,33 +19,19 @@ use UnitEnum;
  * pagos mal registrados y cerrar la caja (eso, y el detalle por
  * profesional/servicio de RF-REP-02, queda para Fase 2).
  */
-final class PanelDelDia extends Page
+final class ServicioPanelDelDia
 {
-    protected static ?string $slug = 'panel-del-dia';
-
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedChartBar;
-
-    protected static string|UnitEnum|null $navigationGroup = 'Reservas';
-
-    protected static ?string $navigationLabel = 'Panel del día';
-
-    protected string $view = 'filament.app.pages.panel-del-dia';
-
-    public static function canAccess(): bool
-    {
-        $usuario = Auth::guard('web')->user();
-
-        return $usuario !== null && ($usuario->es_super_admin || $usuario->can(Permiso::GestionarCitasTodas->value));
-    }
+    public function __construct(private readonly IntervalosOcupadosPorCitas $intervalosOcupadosPorCitas) {}
 
     /**
      * @return Collection<int, Cita>
      */
-    public function citasDeHoy(): Collection
+    public function citasDeHoy(Negocio $negocio): Collection
     {
-        [$inicioDiaUtc, $finDiaUtc] = $this->rangoDeHoyUtc();
+        [$inicioDiaUtc, $finDiaUtc] = $this->rangoDeHoyUtc($negocio);
 
         return Cita::query()
+            ->where('negocio_id', $negocio->id)
             ->where('inicio', '>=', $inicioDiaUtc)
             ->where('inicio', '<', $finDiaUtc)
             ->orderBy('inicio')
@@ -61,11 +41,12 @@ final class PanelDelDia extends Page
     /**
      * Las de hoy que todavía no empiezan: lo que falta por atender.
      *
+     * @param  Collection<int, Cita>  $citasDeHoy
      * @return Collection<int, Cita>
      */
-    public function citasProximas(): Collection
+    public function citasProximas(Collection $citasDeHoy): Collection
     {
-        return $this->citasDeHoy()->filter(
+        return $citasDeHoy->filter(
             fn (Cita $cita): bool => $cita->inicio->greaterThan(CarbonImmutable::now()),
         )->values();
     }
@@ -75,12 +56,12 @@ final class PanelDelDia extends Page
      * hoy), como en una caja diaria: lo que entró hoy, sin importar la
      * fecha de la cita.
      */
-    public function ingresosRegistrados(): int
+    public function ingresosRegistrados(Negocio $negocio): int
     {
-        [$inicioDiaUtc, $finDiaUtc] = $this->rangoDeHoyUtc();
+        [$inicioDiaUtc, $finDiaUtc] = $this->rangoDeHoyUtc($negocio);
 
         $pagos = Pago::query()
-            ->where('negocio_id', Negocio::actual()->id)
+            ->where('negocio_id', $negocio->id)
             ->whereNull('anulado_en')
             ->where('created_at', '>=', $inicioDiaUtc)
             ->where('created_at', '<', $finDiaUtc)
@@ -96,21 +77,19 @@ final class PanelDelDia extends Page
      *
      * @return Collection<int, array{profesional: Profesional, bloques: Collection<int, BloqueLibre>}>
      */
-    public function huecosLibres(): Collection
+    public function huecosLibres(Negocio $negocio): Collection
     {
-        $negocio = Negocio::actual();
         $fechaLocal = CarbonImmutable::now($negocio->zona_horaria)->startOfDay();
-        $intervalosOcupados = app(IntervalosOcupadosPorCitas::class);
 
         return Profesional::query()
             ->where('negocio_id', $negocio->id)
             ->where('activo', true)
             ->orderBy('nombre')
             ->get()
-            ->map(function (Profesional $profesional) use ($fechaLocal, $intervalosOcupados): array {
+            ->map(function (Profesional $profesional) use ($fechaLocal): array {
                 $bloques = $profesional->obtenerBloquesLibres($fechaLocal);
 
-                foreach ($intervalosOcupados->paraProfesionalYFecha($profesional, $fechaLocal) as $intervalo) {
+                foreach ($this->intervalosOcupadosPorCitas->paraProfesionalYFecha($profesional, $fechaLocal) as $intervalo) {
                     $bloques = BloqueLibre::restar($bloques, $intervalo->inicio, $intervalo->fin);
                 }
 
@@ -121,9 +100,9 @@ final class PanelDelDia extends Page
     /**
      * @return array{0: CarbonImmutable, 1: CarbonImmutable}
      */
-    private function rangoDeHoyUtc(): array
+    private function rangoDeHoyUtc(Negocio $negocio): array
     {
-        $fechaLocal = CarbonImmutable::now(Negocio::actual()->zona_horaria)->startOfDay();
+        $fechaLocal = CarbonImmutable::now($negocio->zona_horaria)->startOfDay();
 
         return [$fechaLocal->utc(), $fechaLocal->endOfDay()->utc()];
     }
