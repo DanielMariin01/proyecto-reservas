@@ -16,7 +16,7 @@ Un sistema SaaS multi-negocio de reservas, cursos y tienda para barberías, spas
 - Que cada negocio tenga su página pública con su marca, sin que el desarrollador tenga que dar soporte diario.
 - Servir como proyecto de portafolio: arquitectura limpia, pruebas, documentación y despliegue real.
 
-**Stack definido:** Laravel (backend y API), Filament PHP (paneles de administración), React (página pública y flujo de reserva), MySQL, colas y tareas programadas de Laravel.
+**Stack definido:** Laravel (backend y API), React (interfaz completa: página pública, flujo de reserva, panel admin y panel del negocio), MySQL, colas y tareas programadas de Laravel.
 
 **Alcance por fases**
 
@@ -79,8 +79,8 @@ Cada usuario pertenece a uno o varios negocios y solo ve los datos del negocio q
 
 | Rol | Quién es | Entra por | Puede | No puede |
 | --- | --- | --- | --- | --- |
-| Super administrador | Tú, dueño del SaaS | Panel Filament `/admin` | Crear y suspender negocios, ver uso, gestionar planes del SaaS, entrar como soporte con registro de auditoría | Ver contraseñas; cambiar datos sin dejar registro |
-| Dueño del negocio | Japo, la dueña del spa | Panel Filament `/app/{negocio}` | Todo su negocio: profesionales, servicios, horarios, citas, cursos, productos, clientes, reportes, configuración y página pública | Ver otros negocios |
+| Super administrador | Tú, dueño del SaaS | Panel `/admin` | Crear y suspender negocios, ver uso, gestionar planes del SaaS, entrar como soporte con registro de auditoría | Ver contraseñas; cambiar datos sin dejar registro |
+| Dueño del negocio | Japo, la dueña del spa | Panel `/app/{negocio}` | Todo su negocio: profesionales, servicios, horarios, citas, cursos, productos, clientes, reportes, configuración y página pública | Ver otros negocios |
 | Recepción / administrador | Empleado de confianza | Panel `/app/{negocio}` | Crear, mover y cancelar citas de cualquier profesional; registrar pagos; gestionar clientes e inscripciones | Cambiar precios, servicios, profesionales y configuración |
 | Profesional | Barbero, manicurista, instructora | Panel `/app/{negocio}` (vista reducida, ideal en celular) | Ver y gestionar solo sus citas; editar su horario y bloquear sus días; marcar asistencia y completado | Ver citas o ingresos de otros profesionales; cambiar precios |
 | Cliente final | Quien reserva un servicio | Página pública (React) | Reservar sin crear cuenta; cancelar o reprogramar desde el enlace del correo; ver sus próximas citas | Reservar fuera de las reglas del negocio |
@@ -415,11 +415,11 @@ La regla más importante es el aislamiento: ningún usuario, consulta o archivo 
 **Arquitectura propuesta**
 
 - **Backend:** Laravel con API REST bajo `/api/public/{slug}` para la página y el flujo de reserva, y servicios de dominio separados (`AvailabilityService`, `BookingService`, `EnrollmentService`).
-- **Paneles:** Filament con dos paneles: `admin` (super admin) y `app` (negocio, con tenancy por `Business`).
+- **Paneles:** Laravel + React con dos paneles: `admin` (super admin) y `app` (negocio, con tenancy por `Business`).
 - **Frontend público:** React con Vite (o Inertia), TypeScript, Tailwind y React Query; renderizado del lado del servidor opcional para SEO de la página pública.
 - **Base de datos:** MySQL 8 o PostgreSQL; restricciones de integridad para evitar citas superpuestas.
 
-Las versiones exactas de Laravel, Filament y React se confirman al iniciar el proyecto, usando las estables vigentes.
+Las versiones exactas de Laravel y React se confirman al iniciar el proyecto, usando las estables vigentes.
 
 ## 10. Modelo de datos
 
@@ -461,11 +461,11 @@ El MVP se construye en 8 tareas en orden, cada una pequeña, probada y revisada 
 
 **Tareas del MVP (en orden)**
 
-- [ ] T1. Proyecto base: Laravel, Filament, React con Vite, Pest, Pint, Larastan, CI en GitHub Actions, README.
+- [ ] T1. Proyecto base: Laravel, React con Vite, Pest, Pint, Larastan, CI en GitHub Actions, README.
 - [ ] T2. Multi-tenant y roles: `businesses`, `business_user`, roles y permisos, paneles `admin` y `app`, pruebas de aislamiento (RNF-01).
-- [ ] T3. Catálogo: categorías, servicios, profesionales y su relación, con recursos de Filament (RF-SER, RF-PRO).
+- [ ] T3. Catálogo: categorías, servicios, profesionales y su relación (RF-SER, RF-PRO).
 - [ ] T4. Disponibilidad: horarios, bloqueos, festivos y `AvailabilityService` con pruebas de la sección 5, incluido el ejemplo de Japo.
-- [ ] T5. Reservas: `BookingService`, estados, concurrencia, agenda en Filament, creación desde panel (CU-01, 04, 05).
+- [ ] T5. Reservas: `BookingService`, estados, concurrencia, agenda en el panel, creación desde panel (CU-01, 04, 05).
 - [ ] T6. API pública y flujo de reserva en React (F2), con enlaces firmados para cancelar y reprogramar (CU-02).
 - [ ] T7. Notificaciones por correo y colas: confirmación, cambios, recordatorio 24 h, resumen diario (RF-NOT-01 a 03).
 - [ ] T8. Página pública editable, pagos manuales, tablero del dueño y despliegue (RF-WEB, CU-08, RF-REP-01).
@@ -804,7 +804,7 @@ El proyecto arranca con Laravel 12 sobre PHP 8.2/8.3 y MariaDB, para trabajar co
 | Tema | Decisión | Motivo |
 | --- | --- | --- |
 | Framework | Laravel 12 (`^12.0`) | Funciona con PHP 8.2 local y 8.3 del hosting; correcciones de seguridad hasta el 24 feb 2027 |
-| Paneles | Filament 5 | Compatible con PHP 8.2+ y Laravel 11.28+ |
+| Paneles | Laravel + React (sin Filament) | Resources de Filament migrados a controladores/React entre T12 y T29; Filament retirado del todo en T30 (12 nov 2026) por limitaciones reales en producción (bugs de pluralización en español en las URLs de recursos, entre otros) |
 | PHP | 8.2 en local (XAMPP) y 8.3 en el hosting | No usar funciones exclusivas de PHP 8.3 o superior |
 | Base de datos | MariaDB (11.8 en el hosting) | Citas superpuestas se evitan con transacción y bloqueo de fila, no con restricción de exclusión |
 | Hosting | Hostinger Business, servidor us-phx, Composer 2.9 y Git 2.43 disponibles por SSH | Sin Node en el servidor: React se compila en local o en GitHub Actions |
