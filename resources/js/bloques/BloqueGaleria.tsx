@@ -18,7 +18,12 @@ export default function BloqueGaleria({ datos }: PropiedadesBloque): ReactElemen
 
                 <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
                     {fotos.map((foto) => (
-                        <button key={foto} type="button" onClick={() => setFotoAmpliada(foto)} className="aspect-square overflow-hidden rounded-tarjeta">
+                        <button
+                            key={foto}
+                            type="button"
+                            onClick={() => setFotoAmpliada(foto)}
+                            className="aspect-square overflow-hidden rounded-tarjeta transition-opacity hover:opacity-90"
+                        >
                             <img src={foto} alt="" className="h-full w-full object-cover" />
                         </button>
                     ))}

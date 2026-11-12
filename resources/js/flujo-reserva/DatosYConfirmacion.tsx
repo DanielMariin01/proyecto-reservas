@@ -77,7 +77,7 @@ export default function DatosYConfirmacion({
             </details>
 
             <form onSubmit={manejarEnvio} className="order-2 space-y-6 p-4 sm:order-1 sm:p-6">
-                <button type="button" onClick={onVolver} className="text-sm text-primario">
+                <button type="button" onClick={onVolver} className="text-sm text-primario transition-colors hover:text-acento">
                     ← Volver
                 </button>
 

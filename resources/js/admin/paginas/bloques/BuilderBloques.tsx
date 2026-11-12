@@ -96,7 +96,7 @@ export default function BuilderBloques({ slug, bloques, onChange }: Propiedades)
                                 <button
                                     type="button"
                                     onClick={() => alternarExpandido(indice)}
-                                    className="flex flex-1 items-center gap-3 text-left"
+                                    className="flex flex-1 items-center gap-3 rounded-boton p-2 text-left hover:bg-fondo-panel"
                                 >
                                     <Icono size={20} strokeWidth={1.75} className="text-texto-suave" />
                                     <span className="font-semibold text-tinta">{meta.etiqueta}</span>
