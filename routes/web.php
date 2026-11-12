@@ -70,8 +70,9 @@ Route::get('/', function () {
 Route::get('/ingresar', [SesionController::class, 'mostrar'])->name('login');
 Route::post('/ingresar', [SesionController::class, 'iniciar']);
 
-// Los paneles de Filament no registran su propio formulario de login (RF-DOM-02):
-// cualquiera que llegue a estas rutas se redirige a la única pantalla de acceso.
+// RF-DOM-02: una sola pantalla de acceso para ambos paneles; estos paths
+// se conservan por compatibilidad con enlaces antiguos de cuando los
+// paneles eran de Filament.
 Route::redirect('/admin/login', '/ingresar');
 Route::redirect('/app/login', '/ingresar');
 
@@ -87,6 +88,7 @@ Route::middleware('auth')->group(function (): void {
     Route::get('/elegir-negocio', [ElegirNegocioController::class, 'mostrar'])->name('elegir-negocio');
     Route::get('/elegir-negocio/{negocio}', [ElegirNegocioController::class, 'elegir'])->name('elegir-negocio.entrar');
     Route::get('/suplantacion/salir', [SuplantacionController::class, 'salir'])->name('suplantacion.salir');
+    Route::post('/salir', [SesionController::class, 'salir'])->name('salir');
 });
 
 Route::middleware(['auth', VerificarSuperAdmin::class])->group(function (): void {

@@ -7,7 +7,7 @@ use App\DatosTransferencia\DatosNuevoProfesional;
 use App\Enums\RolNegocio;
 use App\Models\Negocio;
 use App\Models\Resena;
-use Filament\Facades\Filament;
+use App\Negocios\ContextoNegocioActual;
 
 test('un profesional puede ver solo sus propias reseñas', function (): void {
     $negocio = Negocio::factory()->create();
@@ -55,8 +55,7 @@ test('el alcance global del tenant oculta las reseñas de otro negocio', functio
     $resenaA = Resena::factory()->create(['negocio_id' => $negocioA->id]);
     $resenaB = Resena::factory()->create(['negocio_id' => $negocioB->id]);
 
-    Filament::setCurrentPanel(Filament::getPanel('app'));
-    Filament::setTenant($negocioA, isQuiet: true);
+    app(ContextoNegocioActual::class)->fijar($negocioA);
 
     $idsVisibles = Resena::query()->pluck('id');
 

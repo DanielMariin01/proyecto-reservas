@@ -10,8 +10,6 @@ use App\Enums\TipoNegocio;
 use App\Negocios\ContextoNegocioActual;
 use Carbon\Carbon;
 use Database\Factories\NegocioFactory;
-use Filament\Facades\Filament;
-use Filament\Models\Contracts\HasName;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -21,7 +19,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
-final class Negocio extends Model implements HasName
+final class Negocio extends Model
 {
     /** @use HasFactory<NegocioFactory> */
     use HasFactory;
@@ -125,19 +123,11 @@ final class Negocio extends Model implements HasName
         return $this->hasMany(Resena::class);
     }
 
-    public function getFilamentName(): string
-    {
-        return $this->nombre;
-    }
-
     /**
      * El negocio (tenant) activo en la petición actual. Solo se usa en
      * puntos del código que únicamente se ejecutan dentro de una ruta ya
-     * resuelta a un tenant. Se lee primero de ContextoNegocioActual (las
-     * rutas propias, y el panel `app` de Filament desde que su middleware
-     * lo fija ahí también) y, mientras Filament siga activo, se cae a
-     * Filament::getTenant() para las pruebas y flujos que manipulan el
-     * tenant de Filament directamente sin pasar por ese middleware.
+     * resuelta a un tenant, fijado por `ResolverNegocioDesdeRuta` en
+     * `ContextoNegocioActual`.
      */
     public static function actual(): self
     {
@@ -152,15 +142,7 @@ final class Negocio extends Model implements HasName
 
     public static function actualOSinNegocio(): ?self
     {
-        $negocio = app(ContextoNegocioActual::class)->actual();
-
-        if ($negocio instanceof self) {
-            return $negocio;
-        }
-
-        $tenant = Filament::getTenant();
-
-        return $tenant instanceof self ? $tenant : null;
+        return app(ContextoNegocioActual::class)->actual();
     }
 
     public function estaOperativo(): bool

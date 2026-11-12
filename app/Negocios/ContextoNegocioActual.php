@@ -8,10 +8,9 @@ use App\Models\Negocio;
 
 /**
  * Único punto de verdad sobre el negocio (tenant) activo en la petición
- * actual, sin depender de Filament. Se fija una sola vez por petición,
- * desde el middleware que resuelve el negocio de la ruta (hoy el de
- * Filament para el panel `app`, y el nuevo `ResolverNegocioDesdeRuta`
- * para las rutas propias que lo vayan reemplazando).
+ * actual. Se fija una sola vez por petición, desde el middleware que
+ * resuelve el negocio de la ruta (`ResolverNegocioDesdeRuta` para el
+ * panel `app`).
  */
 final class ContextoNegocioActual
 {

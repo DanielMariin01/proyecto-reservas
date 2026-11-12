@@ -4,12 +4,10 @@ declare(strict_types=1);
 
 namespace App\Enums;
 
-use Filament\Support\Contracts\HasLabel;
-
 /**
  * RF-PAG-01: los métodos de pago manual que acepta el negocio.
  */
-enum MetodoPago: string implements HasLabel
+enum MetodoPago: string
 {
     case Efectivo = 'efectivo';
     case Nequi = 'nequi';
@@ -26,10 +24,5 @@ enum MetodoPago: string implements HasLabel
             self::Transferencia => 'Transferencia',
             self::Tarjeta => 'Tarjeta (datáfono)',
         };
-    }
-
-    public function getLabel(): string
-    {
-        return $this->etiqueta();
     }
 }

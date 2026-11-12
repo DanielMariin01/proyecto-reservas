@@ -14,13 +14,10 @@ use Spatie\Permission\PermissionRegistrar;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Equivalente, para las rutas propias de Laravel + React que van
- * reemplazando al panel `app` de Filament, de lo que hoy hacen juntos
- * `EstablecerNegocioActualComoEquipoDePermisos` y `VerificarNegocioOperativo`
- * dentro de Filament: resuelve el negocio desde `{negocio:slug}`, verifica
- * que el usuario autenticado pueda entrar a ese negocio, fija el "team" de
- * permisos y el negocio activo, y bloquea el acceso si el negocio está
- * suspendido o cancelado (RF-SUS, sección 14.5).
+ * Para las rutas del panel `app`: resuelve el negocio desde
+ * `{negocio:slug}`, verifica que el usuario autenticado pueda entrar a ese
+ * negocio, fija el "team" de permisos y el negocio activo, y bloquea el
+ * acceso si el negocio está suspendido o cancelado (RF-SUS, sección 14.5).
  */
 final class ResolverNegocioDesdeRuta
 {

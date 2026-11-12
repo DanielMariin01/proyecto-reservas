@@ -11,7 +11,7 @@
     <body class="min-h-screen bg-fondo-panel">
         <div
             id="admin-paletas-marca-editar"
-            data-url-salir="{{ route('filament.admin.auth.logout') }}"
+            data-url-salir="{{ route('salir') }}"
             data-token-csrf="{{ csrf_token() }}"
             data-paleta-id="{{ $paleta->id }}"
             data-nombre="{{ $paleta->nombre }}"

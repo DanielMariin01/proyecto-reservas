@@ -16,7 +16,7 @@ use Throwable;
  * sitio que loguea algo (ver App\Logging\AgregarContextoObservabilidad).
  *
  * negocio_id se resuelve de forma perezosa, no al construir el objeto:
- * según la ruta, el negocio se conoce por el tenant de Filament (panel
+ * según la ruta, el negocio se conoce por ContextoNegocioActual (panel
  * `app`) o por el parámetro `{negocio:slug}` de la API pública, y
  * ninguno de los dos está resuelto todavía cuando arranca el middleware.
  */
@@ -41,7 +41,7 @@ final class ContextoObservabilidad
         try {
             return Negocio::actual()->id;
         } catch (Throwable) {
-            // No hay tenant de Filament activo (API pública u otra ruta).
+            // No hay negocio activo en el contexto (API pública u otra ruta).
         }
 
         $negocio = $this->peticion->route('negocio');

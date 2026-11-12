@@ -11,7 +11,7 @@
     <body class="min-h-screen bg-fondo-panel">
         <div
             id="admin-negocios-ver"
-            data-url-salir="{{ route('filament.admin.auth.logout') }}"
+            data-url-salir="{{ route('salir') }}"
             data-token-csrf="{{ csrf_token() }}"
             data-slug="{{ $negocio->slug }}"
         ></div>

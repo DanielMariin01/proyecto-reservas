@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Actions\SalirDeSuplantacion;
-use Filament\Facades\Filament;
 use Illuminate\Http\RedirectResponse;
 
 final class SuplantacionController extends Controller
@@ -14,10 +13,6 @@ final class SuplantacionController extends Controller
     {
         $salirDeSuplantacion->ejecutar();
 
-        $url = Filament::getPanel('admin')->getUrl();
-
-        abort_if($url === null, 500, 'No se pudo generar la URL del panel admin.');
-
-        return redirect()->to($url);
+        return redirect()->route('admin.panel');
     }
 }

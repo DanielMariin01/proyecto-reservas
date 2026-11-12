@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 use App\Models\Negocio;
 use App\Models\Servicio;
-use Filament\Facades\Filament;
+use App\Negocios\ContextoNegocioActual;
 
-test('el scope global solo filtra cuando hay un tenant activo de Filament', function (): void {
+test('el scope global solo filtra cuando hay un negocio activo en el contexto', function (): void {
     $negocioA = Negocio::factory()->create();
     $negocioB = Negocio::factory()->create();
     Servicio::factory()->create(['negocio_id' => $negocioA->id]);
@@ -14,8 +14,7 @@ test('el scope global solo filtra cuando hay un tenant activo de Filament', func
 
     expect(Servicio::count())->toBe(2);
 
-    Filament::setCurrentPanel(Filament::getPanel('app'));
-    Filament::setTenant($negocioA, isQuiet: true);
+    app(ContextoNegocioActual::class)->fijar($negocioA);
 
     expect(Servicio::count())->toBe(1);
     expect(Servicio::first()->negocio_id)->toBe($negocioA->id);

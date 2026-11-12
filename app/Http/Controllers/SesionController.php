@@ -7,7 +7,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Concerns\RedirigeANegocio;
 use App\Models\Negocio;
 use App\Models\Usuario;
-use Filament\Facades\Filament;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
@@ -50,14 +50,20 @@ final class SesionController extends Controller
         return $this->redirigirSegunUsuario($usuario);
     }
 
+    public function salir(Request $request): RedirectResponse
+    {
+        Auth::guard('web')->logout();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect()->route('login');
+    }
+
     private function redirigirSegunUsuario(Usuario $usuario): Response
     {
         if ($usuario->es_super_admin) {
-            $url = Filament::getPanel('admin')->getUrl();
-
-            abort_if($url === null, 500, 'No se pudo generar la URL del panel admin.');
-
-            return redirect()->to($url);
+            return redirect()->route('admin.panel');
         }
 
         $negocios = $usuario->negociosDondeTieneRol();

@@ -4,15 +4,12 @@ declare(strict_types=1);
 
 namespace App\Enums;
 
-use Filament\Support\Contracts\HasColor;
-use Filament\Support\Contracts\HasLabel;
-
 /**
  * El valor que se guarda en la columna `citas.estado`. La lógica de qué
  * transición es válida vive en las clases de App\Estados\Cita (patrón
  * Estado), no aquí: este enum es solo el dato persistido.
  */
-enum EstadoCitaValor: string implements HasColor, HasLabel
+enum EstadoCitaValor: string
 {
     case Pendiente = 'pendiente';
     case Confirmada = 'confirmada';
@@ -35,18 +32,13 @@ enum EstadoCitaValor: string implements HasColor, HasLabel
         };
     }
 
-    public function getLabel(): string
-    {
-        return $this->etiqueta();
-    }
-
     /**
      * Colores de la skill diseno-reservas (componente Insignia). La skill
      * solo define confirmada/pendiente/cancelada/no asistió; en atención y
      * completada reusan --primario y --secundario respectivamente, y
      * reprogramada no se muestra nunca (pasa a confirmada en el acto).
      */
-    public function getColor(): string
+    public function color(): string
     {
         return match ($this) {
             self::Pendiente => 'warning',

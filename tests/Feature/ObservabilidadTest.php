@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 use App\Enums\RolNegocio;
 use App\Models\Negocio;
+use App\Negocios\ContextoNegocioActual;
 use App\Observabilidad\ContextoObservabilidad;
-use Filament\Facades\Filament;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -26,8 +26,7 @@ test('un log escrito con un tenant y un usuario activos incluye negocio_id, usua
     $negocio = Negocio::factory()->create();
     $dueno = crearUsuarioConRol($negocio, RolNegocio::Dueno);
 
-    Filament::setCurrentPanel(Filament::getPanel('app'));
-    Filament::setTenant($negocio, isQuiet: true);
+    app(ContextoNegocioActual::class)->fijar($negocio);
     Auth::login($dueno);
 
     $idPeticion = (string) Str::uuid();
