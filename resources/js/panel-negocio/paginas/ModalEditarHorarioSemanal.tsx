@@ -111,7 +111,7 @@ export default function ModalEditarHorarioSemanal({ slug, profesionalId, enviand
                                 {dias[valor].disponible && (
                                     <div className="mt-3 space-y-2">
                                         {dias[valor].rangos.map((rango, indice) => (
-                                            <div key={indice} className="flex items-center gap-2">
+                                            <div key={indice} className="flex flex-wrap items-center gap-2">
                                                 <input
                                                     type="time"
                                                     value={rango.hora_inicio}
