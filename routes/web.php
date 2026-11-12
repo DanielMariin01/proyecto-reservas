@@ -25,10 +25,12 @@ use App\Http\Controllers\App\CategoriaServicioController;
 use App\Http\Controllers\App\MiHorarioController;
 use App\Http\Controllers\App\PaginaCategoriaServicioController;
 use App\Http\Controllers\App\PaginaMiHorarioController;
+use App\Http\Controllers\App\PaginaPanelDelDiaController;
 use App\Http\Controllers\App\PaginaProfesionalController;
 use App\Http\Controllers\App\PaginaResenaController as PaginaResenaAppController;
 use App\Http\Controllers\App\PaginaServicioController;
 use App\Http\Controllers\App\PaginaUsuarioController as PaginaUsuarioAppController;
+use App\Http\Controllers\App\PanelDelDiaController;
 use App\Http\Controllers\App\PanelNegocioController;
 use App\Http\Controllers\App\ProfesionalController;
 use App\Http\Controllers\App\ProfesionalHorarioController;
@@ -201,6 +203,11 @@ Route::middleware(['auth', ResolverNegocioDesdeRuta::class])->prefix('app/{negoc
     // diferidos en T24) tambien quedan aqui.
     Route::get('/mi-horario', [PaginaMiHorarioController::class, 'mostrar'])->name('app.mi-horario');
 
+    // T26 (migracion de Filament): panel del dia (RF-REP-01), el tablero
+    // del dueno con las citas de hoy, ingresos registrados y huecos
+    // libres por profesional.
+    Route::get('/panel-del-dia', [PaginaPanelDelDiaController::class, 'mostrar'])->name('app.panel-del-dia');
+
     Route::prefix('api')->group(function (): void {
         Route::get('/servicios', [ServicioController::class, 'index']);
         Route::post('/servicios', [ServicioController::class, 'store']);
@@ -250,6 +257,8 @@ Route::middleware(['auth', ResolverNegocioDesdeRuta::class])->prefix('app/{negoc
         Route::post('/mi-horario/bloqueos', [MiHorarioController::class, 'crearBloqueo']);
         Route::delete('/mi-horario/bloqueos/{bloqueo}', [MiHorarioController::class, 'eliminarBloqueo']);
         Route::get('/mi-horario/vista-previa-disponibilidad', [MiHorarioController::class, 'vistaPreviaDisponibilidad']);
+
+        Route::get('/panel-del-dia', [PanelDelDiaController::class, 'mostrar']);
     });
 });
 
