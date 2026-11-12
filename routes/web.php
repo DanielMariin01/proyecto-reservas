@@ -22,7 +22,9 @@ use App\Http\Controllers\Admin\TrabajoFallidoController;
 use App\Http\Controllers\Admin\UsuarioController;
 use App\Http\Controllers\App\BloqueoController;
 use App\Http\Controllers\App\CategoriaServicioController;
+use App\Http\Controllers\App\MiHorarioController;
 use App\Http\Controllers\App\PaginaCategoriaServicioController;
+use App\Http\Controllers\App\PaginaMiHorarioController;
 use App\Http\Controllers\App\PaginaPanelDelDiaController;
 use App\Http\Controllers\App\PaginaProfesionalController;
 use App\Http\Controllers\App\PaginaResenaController as PaginaResenaAppController;
@@ -31,6 +33,7 @@ use App\Http\Controllers\App\PaginaUsuarioController as PaginaUsuarioAppControll
 use App\Http\Controllers\App\PanelDelDiaController;
 use App\Http\Controllers\App\PanelNegocioController;
 use App\Http\Controllers\App\ProfesionalController;
+use App\Http\Controllers\App\ProfesionalHorarioController;
 use App\Http\Controllers\App\ProfesionalServicioController;
 use App\Http\Controllers\App\ResenaController as ResenaAppController;
 use App\Http\Controllers\App\ServicioController;
@@ -187,13 +190,18 @@ Route::middleware(['auth', ResolverNegocioDesdeRuta::class])->prefix('app/{negoc
     Route::get('/resenas', [PaginaResenaAppController::class, 'index'])->name('app.resenas.index');
 
     // T24 (migracion de Filament): profesionales, con bloqueos y servicios
-    // vinculados. El editor de horario semanal y la vista previa de
-    // disponibilidad se migran aparte (T25, MiHorario): hoy estas paginas
-    // no los incluyen todavia.
+    // vinculados.
     Route::get('/profesionales', [PaginaProfesionalController::class, 'index'])->name('app.profesionales.index');
     Route::get('/profesionales/create', [PaginaProfesionalController::class, 'create'])->name('app.profesionales.create');
     Route::get('/profesionales/{profesional}', [PaginaProfesionalController::class, 'show'])->name('app.profesionales.show');
     Route::get('/profesionales/{profesional}/edit', [PaginaProfesionalController::class, 'edit'])->name('app.profesionales.edit');
+
+    // T25 (migracion de Filament): "Mi horario" (CU-03/CU-04), el
+    // autoservicio del profesional sobre su propio horario y bloqueos
+    // rapidos. El editor de horario semanal y la vista previa de
+    // disponibilidad del perfil del profesional (vista del dueno,
+    // diferidos en T24) tambien quedan aqui.
+    Route::get('/mi-horario', [PaginaMiHorarioController::class, 'mostrar'])->name('app.mi-horario');
 
     // T26 (migracion de Filament): panel del dia (RF-REP-01), el tablero
     // del dueno con las citas de hoy, ingresos registrados y huecos
@@ -240,6 +248,15 @@ Route::middleware(['auth', ResolverNegocioDesdeRuta::class])->prefix('app/{negoc
         Route::post('/profesionales/{profesional}/servicios', [ProfesionalServicioController::class, 'store']);
         Route::put('/profesionales/{profesional}/servicios/{servicio}', [ProfesionalServicioController::class, 'update']);
         Route::delete('/profesionales/{profesional}/servicios/{servicio}', [ProfesionalServicioController::class, 'destroy']);
+
+        Route::get('/profesionales/{profesional}/horario', [ProfesionalHorarioController::class, 'mostrar']);
+        Route::put('/profesionales/{profesional}/horario', [ProfesionalHorarioController::class, 'actualizar']);
+        Route::get('/profesionales/{profesional}/vista-previa-disponibilidad', [ProfesionalHorarioController::class, 'vistaPreviaDisponibilidad']);
+
+        Route::get('/mi-horario', [MiHorarioController::class, 'mostrar']);
+        Route::post('/mi-horario/bloqueos', [MiHorarioController::class, 'crearBloqueo']);
+        Route::delete('/mi-horario/bloqueos/{bloqueo}', [MiHorarioController::class, 'eliminarBloqueo']);
+        Route::get('/mi-horario/vista-previa-disponibilidad', [MiHorarioController::class, 'vistaPreviaDisponibilidad']);
 
         Route::get('/panel-del-dia', [PanelDelDiaController::class, 'mostrar']);
     });
