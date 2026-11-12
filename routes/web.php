@@ -23,10 +23,12 @@ use App\Http\Controllers\Admin\UsuarioController;
 use App\Http\Controllers\App\BloqueoController;
 use App\Http\Controllers\App\CategoriaServicioController;
 use App\Http\Controllers\App\PaginaCategoriaServicioController;
+use App\Http\Controllers\App\PaginaPaginaWebController;
 use App\Http\Controllers\App\PaginaProfesionalController;
 use App\Http\Controllers\App\PaginaResenaController as PaginaResenaAppController;
 use App\Http\Controllers\App\PaginaServicioController;
 use App\Http\Controllers\App\PaginaUsuarioController as PaginaUsuarioAppController;
+use App\Http\Controllers\App\PaginaWebController as PaginaWebAppController;
 use App\Http\Controllers\App\PanelNegocioController;
 use App\Http\Controllers\App\ProfesionalController;
 use App\Http\Controllers\App\ProfesionalServicioController;
@@ -193,6 +195,12 @@ Route::middleware(['auth', ResolverNegocioDesdeRuta::class])->prefix('app/{negoc
     Route::get('/profesionales/{profesional}', [PaginaProfesionalController::class, 'show'])->name('app.profesionales.show');
     Route::get('/profesionales/{profesional}/edit', [PaginaProfesionalController::class, 'edit'])->name('app.profesionales.edit');
 
+    // T29 (migracion de Filament): el dueno edita el texto y las fotos de
+    // los bloques que el super admin ya armo en el Builder (admin, T20),
+    // sin tocar estructura ni colores (RF-PAG-01). Ultimo resource de la
+    // migracion Filament -> React en el panel app.
+    Route::get('/pagina-web', [PaginaPaginaWebController::class, 'mostrar'])->name('app.pagina-web');
+
     Route::prefix('api')->group(function (): void {
         Route::get('/servicios', [ServicioController::class, 'index']);
         Route::post('/servicios', [ServicioController::class, 'store']);
@@ -233,6 +241,10 @@ Route::middleware(['auth', ResolverNegocioDesdeRuta::class])->prefix('app/{negoc
         Route::post('/profesionales/{profesional}/servicios', [ProfesionalServicioController::class, 'store']);
         Route::put('/profesionales/{profesional}/servicios/{servicio}', [ProfesionalServicioController::class, 'update']);
         Route::delete('/profesionales/{profesional}/servicios/{servicio}', [ProfesionalServicioController::class, 'destroy']);
+
+        Route::get('/pagina', [PaginaWebAppController::class, 'show']);
+        Route::post('/pagina/guardar-y-publicar', [PaginaWebAppController::class, 'guardarYPublicar']);
+        Route::post('/pagina/imagenes', [PaginaWebAppController::class, 'subirImagen']);
     });
 });
 
