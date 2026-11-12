@@ -482,17 +482,17 @@ Después del MVP: Fase 2 (cursos, Google Calendar, reportes, caja), Fase 3 (tien
 **Prompt base para los agentes**
 
 ```markdown
-Eres un desarrollador senior de Laravel, Filament y React. Vas a construir un SaaS multi-negocio de reservas para barberías, spas de uñas y salones en Colombia.
+Eres un desarrollador senior de Laravel y React. Vas a construir un SaaS multi-negocio de reservas para barberías, spas de uñas y salones en Colombia.
 
 Contexto obligatorio: lee docs/requerimientos.md (este documento) antes de escribir código.
 
-Stack: Laravel (estable vigente), Filament (estable vigente) con dos paneles (admin y app con tenancy por Business), React + TypeScript + Vite + Tailwind para la página pública, MySQL, colas y scheduler de Laravel, Pest para pruebas.
+Stack: Laravel (estable vigente) con dos paneles propios (admin y app con tenancy por Business), React + TypeScript + Vite + Tailwind para toda la interfaz (página pública y ambos paneles), MySQL, colas y scheduler de Laravel, Pest para pruebas.
 
 Reglas:
 - Todo dato del negocio lleva business_id y scope global; nunca filtres a mano. Escribe pruebas de aislamiento.
 - Guarda fechas en UTC y muéstralas en la zona del negocio (America/Bogota por defecto).
 - Precios en pesos enteros; formato de salida $20.000.
-- La lógica de disponibilidad y reserva vive en servicios de dominio (AvailabilityService, BookingService), no en controladores ni recursos de Filament.
+- La lógica de disponibilidad y reserva vive en servicios de dominio (AvailabilityService, BookingService), no en controladores.
 - Sigue exactamente las reglas de la sección 5 del documento; si una regla no está clara, pregunta antes de inventarla.
 - Textos de la interfaz en español de Colombia.
 - Cada tarea: 1) plan corto, 2) migraciones y modelos, 3) servicios, 4) pruebas Pest con los criterios de aceptación, 5) interfaz, 6) Pint + Larastan + pruebas en verde, 7) resumen de cambios.
@@ -510,7 +510,7 @@ Todo el código se escribe en español, aplica SOLID y patrones de diseño de fo
 
 | Principio | Cómo se aplica en este proyecto |
 | --- | --- |
-| Responsabilidad única (S) | Controladores y recursos de Filament solo reciben y responden; cada caso de uso vive en su propia clase de acción (`CrearReserva`, `CancelarCita`) y cada regla de disponibilidad en su propia clase |
+| Responsabilidad única (S) | Controladores solo reciben y responden; cada caso de uso vive en su propia clase de acción (`CrearReserva`, `CancelarCita`) y cada regla de disponibilidad en su propia clase |
 | Abierto/cerrado (O) | Nuevos canales de notificación, métodos de pago o reglas de reserva se agregan creando clases nuevas, sin modificar las existentes |
 | Sustitución de Liskov (L) | Toda implementación de una interfaz (`NotificadorInterface`, `PasarelaPagoInterface`) se puede intercambiar sin romper a quien la usa |
 | Segregación de interfaces (I) | Interfaces pequeñas y específicas (`EnviaRecordatorios`, `SincronizaCalendario`) en vez de una interfaz grande |
@@ -600,13 +600,13 @@ Estándares obligatorios (secciones 12 y 13 del documento):
 
 ## 13. Guía de estilo visual
 
-Todo el sistema (página pública, flujo de reserva, paneles de Filament y correos) usa los mismos tokens de diseño, definidos una sola vez y reutilizados en todas partes.
+Todo el sistema (página pública, flujo de reserva, paneles admin/app y correos) usa los mismos tokens de diseño, definidos una sola vez y reutilizados en todas partes.
 
 **Tokens de color**
 
 | Token | Valor | Uso recomendado |
 | --- | --- | --- |
-| `--primario` | #5B6BB1 | Botones principales, enlaces, elementos activos, color primario de Filament |
+| `--primario` | #5B6BB1 | Botones principales, enlaces, elementos activos |
 | `--secundario` | #00A09B | Estados positivos (confirmada, pagada), insignias, detalles |
 | `--acento` | #587EAC | Hover de botones, íconos, gráficos secundarios |
 | `--celeste` | #E1EEFF | Fondos de secciones, tarjetas destacadas, franja horaria seleccionada |
@@ -665,8 +665,7 @@ body {
 
 **Cómo se aplica en cada parte**
 
-- **React y Tailwind:** el archivo de tokens se importa una vez y Tailwind los expone como clases (`bg-primario`, `text-tinta`, `rounded-tarjeta`, `shadow-tarjeta`); prohibido escribir colores hexadecimales en los componentes.
-- **Filament:** tema personalizado con `--primario` como color primario, `--secundario` como color de éxito, fuente Asap y los mismos radios y sombras.
+- **React y Tailwind:** el archivo de tokens se importa una vez y Tailwind los expone como clases (`bg-primario`, `text-tinta`, `rounded-tarjeta`, `shadow-tarjeta`) en la página pública y en los paneles `admin`/`app`; prohibido escribir colores hexadecimales en los componentes.
 - **Correos:** plantilla base con los mismos colores y fuente (con respaldo `Arial` para clientes de correo que no cargan fuentes web).
 - **Componentes base reutilizables:** `Boton`, `Tarjeta`, `Insignia`, `CampoTexto`, `SelectorDeHora`, todos construidos con estos tokens.
 - **Logo y colores del negocio:** la página pública de cada negocio puede sobrescribir `--primario` y `--secundario` con sus colores de marca (RF-NEG-01), manteniendo el resto del sistema.
@@ -758,7 +757,7 @@ La página de cada negocio es una lista de bloques guardada en la base de datos 
 
 - **RF-BLQ-01 (MVP)** Cada negocio tiene una página con plantilla, colores, logo y una lista ordenada de bloques guardada como JSON (tabla `paginas`).
 - **RF-BLQ-02 (MVP)** Los bloques de equipo, servicios, cursos y productos no guardan datos: los consultan al sistema al mostrarse, así un cambio de precio o de empleado se ve en la página sin editarla.
-- **RF-BLQ-03 (MVP)** El super admin arma la página en Filament con el componente *Builder*: un formulario por tipo de bloque, arrastrar para ordenar, vista previa y publicar.
+- **RF-BLQ-03 (MVP)** El super admin arma la página en el panel admin con un Builder propio en React: un formulario por tipo de bloque, botones para moverlo arriba/abajo, vista previa en una pestaña nueva y publicar.
 - **RF-BLQ-04 (MVP)** React dibuja cada bloque con un registro de componentes por tipo (patrón Registro/Fábrica); agregar un tipo de bloque nuevo no modifica los existentes.
 - **RF-BLQ-05 (MVP)** Un solo componente `FlujoReserva` abre la reserva desde cualquier bloque, recibiendo lo ya elegido (servicio o empleado).
 
@@ -830,11 +829,11 @@ El sistema real de reseñas quedó descartado de T6/T8 a propósito: el bloque `
 
 Tampoco estaba en el documento original; se definió y aprobó en esta tarea. La cuenta es un plus opcional sobre el flujo sin cuenta (RF-RES-02 de la sección 15.1, que sigue intacto): deja ver el historial y gestionar citas sin depender del enlace de cada correo.
 
-- **RF-CTA-01** Una cuenta de cliente (`cuentas_cliente`) es global entre negocios — a diferencia de `Usuario`, no pertenece a uno — y vive en un guard de autenticación separado (`cliente`), nunca mezclado con el guard `web` de Usuario/Filament.
+- **RF-CTA-01** Una cuenta de cliente (`cuentas_cliente`) es global entre negocios — a diferencia de `Usuario`, no pertenece a uno — y vive en un guard de autenticación separado (`cliente`), nunca mezclado con el guard `web` de Usuario.
 - **RF-CTA-02** El único método de entrada es Google (Socialite); no hay registro manual ni contraseña. La cuenta se crea sola en el primer login (por `google_id`, con el `correo` como respaldo si ya existía una cuenta con otro `google_id`).
 - **RF-CTA-03** Al crearse la cuenta (o reconocer una ya existente), se enlazan por `correo` todos los `Cliente` de cualquier negocio que no tuvieran `cuenta_cliente_id` todavía (`ServicioCuentaCliente::vincularClientesExistentes`) — nunca se duplica el registro de `Cliente` de cada negocio, solo se le añade el enlace. Como Google ya verificó el correo, no hace falta ninguna verificación adicional para confiar en ese enlace.
 - **RF-CTA-04** Una reserva nueva sin cuenta (`CrearReserva`) también enlaza de una vez el `Cliente` que crea si su correo ya tiene una `CuentaCliente`, sin esperar a que esa persona vuelva a entrar con Google.
 - **RF-CTA-05** El panel `/mi-cuenta` (Blade + React, mismo patrón que `/{negocio:slug}/reservas/{token}`) muestra "Próximas" e "Historial" de todos los negocios donde la cuenta tiene citas, reutilizando sin cambios `CancelarCita`, `ReprogramarCita` y `CrearResena` (T5/T10) — la única diferencia frente al flujo por token es cómo se prueba que la cita es suya (sesión del guard `cliente` en vez de token), verificado comparando `cita.cliente.cuenta_cliente_id` con la cuenta en sesión.
 - **RF-CTA-06** Un cliente con sesión puede dejar una reseña de una cita completada suya directo desde el panel, sin el enlace del correo — misma `CrearResena` y la misma cadena de reglas de la sección 17.
 
-**Patrones usados**: Servicio (`ServicioCuentaCliente`, único punto de entrada de la cuenta), Evento auditable (`CuentaClienteCreada`), Adaptador externo ya existente (Socialite detrás de la interfaz del propio paquete). Sin Acción ni DTO de registro — no hay nada que registrar a mano. Sin `Policy` de Filament: `Cita` ya tiene `PoliticaCita` atada al guard `web`, y una `Gate::policy` no admite dos políticas para el mismo modelo; la pertenencia se valida como un chequeo simple en el controlador.
+**Patrones usados**: Servicio (`ServicioCuentaCliente`, único punto de entrada de la cuenta), Evento auditable (`CuentaClienteCreada`), Adaptador externo ya existente (Socialite detrás de la interfaz del propio paquete). Sin Acción ni DTO de registro — no hay nada que registrar a mano. Sin una `Policy` aparte para este flujo: `Cita` ya tiene `PoliticaCita` atada al guard `web`, y una `Gate::policy` no admite dos políticas para el mismo modelo; la pertenencia se valida como un chequeo simple en el controlador.
