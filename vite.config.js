@@ -49,8 +49,6 @@ export default defineConfig({
                 'resources/js/panel-negocio-citas.tsx',
                 'resources/js/panel-negocio-citas-crear.tsx',
                 'resources/js/panel-negocio-pagina-web.tsx',
-                'resources/css/filament/admin/theme.css',
-                'resources/css/filament/app/theme.css',
             ],
             refresh: true,
         }),

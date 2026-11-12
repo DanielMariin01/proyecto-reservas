@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace App\Enums;
 
-use Filament\Support\Contracts\HasLabel;
-
-enum OrigenCita: string implements HasLabel
+enum OrigenCita: string
 {
     case Web = 'web';
     case Panel = 'panel';
@@ -17,10 +15,5 @@ enum OrigenCita: string implements HasLabel
             self::Web => 'Página pública',
             self::Panel => 'Panel',
         };
-    }
-
-    public function getLabel(): string
-    {
-        return $this->etiqueta();
     }
 }

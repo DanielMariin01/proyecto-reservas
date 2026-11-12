@@ -11,8 +11,8 @@ Si una regla no está clara en el documento, **pregunta antes de inventarla**.
 ## Stack
 
 - **Laravel 12** (`^12.0`), PHP **8.2** en local y **8.3** en producción: no uses funciones exclusivas de PHP 8.3+.
-- **Filament 5** con dos paneles: `admin` (super admin) y `app` (negocio, con tenancy por `Negocio`).
-- **React + TypeScript + Vite + Tailwind** para la página pública y el flujo de reserva.
+- **React + TypeScript + Vite + Tailwind** para toda la interfaz: la página pública, el flujo de reserva, el panel `admin` (super admin) y el panel `app` (negocio, con tenancy por `Negocio`). Controladores Laravel + rutas propias, sin Filament.
+- Tenancy del panel `app`: middleware `ResolverNegocioDesdeRuta` fija el negocio actual en `ContextoNegocioActual` (ver `App\Negocios`), de donde lo lee `ScopeNegocio`.
 - **MariaDB** (11.8 en producción).
 - Colas con driver `database` y scheduler por cron (hosting compartido, sin procesos permanentes).
 - Pruebas con **Pest**; formato con **Pint**; análisis estático con **Larastan**.
@@ -22,7 +22,7 @@ Si una regla no está clara en el documento, **pregunta antes de inventarla**.
 
 ### Arquitectura
 - Aplica **SOLID** en todo el código y los patrones de la sección 12.2 (Servicios, Acciones, DTO, Estado, Estrategia, Cadena de reglas, Observador con eventos, Adaptador, Fábrica, Políticas). Justifica cada patrón en el pull request.
-- Controladores y recursos de Filament solo reciben y responden. La lógica vive en servicios de dominio (`ServicioDisponibilidad`, `ServicioReservas`) y acciones (`CrearReserva`, `CancelarCita`).
+- Controladores solo reciben y responden. La lógica vive en servicios de dominio (`ServicioDisponibilidad`, `ServicioReservas`) y acciones (`CrearReserva`, `CancelarCita`).
 - Servicios externos (Google Calendar, pasarelas, correo) siempre detrás de una interfaz propia, registrada en un `ServiceProvider`.
 - La página pública **nunca** calcula horas ni guarda citas: solo consume la API pública `/api/publico/{slug}/...` (sección 15.1).
 

@@ -9,11 +9,12 @@
         @vite(['resources/css/app.css', 'resources/js/panel-negocio-profesionales-crear.tsx'])
     </head>
     <body class="min-h-screen bg-fondo-panel">
+        @include('partials.suplantacion-banner')
         <div
             id="panel-profesionales-crear"
             data-negocio-nombre="{{ $negocio->nombre }}"
             data-negocio-slug="{{ $negocio->slug }}"
-            data-url-salir="{{ route('filament.app.auth.logout') }}"
+            data-url-salir="{{ route('salir') }}"
             data-token-csrf="{{ csrf_token() }}"
         ></div>
     </body>

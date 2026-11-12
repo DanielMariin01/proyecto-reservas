@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace App\Enums;
 
-use Filament\Support\Contracts\HasLabel;
-
-enum TipoBloqueo: string implements HasLabel
+enum TipoBloqueo: string
 {
     /** Quita disponibilidad dentro del horario normal (RF-DIS-02/03). */
     case Bloqueo = 'bloqueo';
@@ -20,10 +18,5 @@ enum TipoBloqueo: string implements HasLabel
             self::Bloqueo => 'Bloqueo (no atiendo)',
             self::Apertura => 'Apertura especial',
         };
-    }
-
-    public function getLabel(): string
-    {
-        return $this->etiqueta();
     }
 }

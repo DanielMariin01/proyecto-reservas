@@ -11,7 +11,7 @@
     <body class="min-h-screen bg-fondo-panel">
         <div
             id="admin-usuarios-editar"
-            data-url-salir="{{ route('filament.admin.auth.logout') }}"
+            data-url-salir="{{ route('salir') }}"
             data-token-csrf="{{ csrf_token() }}"
             data-usuario-id="{{ $usuario->id }}"
             data-nombre="{{ $usuario->nombre }}"

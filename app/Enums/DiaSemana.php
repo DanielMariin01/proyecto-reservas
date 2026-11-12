@@ -4,13 +4,11 @@ declare(strict_types=1);
 
 namespace App\Enums;
 
-use Filament\Support\Contracts\HasLabel;
-
 /**
  * Coincide exactamente con el valor que devuelve Carbon::dayOfWeek
  * (0 = domingo ... 6 = sábado), para no tener que traducir índices.
  */
-enum DiaSemana: int implements HasLabel
+enum DiaSemana: int
 {
     case Domingo = 0;
     case Lunes = 1;
@@ -31,10 +29,5 @@ enum DiaSemana: int implements HasLabel
             self::Viernes => 'Viernes',
             self::Sabado => 'Sábado',
         };
-    }
-
-    public function getLabel(): string
-    {
-        return $this->etiqueta();
     }
 }

@@ -11,9 +11,8 @@ use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Equivalente, para las rutas propias del panel admin, de lo que hoy
- * resuelve Usuario::canAccessPanel() para el panel `admin` de Filament:
- * solo el super admin entra, el resto recibe 403 (RF-DOM-02).
+ * Protege las rutas del panel admin: solo el super admin entra, el resto
+ * recibe 403 (RF-DOM-02).
  */
 final class VerificarSuperAdmin
 {

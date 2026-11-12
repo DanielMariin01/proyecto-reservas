@@ -5,11 +5,6 @@ declare(strict_types=1);
 namespace App\Models;
 
 use Database\Factories\UsuarioFactory;
-use Filament\Models\Contracts\FilamentUser;
-use Filament\Models\Contracts\HasDefaultTenant;
-use Filament\Models\Contracts\HasName;
-use Filament\Models\Contracts\HasTenants;
-use Filament\Panel;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -21,7 +16,7 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Traits\HasRoles;
 
-final class Usuario extends Authenticatable implements FilamentUser, HasDefaultTenant, HasName, HasTenants, MustVerifyEmail
+final class Usuario extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<UsuarioFactory> */
     use HasFactory;
@@ -62,26 +57,12 @@ final class Usuario extends Authenticatable implements FilamentUser, HasDefaultT
         ];
     }
 
-    public function getFilamentName(): string
-    {
-        return $this->nombre;
-    }
-
     /**
      * @return HasOne<Profesional, $this>
      */
     public function profesional(): HasOne
     {
         return $this->hasOne(Profesional::class);
-    }
-
-    public function canAccessPanel(Panel $panel): bool
-    {
-        if ($panel->getId() === 'admin') {
-            return $this->es_super_admin;
-        }
-
-        return $this->es_super_admin || $this->negociosDondeTieneRol()->isNotEmpty();
     }
 
     public function canAccessTenant(Model $tenant): bool
@@ -95,33 +76,6 @@ final class Usuario extends Authenticatable implements FilamentUser, HasDefaultT
         }
 
         return $this->es_super_admin && $this->negocioSuplantadoId() === $tenant->id;
-    }
-
-    /**
-     * @return Collection<int, Negocio>
-     */
-    public function getTenants(Panel $panel): Collection
-    {
-        $negocios = $this->negociosDondeTieneRol();
-
-        $suplantadoId = $this->negocioSuplantadoId();
-
-        if ($this->es_super_admin && $suplantadoId !== null && ! $negocios->contains('id', $suplantadoId)) {
-            $negocioSuplantado = Negocio::find($suplantadoId);
-
-            if ($negocioSuplantado !== null) {
-                $negocios->push($negocioSuplantado);
-            }
-        }
-
-        return $negocios;
-    }
-
-    public function getDefaultTenant(Panel $panel): ?Model
-    {
-        $negocios = $this->getTenants($panel);
-
-        return $negocios->count() === 1 ? $negocios->first() : null;
     }
 
     /**

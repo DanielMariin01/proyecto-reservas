@@ -4,10 +4,7 @@ declare(strict_types=1);
 
 namespace App\Enums;
 
-use Filament\Support\Contracts\HasColor;
-use Filament\Support\Contracts\HasLabel;
-
-enum EstadoResenaValor: string implements HasColor, HasLabel
+enum EstadoResenaValor: string
 {
     case Publicada = 'publicada';
     case Oculta = 'oculta';
@@ -20,12 +17,7 @@ enum EstadoResenaValor: string implements HasColor, HasLabel
         };
     }
 
-    public function getLabel(): string
-    {
-        return $this->etiqueta();
-    }
-
-    public function getColor(): string
+    public function color(): string
     {
         return match ($this) {
             self::Publicada => 'success',
