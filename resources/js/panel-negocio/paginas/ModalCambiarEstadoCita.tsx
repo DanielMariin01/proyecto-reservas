@@ -2,7 +2,7 @@ import type { ReactElement } from 'react';
 import { useState } from 'react';
 import Boton from '@/componentes/Boton';
 import Modal from '@/componentes/Modal';
-import type { DestinoEstado } from '../api/agenda';
+import type { DestinoEstado } from '../api/citaAcciones';
 
 interface Propiedades {
     destinos: DestinoEstado[];

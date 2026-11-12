@@ -23,10 +23,13 @@ use App\Http\Controllers\Admin\UsuarioController;
 use App\Http\Controllers\App\AgendaDelDiaController;
 use App\Http\Controllers\App\BloqueoController;
 use App\Http\Controllers\App\CategoriaServicioController;
+use App\Http\Controllers\App\CitaAccionesController;
+use App\Http\Controllers\App\CitaController;
 use App\Http\Controllers\App\MiHorarioController;
 use App\Http\Controllers\App\MisCitasHoyController;
 use App\Http\Controllers\App\PaginaAgendaDelDiaController;
 use App\Http\Controllers\App\PaginaCategoriaServicioController;
+use App\Http\Controllers\App\PaginaCitaController;
 use App\Http\Controllers\App\PaginaMiHorarioController;
 use App\Http\Controllers\App\PaginaMisCitasHoyController;
 use App\Http\Controllers\App\PaginaPanelDelDiaController;
@@ -214,11 +217,15 @@ Route::middleware(['auth', ResolverNegocioDesdeRuta::class])->prefix('app/{negoc
 
     // T27 (migracion de Filament): agenda visual del dueno (RF-RES-07) y
     // mis citas de hoy, el autoservicio del profesional (CU-04). Las
-    // acciones sobre cada cita reutilizan los mismos Actions de dominio
-    // que CitaResource (Filament, aun no migrado): nunca duplicar esa
-    // logica cuando se migre.
+    // acciones sobre cada cita viven en CitaAccionesController (T28),
+    // compartidas con la lista general de citas: nunca duplicar esa logica.
     Route::get('/agenda', [PaginaAgendaDelDiaController::class, 'mostrar'])->name('app.agenda');
     Route::get('/mis-citas-hoy', [PaginaMisCitasHoyController::class, 'mostrar'])->name('app.mis-citas-hoy');
+
+    // T28 (migracion de Filament): lista general de citas (RF-RES-06) y
+    // creacion manual de una cita desde el panel.
+    Route::get('/citas', [PaginaCitaController::class, 'index'])->name('app.citas.index');
+    Route::get('/citas/create', [PaginaCitaController::class, 'create'])->name('app.citas.create');
 
     Route::prefix('api')->group(function (): void {
         Route::get('/servicios', [ServicioController::class, 'index']);
@@ -273,16 +280,23 @@ Route::middleware(['auth', ResolverNegocioDesdeRuta::class])->prefix('app/{negoc
         Route::get('/panel-del-dia', [PanelDelDiaController::class, 'mostrar']);
 
         Route::get('/agenda', [AgendaDelDiaController::class, 'mostrar']);
-        Route::post('/agenda/citas/{cita}/cambiar-estado', [AgendaDelDiaController::class, 'cambiarEstado']);
-        Route::post('/agenda/citas/{cita}/completar-con-pago', [AgendaDelDiaController::class, 'completarConPago']);
-        Route::post('/agenda/citas/{cita}/cancelar', [AgendaDelDiaController::class, 'cancelar']);
-        Route::post('/agenda/citas/{cita}/reprogramar', [AgendaDelDiaController::class, 'reprogramar']);
-        Route::post('/agenda/citas/{cita}/anular-pago', [AgendaDelDiaController::class, 'anularPago']);
 
         Route::get('/mis-citas-hoy', [MisCitasHoyController::class, 'mostrar']);
         Route::post('/mis-citas-hoy/citas/{cita}/marcar-en-atencion', [MisCitasHoyController::class, 'marcarEnAtencion']);
         Route::post('/mis-citas-hoy/citas/{cita}/marcar-no-asistio', [MisCitasHoyController::class, 'marcarNoAsistio']);
         Route::post('/mis-citas-hoy/citas/{cita}/completar-con-pago', [MisCitasHoyController::class, 'completarConPago']);
+
+        Route::get('/citas', [CitaController::class, 'index']);
+        Route::post('/citas', [CitaController::class, 'store']);
+
+        // Compartidas entre la agenda, la lista general de citas y mis
+        // citas de hoy (las 3 solo difieren en que muestran y filtran, no
+        // en como actuan sobre una cita puntual).
+        Route::post('/citas/{cita}/cambiar-estado', [CitaAccionesController::class, 'cambiarEstado']);
+        Route::post('/citas/{cita}/completar-con-pago', [CitaAccionesController::class, 'completarConPago']);
+        Route::post('/citas/{cita}/cancelar', [CitaAccionesController::class, 'cancelar']);
+        Route::post('/citas/{cita}/reprogramar', [CitaAccionesController::class, 'reprogramar']);
+        Route::post('/citas/{cita}/anular-pago', [CitaAccionesController::class, 'anularPago']);
     });
 });
 
