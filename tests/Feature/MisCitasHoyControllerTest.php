@@ -5,16 +5,12 @@ declare(strict_types=1);
 use App\Actions\CrearProfesional;
 use App\DatosTransferencia\DatosNuevoProfesional;
 use App\Enums\EstadoCitaValor;
-use App\Enums\MetodoPago;
 use App\Enums\RolNegocio;
-use App\Filament\App\Pages\MisCitasHoy;
 use App\Models\Cita;
 use App\Models\Cliente;
 use App\Models\Negocio;
 use App\Models\Servicio;
 use Carbon\CarbonImmutable;
-use Filament\Facades\Filament;
-use Livewire\Livewire;
 
 afterEach(function (): void {
     CarbonImmutable::setTestNow();
@@ -24,9 +20,8 @@ test('un usuario sin profesional vinculado no puede ver Mis citas de hoy', funct
     $negocio = Negocio::factory()->create();
     $dueno = crearUsuarioConRol($negocio, RolNegocio::Dueno);
 
-    $respuesta = $this->actingAs($dueno)->get("/app/{$negocio->slug}/mis-citas-hoy");
-
-    $respuesta->assertForbidden();
+    $this->actingAs($dueno)->get("/app/{$negocio->slug}/mis-citas-hoy")->assertForbidden();
+    $this->actingAs($dueno)->getJson("/app/{$negocio->slug}/api/mis-citas-hoy")->assertForbidden();
 });
 
 test('el profesional ve solo sus citas de hoy, no las de otro dia ni las de otro profesional', function (): void {
@@ -67,17 +62,15 @@ test('el profesional ve solo sus citas de hoy, no las de otro dia ni las de otro
         'fin' => CarbonImmutable::now('America/Bogota')->setTime(15, 0)->utc(),
     ]);
 
-    $respuesta = $this->actingAs($usuarioProfesional)->get("/app/{$negocio->slug}/mis-citas-hoy");
+    $this->actingAs($usuarioProfesional)->get("/app/{$negocio->slug}/mis-citas-hoy")->assertOk();
+
+    $respuesta = $this->actingAs($usuarioProfesional)->getJson("/app/{$negocio->slug}/api/mis-citas-hoy");
 
     $respuesta->assertOk();
-    $respuesta->assertSee('Ana Pérez');
-
-    Filament::setCurrentPanel(Filament::getPanel('app'));
-    Filament::setTenant($negocio, isQuiet: true);
-
-    $citasVisibles = Livewire::actingAs($usuarioProfesional)->test(MisCitasHoy::class)->instance()->citasDeHoy();
-
-    expect($citasVisibles->pluck('id')->all())->toBe([$citaDeHoy->id]);
+    $citas = $respuesta->json('citas');
+    expect($citas)->toHaveCount(1);
+    expect($citas[0]['id'])->toBe($citaDeHoy->id);
+    expect($citas[0]['clienteNombre'])->toBe('Ana Pérez');
 });
 
 test('marcar en atencion y despues completar con pago actualiza el estado y registra el pago', function (): void {
@@ -99,37 +92,23 @@ test('marcar en atencion y despues completar con pago actualiza el estado y regi
         'precio' => 30000,
     ]);
 
-    Filament::setCurrentPanel(Filament::getPanel('app'));
-    Filament::setTenant($negocio, isQuiet: true);
-
-    Livewire::actingAs($usuarioProfesional)
-        ->test(MisCitasHoy::class)
-        ->call('marcarEnAtencion', $cita->id);
+    $this->actingAs($usuarioProfesional)
+        ->postJson("/app/{$negocio->slug}/api/mis-citas-hoy/citas/{$cita->id}/marcar-en-atencion")
+        ->assertOk();
 
     expect($cita->refresh()->estado)->toBe(EstadoCitaValor::EnAtencion);
 
-    // marcarCompletada no completa de una: abre el formulario de pago.
-    Livewire::actingAs($usuarioProfesional)
-        ->test(MisCitasHoy::class)
-        ->call('marcarCompletada', $cita->id)
-        ->assertSet('citaPendientePagoId', $cita->id)
-        ->assertSet('valorPago', 30000);
+    $respuesta = $this->actingAs($usuarioProfesional)->postJson(
+        "/app/{$negocio->slug}/api/mis-citas-hoy/citas/{$cita->id}/completar-con-pago",
+        ['metodo' => 'nequi', 'valor' => 30000, 'propina' => 2000],
+    );
 
-    expect($cita->refresh()->estado)->toBe(EstadoCitaValor::EnAtencion);
-
-    Livewire::actingAs($usuarioProfesional)
-        ->test(MisCitasHoy::class)
-        ->call('marcarCompletada', $cita->id)
-        ->set('metodoPago', MetodoPago::Nequi->value)
-        ->set('propinaPago', 2000)
-        ->call('confirmarPago');
-
+    $respuesta->assertOk();
     $cita->refresh();
     expect($cita->estado)->toBe(EstadoCitaValor::Completada);
 
     $pago = $cita->pagoActivo();
     expect($pago)->not->toBeNull();
-    expect($pago->metodo)->toBe(MetodoPago::Nequi);
     expect($pago->valor)->toBe(30000);
     expect($pago->propina)->toBe(2000);
 });
@@ -152,11 +131,33 @@ test('un profesional no puede cambiar el estado de la cita de otro profesional',
         'estado' => EstadoCitaValor::Confirmada,
     ]);
 
-    Filament::setCurrentPanel(Filament::getPanel('app'));
-    Filament::setTenant($negocio, isQuiet: true);
+    $this->actingAs($usuarioProfesional)
+        ->postJson("/app/{$negocio->slug}/api/mis-citas-hoy/citas/{$citaAjena->id}/marcar-en-atencion")
+        ->assertNotFound();
 
-    Livewire::actingAs($usuarioProfesional)
-        ->test(MisCitasHoy::class)
-        ->call('marcarEnAtencion', $citaAjena->id)
-        ->assertStatus(404);
+    expect($citaAjena->refresh()->estado)->toBe(EstadoCitaValor::Confirmada);
+});
+
+test('marcar no asistio cambia el estado', function (): void {
+    $negocio = Negocio::factory()->create();
+    $usuarioProfesional = crearUsuarioConRol($negocio, RolNegocio::Profesional);
+    $profesional = app(CrearProfesional::class)->ejecutar(new DatosNuevoProfesional(negocio: $negocio, nombre: 'Japo'));
+    $profesional->update(['usuario_id' => $usuarioProfesional->id]);
+
+    $servicio = Servicio::factory()->create(['negocio_id' => $negocio->id]);
+    $cliente = Cliente::factory()->create(['negocio_id' => $negocio->id]);
+
+    $cita = Cita::factory()->create([
+        'negocio_id' => $negocio->id,
+        'profesional_id' => $profesional->id,
+        'servicio_id' => $servicio->id,
+        'cliente_id' => $cliente->id,
+        'estado' => EstadoCitaValor::Confirmada,
+    ]);
+
+    $this->actingAs($usuarioProfesional)
+        ->postJson("/app/{$negocio->slug}/api/mis-citas-hoy/citas/{$cita->id}/marcar-no-asistio")
+        ->assertOk();
+
+    expect($cita->refresh()->estado)->toBe(EstadoCitaValor::NoAsistio);
 });

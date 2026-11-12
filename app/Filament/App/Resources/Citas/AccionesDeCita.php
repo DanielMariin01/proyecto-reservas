@@ -32,11 +32,12 @@ use Throwable;
 
 /**
  * Las acciones de una Cita (completar con pago, cambiar estado,
- * reprogramar, cancelar, anular pago) — una sola definición,
- * compartida entre `CitasTable` (la tabla del recurso) y
- * `AgendaDelDia` (las columnas por profesional), cada una vinculando
- * la acción a su registro con `->record()`. Nunca duplicar esta
- * lógica en el otro lugar.
+ * reprogramar, cancelar, anular pago), para `CitasTable` (la tabla del
+ * recurso, todavía en Filament). La Agenda del día y Mis citas de hoy ya
+ * se migraron a Laravel + React (T27) y llaman los mismos Actions de
+ * dominio directamente, vía `App\Services\ServicioAccionesCita` — cuando
+ * se migre `CitaResource`, esta clase se puede borrar y esa lógica queda
+ * centralizada ahí.
  */
 final class AccionesDeCita
 {
