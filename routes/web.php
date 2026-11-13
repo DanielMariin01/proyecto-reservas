@@ -46,6 +46,7 @@ use App\Http\Controllers\App\ProfesionalHorarioController;
 use App\Http\Controllers\App\ProfesionalServicioController;
 use App\Http\Controllers\App\ResenaController as ResenaAppController;
 use App\Http\Controllers\App\ServicioController;
+use App\Http\Controllers\App\UsuarioActualController;
 use App\Http\Controllers\App\UsuarioController as UsuarioAppController;
 use App\Http\Controllers\Cliente\AreaClienteController;
 use App\Http\Controllers\Cliente\CitasClienteController;
@@ -238,6 +239,8 @@ Route::middleware(['auth', ResolverNegocioDesdeRuta::class])->prefix('app/{negoc
     Route::get('/pagina-web', [PaginaPaginaWebController::class, 'mostrar'])->name('app.pagina-web');
 
     Route::prefix('api')->group(function (): void {
+        Route::get('/usuario-actual', [UsuarioActualController::class, 'mostrar']);
+
         Route::get('/servicios', [ServicioController::class, 'index']);
         Route::post('/servicios', [ServicioController::class, 'store']);
         Route::put('/servicios/{servicio}', [ServicioController::class, 'update']);
