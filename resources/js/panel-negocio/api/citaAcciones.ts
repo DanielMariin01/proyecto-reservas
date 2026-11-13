@@ -32,6 +32,7 @@ export interface CitaConAcciones {
     precio: number;
     fecha: string;
     horaHM: string;
+    finHM: string;
     acciones: AccionesCita;
 }
 

@@ -267,12 +267,20 @@ Los campos "ícono" de `portada` y `texto_con_imagen` (modo motivos) eligen de u
 
 El negocio no define un color libre para su identidad de marca: el super admin le asigna una paleta con nombre de una lista reutilizable (tabla `paletas_marca`), pensada para crecer sin tocar código. Cada paleta tiene `color_primario` y `color_secundario`; `color_primario` debe cumplir AA con texto blanco (mínimo 4,5:1) para poder guardarse — lo valida `App\Services\CalculadoraContraste`, y a diferencia del color libre de bloque (sección 1), aquí **sí bloquea**. Paletas iniciales: "Color Barbería" (`#1B263B` / `#415A77`, 15,1:1) y "Color Uñas" (`#C2185B` / `#F06292`, 5,9:1).
 
-## 7. Paneles (Filament)
+## 7. Paneles (`admin` y `app`, Laravel + React)
 
-- Tema personalizado: `--primario` como color primario, `--secundario` como éxito, fuente Asap, radios y sombras de la guía.
-- Agenda por columnas de empleado con el color de cada empleado en el borde izquierdo de la cita.
-- Vista "Hoy" del empleado pensada para celular: tarjetas grandes con hora, cliente, servicio, `Insignia` de estado y acciones visibles sin menús ocultos.
-- **Builder de bloques de página** (`NegocioForm`): usa el soporte nativo de Filament 5 para no obligar a hacer scroll por una lista larga — `->collapsible()->collapsed()` (cada bloque empieza contraído, con botón individual y "colapsar/expandir todo"), `->blockNumbers(false)` (sin número, solo label) y `Block::make(...)->icon(...)` con un ícono Heroicon por tipo de bloque, para reconocerlo sin expandirlo. Nunca construir esto a mano si Filament ya lo trae.
+Los dos paneles son Laravel + React, sin Filament — mismos tokens que el resto del sistema (`--primario`, `--secundario`, fuente Asap, radios y sombras de la guía).
+
+**Agenda del día** (dueño/recepción, RF-RES-07):
+
+- Arriba, un selector de profesionales en chips: foto circular de 44px (o un círculo con su color e inicial si no tiene foto) + nombre; selección única — el profesional activo se resalta con borde `--primario` y fondo `--celeste`, el resto queda neutro. No hay varios calendarios abiertos a la vez.
+- Debajo, el horario del profesional seleccionado como una grilla de franjas de 1 hora (7:00, 8:00, 9:00…), según su horario de trabajo real de ese día — si no trabaja ese día, el mensaje "No trabaja este día" en vez de una grilla vacía. Dentro de la franja que ocupa una cita se dibuja su tarjeta completa, con alto proporcional a la duración real (una cita de 45 min no llena una franja de 60); las franjas sin cita quedan visualmente libres. El borde izquierdo de cada tarjeta lleva el color del profesional, igual que antes.
+- **Acciones de una cita**: la tarjeta es un solo botón clickeable (`cursor-pointer`, `hover:bg-fondo-panel`) — no muestra los botones de acción sueltos. Al hacer clic se abre un modal "Acciones de la cita" con el resumen arriba y cada acción disponible como botón con ícono (`Banknote` completar y pagar, `CheckCircle` cambiar estado, `CalendarClock` reprogramar, `XCircle` cancelar, `RotateCcw` anular pago); elegir una abre el modal específico de siempre. La lista general de citas (tabla) no sigue este patrón: ahí las acciones siguen visibles directo en la fila, con los mismos íconos.
+- Vista "Mis citas de hoy" del profesional (celular): sigue con tarjetas grandes, hora, cliente, servicio e `Insignia` de estado — ese flujo no cambió.
+
+**Editar horario semanal** (del perfil del profesional): en vez de una lista de 7 tarjetas de día todas abiertas a la vez, una fila de 7 círculos de día (Do-Sá, mismo componente visual que los círculos de `CalendarioMes`: seleccionado con borde `--primario` y fondo `--celeste`, un punto debajo del día si ya tiene horario configurado) — al tocar un día aparecen debajo su interruptor de disponible/no disponible y sus rangos de hora, igual que en la reserva pública aparecen las horas debajo del día elegido en el calendario.
+
+**Builder de bloques de página** (panel admin, RF-BLQ-03): componente React propio (`BuilderBloques`) — formulario por tipo de bloque, botones para moverlo arriba/abajo (sin arrastrar), vista previa en una pestaña nueva y publicar.
 
 ## 8. Estados obligatorios en cada pantalla
 
