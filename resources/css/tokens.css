@@ -16,4 +16,35 @@
     --radius-boton: 8px;
 
     --shadow-tarjeta: 0 4px 24px rgba(91, 107, 177, 0.12);
+
+    /*
+     * Solo para los componentes de ShadcnUI de la pantalla Finanzas
+     * (la única que usa ese sistema, a propósito — ver CLAUDE.md). Son
+     * los nombres de variable que Shadcn espera, mapeados a los tokens
+     * de arriba en vez de sus colores por defecto. "destructive" no
+     * tiene token propio en la skill diseno-reservas (el resto del
+     * proyecto usa un rojo suelto, ej. text-red-600, para errores) —
+     * se reutiliza ese mismo rojo aquí; si en algún momento se define
+     * un token de error real, actualizar esto también.
+     */
+    --color-primary: var(--color-primario);
+    --color-primary-foreground: var(--color-blanco);
+    --color-secondary: var(--color-secundario);
+    --color-secondary-foreground: var(--color-blanco);
+    --color-background: var(--color-fondo-panel);
+    --color-foreground: var(--color-tinta);
+    --color-card: var(--color-blanco);
+    --color-card-foreground: var(--color-tinta);
+    --color-popover: var(--color-blanco);
+    --color-popover-foreground: var(--color-tinta);
+    --color-muted: var(--color-gris-claro);
+    --color-muted-foreground: var(--color-texto-suave);
+    --color-accent: var(--color-acento);
+    --color-accent-foreground: var(--color-blanco);
+    --color-destructive: #DC2626;
+    --color-destructive-foreground: var(--color-blanco);
+    --color-border: var(--color-gris-claro);
+    --color-input: var(--color-gris-claro);
+    --color-ring: var(--color-primario);
+    --radius: var(--radius-tarjeta);
 }

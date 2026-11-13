@@ -17,8 +17,7 @@ body {
  * Excepción puntual a Asap (skill diseno-reservas, sección 1): solo la
  * página pública usa la pila de fuentes del sistema. Se aplica en el
  * <main> de PaginaNegocio.tsx, que envuelve todos los bloques y el flujo
- * de reserva. Los paneles de Filament (admin/app) no usan esta clase y
- * siguen con Asap vía su propio ->font() en los Panel providers.
+ * de reserva. Los paneles admin/app no usan esta clase y siguen con Asap.
  */
 .fuente-publica {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;

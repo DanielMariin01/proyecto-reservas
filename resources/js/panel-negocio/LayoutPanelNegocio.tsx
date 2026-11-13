@@ -1,6 +1,6 @@
 import type { ReactElement, ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Calendar, CalendarCheck, ClipboardList, Clock, Globe, LayoutDashboard, Scissors, Star, Tags, UserCog, Users } from 'lucide-react';
+import { Calendar, CalendarCheck, ClipboardList, Clock, Globe, LayoutDashboard, Scissors, Star, Tags, UserCog, Users, Wallet } from 'lucide-react';
 import LayoutConMenuLateral, { type EnlaceMenuLateral } from '@/componentes/LayoutConMenuLateral';
 import { obtenerUsuarioActual } from './api/usuarioActual';
 
@@ -22,6 +22,7 @@ export default function LayoutPanelNegocio({ negocioNombre, negocioSlug, urlSali
 
     const enlaces: EnlaceMenuLateral[] = [
         { etiqueta: 'Panel del día', href: `/app/${negocioSlug}/panel-del-dia`, Icono: LayoutDashboard },
+        { etiqueta: 'Finanzas', href: `/app/${negocioSlug}/finanzas`, Icono: Wallet },
         { etiqueta: 'Agenda', href: `/app/${negocioSlug}/agenda`, Icono: Calendar },
         ...(esProfesional
             ? [{ etiqueta: 'Mis citas de hoy', href: `/app/${negocioSlug}/mis-citas-hoy`, Icono: ClipboardList }]
