@@ -19,10 +19,11 @@ export default function LayoutPanelNegocio({ negocioNombre, negocioSlug, urlSali
     });
 
     const esProfesional = consultaUsuario.data?.esProfesional ?? false;
+    const puedeVerFinanzas = consultaUsuario.data?.puedeVerFinanzas ?? false;
 
     const enlaces: EnlaceMenuLateral[] = [
         { etiqueta: 'Panel del día', href: `/app/${negocioSlug}/panel-del-dia`, Icono: LayoutDashboard },
-        { etiqueta: 'Finanzas', href: `/app/${negocioSlug}/finanzas`, Icono: Wallet },
+        ...(puedeVerFinanzas ? [{ etiqueta: 'Finanzas', href: `/app/${negocioSlug}/finanzas`, Icono: Wallet }] : []),
         { etiqueta: 'Agenda', href: `/app/${negocioSlug}/agenda`, Icono: Calendar },
         ...(esProfesional
             ? [{ etiqueta: 'Mis citas de hoy', href: `/app/${negocioSlug}/mis-citas-hoy`, Icono: ClipboardList }]

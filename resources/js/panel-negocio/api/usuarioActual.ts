@@ -2,6 +2,7 @@ import axios from 'axios';
 
 export interface UsuarioActual {
     esProfesional: boolean;
+    puedeVerFinanzas: boolean;
 }
 
 export async function obtenerUsuarioActual(slug: string): Promise<UsuarioActual> {

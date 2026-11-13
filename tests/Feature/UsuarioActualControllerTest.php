@@ -28,3 +28,23 @@ test('un dueno vinculado a un profesional si es profesional', function (): void 
     $respuesta->assertOk();
     expect($respuesta->json('esProfesional'))->toBeTrue();
 });
+
+test('el dueno puede ver finanzas', function (): void {
+    $negocio = Negocio::factory()->create();
+    $dueno = crearUsuarioConRol($negocio, RolNegocio::Dueno);
+
+    $respuesta = $this->actingAs($dueno)->getJson("/app/{$negocio->slug}/api/usuario-actual");
+
+    $respuesta->assertOk();
+    expect($respuesta->json('puedeVerFinanzas'))->toBeTrue();
+});
+
+test('un profesional no puede ver finanzas', function (): void {
+    $negocio = Negocio::factory()->create();
+    $profesional = crearUsuarioConRol($negocio, RolNegocio::Profesional);
+
+    $respuesta = $this->actingAs($profesional)->getJson("/app/{$negocio->slug}/api/usuario-actual");
+
+    $respuesta->assertOk();
+    expect($respuesta->json('puedeVerFinanzas'))->toBeFalse();
+});
