@@ -57,6 +57,7 @@ final class RecursoCita extends JsonResource
             'precio' => $cita->precio,
             'fecha' => $inicioLocal->toDateString(),
             'horaHM' => $inicioLocal->format('H:i'),
+            'finHM' => $cita->fin->setTimezone($zonaHoraria)->format('H:i'),
             'acciones' => [
                 'puedeCompletarConPago' => $this->servicioAccionesCita->puedeCompletarConPago($cita, $this->usuario),
                 'puedeCambiarEstado' => $this->servicioAccionesCita->puedeCambiarEstado($cita, $this->usuario),

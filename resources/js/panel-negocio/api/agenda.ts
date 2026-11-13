@@ -5,6 +5,9 @@ export interface ColumnaAgenda {
     profesionalId: number;
     profesionalNombre: string;
     profesionalColor: string | null;
+    profesionalFoto: string | null;
+    horaInicio: string | null;
+    horaFin: string | null;
     citas: CitaConAcciones[];
 }
 

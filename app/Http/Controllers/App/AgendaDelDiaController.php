@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\App;
 
+use App\Enums\DiaSemana;
 use App\Enums\Permiso;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\App\RecursoCita;
@@ -17,6 +18,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * RF-RES-07: la agenda visual del dueño, columnas por profesional. Las
@@ -40,24 +42,32 @@ final class AgendaDelDiaController extends Controller
         $inicioDiaUtc = $fechaLocal->utc();
         $finDiaUtc = $fechaLocal->endOfDay()->utc();
         $usuario = $this->usuarioActual();
+        $diaSemana = DiaSemana::from($fechaLocal->dayOfWeek);
 
         $columnas = Profesional::query()
             ->where('negocio_id', $negocio->id)
             ->where('activo', true)
             ->orderBy('nombre')
             ->get()
-            ->map(fn (Profesional $profesional): array => [
-                'profesionalId' => $profesional->id,
-                'profesionalNombre' => $profesional->nombre,
-                'profesionalColor' => $profesional->color,
-                'citas' => Cita::query()
-                    ->where('profesional_id', $profesional->id)
-                    ->where('inicio', '>=', $inicioDiaUtc)
-                    ->where('inicio', '<', $finDiaUtc)
-                    ->orderBy('inicio')
-                    ->get()
-                    ->map(fn (Cita $cita): RecursoCita => new RecursoCita($cita, $usuario, $this->servicioAccionesCita)),
-            ])
+            ->map(function (Profesional $profesional) use ($inicioDiaUtc, $finDiaUtc, $usuario, $diaSemana): array {
+                $rangosDelDia = $profesional->horariosTrabajo()->where('dia_semana', $diaSemana->value)->get();
+
+                return [
+                    'profesionalId' => $profesional->id,
+                    'profesionalNombre' => $profesional->nombre,
+                    'profesionalColor' => $profesional->color,
+                    'profesionalFoto' => $profesional->foto !== null ? Storage::disk('public')->url($profesional->foto) : null,
+                    'horaInicio' => $rangosDelDia->isEmpty() ? null : mb_substr((string) $rangosDelDia->min('hora_inicio'), 0, 5),
+                    'horaFin' => $rangosDelDia->isEmpty() ? null : mb_substr((string) $rangosDelDia->max('hora_fin'), 0, 5),
+                    'citas' => Cita::query()
+                        ->where('profesional_id', $profesional->id)
+                        ->where('inicio', '>=', $inicioDiaUtc)
+                        ->where('inicio', '<', $finDiaUtc)
+                        ->orderBy('inicio')
+                        ->get()
+                        ->map(fn (Cita $cita): RecursoCita => new RecursoCita($cita, $usuario, $this->servicioAccionesCita)),
+                ];
+            })
             ->values();
 
         return response()->json([
