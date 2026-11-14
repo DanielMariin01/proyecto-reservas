@@ -1,8 +1,9 @@
-import { Users } from 'lucide-react';
+import { Star, Users } from 'lucide-react';
 import type { ReactElement } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { obtenerTodosLosProfesionales } from '@/flujo-reserva/api/clientePublico';
 import Boton from '@/componentes/Boton';
+import Carrusel from '@/componentes/Carrusel';
 import Tarjeta from '@/componentes/Tarjeta';
 import { obtenerEstiloColor } from './colorLibre';
 import type { PropiedadesBloque } from './tipos';
@@ -33,18 +34,24 @@ export default function BloqueEquipo({ datos, slug, onReservar }: PropiedadesBlo
                 )}
 
                 {profesionalesQuery.data && profesionalesQuery.data.length > 0 && (
-                    <div className="grid gap-4 sm:grid-cols-3">
+                    <Carrusel etiqueta="Nuestro equipo">
                         {profesionalesQuery.data.map((profesional) => (
-                            <Tarjeta key={profesional.id} className="flex flex-col items-center gap-2 text-center">
+                            <Tarjeta key={profesional.id} className="flex w-[200px] shrink-0 snap-start flex-col items-center gap-2 text-center">
                                 {profesional.foto ? (
-                                    <img src={profesional.foto} alt="" className="h-24 w-24 rounded-full object-cover" />
+                                    <img src={profesional.foto} alt="" className="h-20 w-20 rounded-full object-cover" />
                                 ) : (
-                                    <span className="flex h-24 w-24 items-center justify-center rounded-full bg-fondo-panel text-texto-suave">
-                                        <Users size={32} strokeWidth={1.75} />
+                                    <span className="flex h-20 w-20 items-center justify-center rounded-full bg-fondo-panel text-texto-suave">
+                                        <Users size={28} strokeWidth={1.75} />
                                     </span>
                                 )}
                                 <p className="font-semibold text-tinta">{profesional.nombre}</p>
                                 {profesional.especialidad && <p className="text-sm text-texto-suave">{profesional.especialidad}</p>}
+                                {profesional.notaPromedio !== null && (
+                                    <div className="flex items-center gap-1">
+                                        <Star size={16} strokeWidth={1.75} className="fill-secundario text-secundario" />
+                                        <span className="text-sm font-semibold text-tinta">{profesional.notaPromedio.toFixed(1)}</span>
+                                    </div>
+                                )}
                                 <Boton
                                     variante="contorno"
                                     className="mt-2 w-full"
@@ -54,7 +61,7 @@ export default function BloqueEquipo({ datos, slug, onReservar }: PropiedadesBlo
                                 </Boton>
                             </Tarjeta>
                         ))}
-                    </div>
+                    </Carrusel>
                 )}
             </div>
         </section>

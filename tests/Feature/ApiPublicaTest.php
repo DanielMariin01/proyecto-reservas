@@ -77,6 +77,21 @@ test('GET profesionales solo devuelve los activos', function (): void {
     expect($ids)->not->toContain($profesionalInactivo->id);
 });
 
+test('GET profesionales expone la nota promedio cacheada de cada profesional', function (): void {
+    ['negocio' => $negocio, 'profesional' => $profesionalConNota] = negocioPublicoListo();
+    $profesionalConNota->update(['promedio_calificacion' => 4.67, 'total_resenas' => 3]);
+    $profesionalSinResenas = Profesional::factory()->create(['negocio_id' => $negocio->id]);
+
+    $respuesta = $this->getJson("/api/publico/{$negocio->slug}/profesionales");
+
+    $respuesta->assertOk();
+    $datos = collect($respuesta->json('data'))->keyBy('id');
+    expect($datos[$profesionalConNota->id]['notaPromedio'])->toBe(4.67);
+    expect($datos[$profesionalConNota->id]['totalResenas'])->toBe(3);
+    expect($datos[$profesionalSinResenas->id]['notaPromedio'])->toBeNull();
+    expect($datos[$profesionalSinResenas->id]['totalResenas'])->toBe(0);
+});
+
 test('GET disponibilidad por mes devuelve el dia con horario', function (): void {
     ['negocio' => $negocio, 'servicio' => $servicio, 'fecha' => $fecha] = negocioPublicoListo();
 
