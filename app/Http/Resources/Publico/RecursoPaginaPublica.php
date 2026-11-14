@@ -66,6 +66,7 @@ final class RecursoPaginaPublica extends JsonResource
 
                 if ($tipo === TipoBloque::Testimonios->value && ($datos['fuente'] ?? null) === FuenteTestimonios::Sistema->value) {
                     $datos['testimonios'] = $this->testimoniosDelSistema();
+                    $datos['resumen'] = $this->resumenResenas();
                 }
 
                 return ['tipo' => $tipo, 'datos' => $datos];
@@ -98,6 +99,22 @@ final class RecursoPaginaPublica extends JsonResource
             'foto' => null,
             'estrellas' => $resena->calificacion,
         ])->all());
+    }
+
+    /**
+     * `promedio_calificacion`/`total_resenas` ya se mantienen cacheados en
+     * `Negocio` por `ServicioResenas::recalcularPromedios` (patrón
+     * Observador, ver `ActualizarPromedioDeCalificaciones`) — aquí solo se
+     * exponen, sin agregación nueva.
+     *
+     * @return array{promedio: float|null, total: int}
+     */
+    private function resumenResenas(): array
+    {
+        return [
+            'promedio' => $this->negocio->promedio_calificacion,
+            'total' => $this->negocio->total_resenas,
+        ];
     }
 
     /**

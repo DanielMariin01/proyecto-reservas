@@ -157,6 +157,41 @@ test('con fuente sistema, el bloque testimonios muestra las reseñas reales publ
     $respuesta->assertJsonPath('data.bloques.0.datos.testimonios.0.estrellas', 5);
 });
 
+test('con fuente sistema, el bloque testimonios incluye el resumen de reseñas del negocio', function (): void {
+    $negocio = Negocio::factory()->create(['promedio_calificacion' => 4.67, 'total_resenas' => 3]);
+
+    $pagina = Pagina::factory()->create([
+        'negocio_id' => $negocio->id,
+        'bloques' => [[
+            'type' => TipoBloque::Testimonios->value,
+            'data' => ['fuente' => 'sistema'],
+        ]],
+    ]);
+    app(PublicarPagina::class)->ejecutar($pagina);
+
+    $respuesta = $this->getJson("/api/publico/{$negocio->slug}/pagina");
+
+    $respuesta->assertJsonPath('data.bloques.0.datos.resumen.promedio', 4.67);
+    $respuesta->assertJsonPath('data.bloques.0.datos.resumen.total', 3);
+});
+
+test('con fuente manual, el bloque testimonios no incluye el resumen de reseñas', function (): void {
+    $negocio = Negocio::factory()->create();
+
+    $pagina = Pagina::factory()->create([
+        'negocio_id' => $negocio->id,
+        'bloques' => [[
+            'type' => TipoBloque::Testimonios->value,
+            'data' => ['fuente' => 'manual', 'testimonios' => []],
+        ]],
+    ]);
+    app(PublicarPagina::class)->ejecutar($pagina);
+
+    $respuesta = $this->getJson("/api/publico/{$negocio->slug}/pagina");
+
+    $respuesta->assertJsonMissingPath('data.bloques.0.datos.resumen');
+});
+
 test('la api expone la etiqueta legible del tipo de negocio', function (): void {
     $negocio = Negocio::factory()->create(['tipo' => TipoNegocio::Barberia]);
 
