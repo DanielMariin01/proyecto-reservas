@@ -7,6 +7,7 @@ namespace App\Http\Resources\App;
 use App\Models\Servicio;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * @mixin Servicio
@@ -24,7 +25,7 @@ final class RecursoServicio extends JsonResource
             'categoriaServicioId' => $this->categoria_servicio_id,
             'categoriaServicioNombre' => $this->categoriaServicio?->nombre,
             'descripcion' => $this->descripcion,
-            'foto' => $this->foto,
+            'foto' => $this->foto !== null ? Storage::disk('public')->url($this->foto) : null,
             'duracionMinutos' => $this->duracion_minutos,
             'precio' => $this->precio,
             'margenAntesMinutos' => $this->margen_antes_minutos,
