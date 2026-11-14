@@ -14,6 +14,8 @@ use App\Models\Gasto;
 use App\Models\Negocio;
 use App\Models\Pago;
 use App\Models\PagoSuscripcion;
+use App\Models\Pedido;
+use App\Models\Producto;
 use App\Models\Profesional;
 use App\Models\Resena;
 use App\Models\Servicio;
@@ -26,6 +28,8 @@ use App\Policies\PoliticaGasto;
 use App\Policies\PoliticaNegocio;
 use App\Policies\PoliticaPago;
 use App\Policies\PoliticaPagoSuscripcion;
+use App\Policies\PoliticaPedido;
+use App\Policies\PoliticaProducto;
 use App\Policies\PoliticaProfesional;
 use App\Policies\PoliticaResena;
 use App\Policies\PoliticaServicio;
@@ -76,5 +80,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Pago::class, PoliticaPago::class);
         Gate::policy(Resena::class, PoliticaResena::class);
         Gate::policy(Gasto::class, PoliticaGasto::class);
+        Gate::policy(Producto::class, PoliticaProducto::class);
+        Gate::policy(Pedido::class, PoliticaPedido::class);
     }
 }

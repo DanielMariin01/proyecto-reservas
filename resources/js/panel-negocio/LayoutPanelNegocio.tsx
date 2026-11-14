@@ -8,7 +8,9 @@ import {
     Clock,
     Globe,
     LayoutDashboard,
+    PackageCheck,
     Scissors,
+    ShoppingBag,
     Star,
     Tags,
     UserCog,
@@ -34,6 +36,8 @@ export default function LayoutPanelNegocio({ negocioNombre, negocioSlug, urlSali
 
     const esProfesional = consultaUsuario.data?.esProfesional ?? false;
     const puedeVerFinanzas = consultaUsuario.data?.puedeVerFinanzas ?? false;
+    const puedeGestionarProductos = consultaUsuario.data?.puedeGestionarProductos ?? false;
+    const puedeGestionarPedidos = consultaUsuario.data?.puedeGestionarPedidos ?? false;
 
     const enlaces: EnlaceMenuLateral[] = [
         { etiqueta: 'Panel del día', href: `/app/${negocioSlug}/panel-del-dia`, Icono: LayoutDashboard },
@@ -49,6 +53,8 @@ export default function LayoutPanelNegocio({ negocioNombre, negocioSlug, urlSali
         { etiqueta: 'Profesionales', href: `/app/${negocioSlug}/profesionales`, Icono: Users },
         { etiqueta: 'Servicios', href: `/app/${negocioSlug}/servicios`, Icono: Scissors },
         { etiqueta: 'Categorías de servicio', href: `/app/${negocioSlug}/categorias-servicio`, Icono: Tags },
+        ...(puedeGestionarProductos ? [{ etiqueta: 'Productos', href: `/app/${negocioSlug}/productos`, Icono: ShoppingBag }] : []),
+        ...(puedeGestionarPedidos ? [{ etiqueta: 'Pedidos', href: `/app/${negocioSlug}/pedidos`, Icono: PackageCheck }] : []),
         ...(esProfesional ? [{ etiqueta: 'Mi horario', href: `/app/${negocioSlug}/mi-horario`, Icono: Clock }] : []),
         { etiqueta: 'Página web', href: `/app/${negocioSlug}/pagina-web`, Icono: Globe },
         { etiqueta: 'Reseñas', href: `/app/${negocioSlug}/resenas`, Icono: Star },

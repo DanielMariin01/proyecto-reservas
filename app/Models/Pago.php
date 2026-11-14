@@ -26,6 +26,7 @@ final class Pago extends Model
     protected $fillable = [
         'negocio_id',
         'cita_id',
+        'pedido_id',
         'metodo',
         'valor',
         'propina',
@@ -53,6 +54,14 @@ final class Pago extends Model
     public function cita(): BelongsTo
     {
         return $this->belongsTo(Cita::class);
+    }
+
+    /**
+     * @return BelongsTo<Pedido, $this>
+     */
+    public function pedido(): BelongsTo
+    {
+        return $this->belongsTo(Pedido::class);
     }
 
     /**

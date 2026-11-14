@@ -5,6 +5,8 @@ declare(strict_types=1);
 use App\Http\Controllers\Publico\DisponibilidadController;
 use App\Http\Controllers\Publico\GestionarCitaPorTokenController;
 use App\Http\Controllers\Publico\PaginaController;
+use App\Http\Controllers\Publico\PedidosController;
+use App\Http\Controllers\Publico\ProductosController;
 use App\Http\Controllers\Publico\ProfesionalesController;
 use App\Http\Controllers\Publico\ReservasController;
 use App\Http\Controllers\Publico\ServiciosController;
@@ -29,8 +31,14 @@ Route::prefix('publico/{negocio:slug}')
         Route::get('/disponibilidad', [DisponibilidadController::class, 'index'])
             ->middleware('throttle:60,1');
 
+        Route::get('/productos', [ProductosController::class, 'index'])
+            ->middleware('throttle:60,1');
+
         // RNF-04: límite de intentos más estricto en el endpoint de reserva.
         Route::post('/reservas', [ReservasController::class, 'store'])
+            ->middleware('throttle:5,1');
+
+        Route::post('/pedidos', [PedidosController::class, 'store'])
             ->middleware('throttle:5,1');
     });
 

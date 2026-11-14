@@ -12,8 +12,6 @@ use App\Events\CitaCreada;
 use App\Exceptions\HoraInvalidaException;
 use App\Exceptions\HoraYaTomadaException;
 use App\Models\Cita;
-use App\Models\Cliente;
-use App\Models\CuentaCliente;
 use App\Models\Profesional;
 use App\Services\ServicioDisponibilidad;
 use App\Services\ServicioReservas;
@@ -25,11 +23,17 @@ final class CrearReserva
         private readonly ServicioReservas $servicioReservas,
         private readonly ServicioDisponibilidad $servicioDisponibilidad,
         private readonly FabricaEstadoCita $fabricaEstadoCita,
+        private readonly ResolverOCrearCliente $resolverOCrearCliente,
     ) {}
 
     public function ejecutar(DatosReserva $datos): Cita
     {
-        $cliente = $this->resolverCliente($datos);
+        $cliente = $this->resolverOCrearCliente->ejecutar(
+            $datos->negocio,
+            $datos->nombreCliente,
+            $datos->celularCliente,
+            $datos->correoCliente,
+        );
         $profesional = $datos->profesional;
 
         if ($profesional === null) {
@@ -53,40 +57,6 @@ final class CrearReserva
         CitaCreada::dispatch($cita);
 
         return $cita;
-    }
-
-    private function resolverCliente(DatosReserva $datos): Cliente
-    {
-        $clienteExistente = Cliente::query()
-            ->where('negocio_id', $datos->negocio->id)
-            ->where('celular', $datos->celularCliente)
-            ->first();
-
-        if ($clienteExistente !== null) {
-            return $clienteExistente;
-        }
-
-        return Cliente::create([
-            'negocio_id' => $datos->negocio->id,
-            'cuenta_cliente_id' => $this->cuentaClienteParaCorreo($datos->correoCliente),
-            'nombre' => $datos->nombreCliente,
-            'celular' => $datos->celularCliente,
-            'correo' => $datos->correoCliente,
-        ]);
-    }
-
-    /**
-     * T11: si el correo de una reserva nueva (sin cuenta) ya tiene una
-     * CuentaCliente, el Cliente que se crea ahora queda enlazado de una
-     * vez, sin esperar a que esa persona vuelva a entrar con Google.
-     */
-    private function cuentaClienteParaCorreo(?string $correo): ?int
-    {
-        if ($correo === null) {
-            return null;
-        }
-
-        return CuentaCliente::query()->where('correo', $correo)->value('id');
     }
 
     /**

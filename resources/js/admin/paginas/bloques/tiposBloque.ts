@@ -44,7 +44,7 @@ export const TIPOS_BLOQUE: MetaTipoBloque[] = [
     { tipo: 'equipo', etiqueta: 'Nuestro equipo', Icono: Users, disponible: true },
     { tipo: 'servicios', etiqueta: 'Servicios', Icono: Sparkles, disponible: true },
     { tipo: 'cursos', etiqueta: 'Cursos (próximamente)', Icono: GraduationCap, disponible: false },
-    { tipo: 'productos', etiqueta: 'Productos (próximamente)', Icono: ShoppingBag, disponible: false },
+    { tipo: 'productos', etiqueta: 'Productos', Icono: ShoppingBag, disponible: true },
     { tipo: 'texto', etiqueta: 'Texto', Icono: FileText, disponible: true },
     { tipo: 'texto_con_imagen', etiqueta: 'Texto con imagen', Icono: Columns3, disponible: true },
     { tipo: 'galeria', etiqueta: 'Galería', Icono: Images, disponible: true },
