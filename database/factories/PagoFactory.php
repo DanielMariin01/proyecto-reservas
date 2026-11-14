@@ -8,6 +8,7 @@ use App\Enums\MetodoPago;
 use App\Models\Cita;
 use App\Models\Negocio;
 use App\Models\Pago;
+use App\Models\Pedido;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -36,6 +37,18 @@ final class PagoFactory extends Factory
         return $this->state(fn (array $atributos): array => [
             'anulado_en' => now(),
             'motivo_anulacion' => 'Registrado por error',
+        ]);
+    }
+
+    /**
+     * Un pago de pedido, no de cita: `cita_id` y `pedido_id` son
+     * mutuamente excluyentes (ver App\Models\Pedido).
+     */
+    public function paraPedido(): static
+    {
+        return $this->state(fn (array $atributos): array => [
+            'cita_id' => null,
+            'pedido_id' => Pedido::factory(),
         ]);
     }
 }
