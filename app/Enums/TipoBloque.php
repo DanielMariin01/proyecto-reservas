@@ -6,11 +6,12 @@ namespace App\Enums;
 
 /**
  * RF-BLQ-03/14.3: los tipos de bloque que el super admin puede agregar al
- * armar la página (skill diseno-reservas, sección 6). Cursos y productos
- * ya están aquí porque RF-BLQ-04 pide que el registro de tipos no cambie
- * cuando se agregue uno nuevo, pero su contenido real (RF-CUR, tienda)
- * es de Fase 2/3: mientras tanto el bloque se guarda y se puede ordenar,
- * pero React lo muestra como "Próximamente".
+ * armar la página (skill diseno-reservas, sección 6). `Cursos` sigue aquí
+ * porque RF-BLQ-04 pide que el registro de tipos no cambie cuando se
+ * agregue uno nuevo, pero su contenido real (RF-CUR, Fase 2) todavía no
+ * existe: mientras tanto el bloque se guarda y se puede ordenar, pero
+ * React lo muestra como "Próximamente". `Productos` ya tiene su modelo
+ * real (módulo de tienda v1) y quedó disponible.
  */
 enum TipoBloque: string
 {
@@ -56,11 +57,11 @@ enum TipoBloque: string
     }
 
     /**
-     * Fase 2/3: el bloque existe en el registro pero no tiene datos reales
-     * detrás todavía (no hay modelos Curso/Producto).
+     * Fase 2: el bloque existe en el registro pero no tiene datos reales
+     * detrás todavía (no hay modelo Curso).
      */
     public function disponible(): bool
     {
-        return $this !== self::Cursos && $this !== self::Productos;
+        return $this !== self::Cursos;
     }
 }

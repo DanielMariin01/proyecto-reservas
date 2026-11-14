@@ -6,6 +6,7 @@ import BloqueEquipo from './BloqueEquipo';
 import BloqueGaleria from './BloqueGaleria';
 import BloquePieDePagina from './BloquePieDePagina';
 import BloquePortada from './BloquePortada';
+import BloqueProductos from './BloqueProductos';
 import BloqueProximamente from './BloqueProximamente';
 import BloqueServicios from './BloqueServicios';
 import BloqueServiciosDestacados from './BloqueServiciosDestacados';
@@ -19,8 +20,8 @@ import type { PropiedadesBloque } from './tipos';
 
 /**
  * RF-BLQ-04: un registro de componentes por tipo de bloque. Agregar un
- * tipo nuevo (cuando cursos/productos tengan datos reales, por ejemplo)
- * es agregar una entrada aquí, sin tocar las demás.
+ * tipo nuevo (cuando cursos tenga datos reales, por ejemplo) es agregar
+ * una entrada aquí, sin tocar las demás.
  */
 const registroBloques: Record<string, ComponentType<PropiedadesBloque>> = {
     barra_promocion: BloqueBarraPromocion,
@@ -39,7 +40,7 @@ const registroBloques: Record<string, ComponentType<PropiedadesBloque>> = {
     whatsapp: BloqueWhatsapp,
     pie_de_pagina: BloquePieDePagina,
     cursos: BloqueProximamente,
-    productos: BloqueProximamente,
+    productos: BloqueProductos,
 };
 
 export default registroBloques;

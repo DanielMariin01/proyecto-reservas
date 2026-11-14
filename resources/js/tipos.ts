@@ -120,3 +120,46 @@ export interface DatosDelCliente {
     nota: string;
     autorizacionDatos: boolean;
 }
+
+export interface Producto {
+    id: number;
+    nombre: string;
+    descripcion: string | null;
+    foto: string | null;
+    precio: number;
+}
+
+export interface ItemCarrito {
+    producto: Producto;
+    cantidad: number;
+}
+
+export interface ItemPedidoCreado {
+    nombreProducto: string;
+    precioUnitario: number;
+    cantidad: number;
+    subtotal: number;
+}
+
+export interface PedidoCreado {
+    id: number;
+    items: ItemPedidoCreado[];
+    total: number;
+    tipoEntrega: string;
+    tipoEntregaEtiqueta: string;
+    barrio: string | null;
+    estado: string;
+    direccion: string | null;
+    whatsapp: string | null;
+    nombreNegocio: string;
+}
+
+export interface DatosDelClienteCompra {
+    nombre: string;
+    celular: string;
+    correo: string;
+    nota: string;
+    tipoEntrega: 'recoger' | 'domicilio';
+    barrio: string;
+    autorizacionDatos: boolean;
+}
