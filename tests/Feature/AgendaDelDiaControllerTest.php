@@ -4,14 +4,17 @@ declare(strict_types=1);
 
 use App\Actions\CrearProfesional;
 use App\DatosTransferencia\DatosNuevoProfesional;
+use App\Enums\DiaSemana;
 use App\Enums\EstadoCitaValor;
 use App\Enums\RolNegocio;
 use App\Models\Cita;
 use App\Models\Cliente;
+use App\Models\HorarioTrabajo;
 use App\Models\Negocio;
 use App\Models\Pago;
 use App\Models\Servicio;
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Facades\Storage;
 
 afterEach(function (): void {
     CarbonImmutable::setTestNow();
@@ -52,6 +55,56 @@ test('el dueno ve la agenda del dia agrupada por profesional', function (): void
     expect($respuesta->json('columnas.0.profesionalNombre'))->toBe('Japo');
     expect($respuesta->json('columnas.0.citas.0.clienteNombre'))->toBe('Ana Pérez');
     expect($respuesta->json('columnas.0.citas.0.servicioNombre'))->toBe('Corte');
+    expect($respuesta->json('columnas.0.citas.0.horaHM'))->toBe('10:00');
+    expect($respuesta->json('columnas.0.citas.0.finHM'))->toBe('11:00');
+});
+
+test('la agenda devuelve la foto del profesional como url servible', function (): void {
+    Storage::fake('public');
+    CarbonImmutable::setTestNow(CarbonImmutable::parse('2026-11-03 08:00:00', 'America/Bogota'));
+
+    $negocio = Negocio::factory()->create(['zona_horaria' => 'America/Bogota']);
+    $dueno = crearUsuarioConRol($negocio, RolNegocio::Dueno);
+    app(CrearProfesional::class)->ejecutar(new DatosNuevoProfesional(negocio: $negocio, nombre: 'Japo', foto: 'profesionales/japo.jpg'));
+
+    $respuesta = $this->actingAs($dueno)->getJson("/app/{$negocio->slug}/api/agenda?fecha=2026-11-03");
+
+    $respuesta->assertOk();
+    expect($respuesta->json('columnas.0.profesionalFoto'))->toBe(Storage::disk('public')->url('profesionales/japo.jpg'));
+});
+
+test('la agenda devuelve el horario de trabajo del dia para cada profesional, o null si no trabaja', function (): void {
+    CarbonImmutable::setTestNow(CarbonImmutable::parse('2026-11-03 08:00:00', 'America/Bogota'));
+
+    $negocio = Negocio::factory()->create(['zona_horaria' => 'America/Bogota']);
+    $dueno = crearUsuarioConRol($negocio, RolNegocio::Dueno);
+    $japo = app(CrearProfesional::class)->ejecutar(new DatosNuevoProfesional(negocio: $negocio, nombre: 'Japo'));
+    app(CrearProfesional::class)->ejecutar(new DatosNuevoProfesional(negocio: $negocio, nombre: 'Luna'));
+
+    HorarioTrabajo::factory()->create([
+        'negocio_id' => $negocio->id,
+        'profesional_id' => $japo->id,
+        'dia_semana' => DiaSemana::Martes,
+        'hora_inicio' => '09:00:00',
+        'hora_fin' => '12:00:00',
+    ]);
+    HorarioTrabajo::factory()->create([
+        'negocio_id' => $negocio->id,
+        'profesional_id' => $japo->id,
+        'dia_semana' => DiaSemana::Martes,
+        'hora_inicio' => '14:00:00',
+        'hora_fin' => '18:00:00',
+    ]);
+
+    $respuesta = $this->actingAs($dueno)->getJson("/app/{$negocio->slug}/api/agenda?fecha=2026-11-03");
+
+    $respuesta->assertOk();
+    $columnas = collect($respuesta->json('columnas'))->keyBy('profesionalNombre');
+
+    expect($columnas['Japo']['horaInicio'])->toBe('09:00');
+    expect($columnas['Japo']['horaFin'])->toBe('18:00');
+    expect($columnas['Luna']['horaInicio'])->toBeNull();
+    expect($columnas['Luna']['horaFin'])->toBeNull();
 });
 
 test('la agenda no muestra citas de otro negocio aunque coincida la fecha', function (): void {

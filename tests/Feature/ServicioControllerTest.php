@@ -6,6 +6,7 @@ use App\Enums\RolNegocio;
 use App\Models\CategoriaServicio;
 use App\Models\Negocio;
 use App\Models\Servicio;
+use Illuminate\Support\Facades\Storage;
 
 test('un profesional no puede ver las paginas de servicios', function (): void {
     $negocio = Negocio::factory()->create();
@@ -41,6 +42,19 @@ test('la api lista solo los servicios del negocio actual', function (): void {
 
     expect($datos)->toHaveCount(1);
     expect($datos[0]['nombre'])->toBe('Servicio A');
+});
+
+test('la api devuelve la foto del servicio como url servible, no como la ruta cruda del disco', function (): void {
+    Storage::fake('public');
+    $negocio = Negocio::factory()->create();
+    $dueno = crearUsuarioConRol($negocio, RolNegocio::Dueno);
+    $servicio = Servicio::factory()->create(['negocio_id' => $negocio->id, 'foto' => 'servicios/corte.jpg']);
+
+    $respuesta = $this->actingAs($dueno)->getJson("/app/{$negocio->slug}/api/servicios");
+
+    $respuesta->assertOk();
+    expect($respuesta->json('data.0.foto'))->toBe(Storage::disk('public')->url('servicios/corte.jpg'));
+    expect($respuesta->json('data.0.foto'))->not->toBe($servicio->foto);
 });
 
 test('un dueno no puede editar un servicio de otro negocio aunque adivine el id', function (): void {

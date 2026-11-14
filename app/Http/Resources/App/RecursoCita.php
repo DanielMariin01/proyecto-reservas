@@ -46,6 +46,8 @@ final class RecursoCita extends JsonResource
             'id' => $cita->id,
             'inicioVisible' => $inicioLocal->format('d/m/Y H:i'),
             'hora' => Hora::formatear($cita->inicio, $zonaHoraria),
+            'finHora' => Hora::formatear($cita->fin, $zonaHoraria),
+            'duracionMinutos' => (int) $cita->inicio->diffInMinutes($cita->fin),
             'clienteNombre' => $cita->cliente?->nombre,
             'servicioNombre' => $cita->servicio?->nombre,
             'profesionalNombre' => $cita->profesional?->nombre,
@@ -57,6 +59,7 @@ final class RecursoCita extends JsonResource
             'precio' => $cita->precio,
             'fecha' => $inicioLocal->toDateString(),
             'horaHM' => $inicioLocal->format('H:i'),
+            'finHM' => $cita->fin->setTimezone($zonaHoraria)->format('H:i'),
             'acciones' => [
                 'puedeCompletarConPago' => $this->servicioAccionesCita->puedeCompletarConPago($cita, $this->usuario),
                 'puedeCambiarEstado' => $this->servicioAccionesCita->puedeCambiarEstado($cita, $this->usuario),
