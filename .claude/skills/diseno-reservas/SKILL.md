@@ -152,6 +152,17 @@ Basado en el checkout de Hostinger Ecommerce, corregido.
 - Botones: "Agregar a mi calendario" (descarga .ics), "Escribir por WhatsApp" (enlace wa.me con mensaje prellenado), "Cómo llegar" (Google Maps).
 - Texto: "Te enviamos la confirmación a tu correo. Desde ahí puedes cancelar o cambiar la hora."
 
+## 5.1 Patrón: carrito y compra
+
+Módulo de tienda v1 (sin variantes ni inventario — eso queda para una fase posterior). Mismo espíritu que las secciones 3 a 5 (ventana de reserva, datos y confirmación, éxito), pero 3 pasos en vez de 5 porque no hay que elegir fecha ni hora: **Carrito → Datos y entrega → Éxito**.
+
+- **Agregar al producto**: el botón "Agregar al carrito" del bloque `productos` abre el carrito de una vez (no hace falta un ícono aparte para verlo). Mientras el carrito no esté vacío, un botón flotante circular `--primario` abajo a la derecha (visible en toda la página pública, como el de WhatsApp pero para el carrito) muestra el número de unidades y lo vuelve a abrir.
+- **Carrito**: tarjeta centrada (ancho máximo ~448 px), igual radio/sombra que el resto de tarjetas. Cada línea: foto o ícono de respaldo 56 px, nombre, precio, selector de cantidad (botones − / + alrededor del número) y botón de quitar (ícono de papelera). Total en 18 px peso 700 debajo de la lista. `Boton principal` "Continuar" de ancho completo (no se muestra si el carrito quedó vacío). Botón de cerrar circular oscuro arriba a la derecha, igual que el resto de los flujos; tecla Esc también cierra.
+- **Datos y entrega**: mismas dos columnas de la sección 4 (formulario 55 %, resumen 45 % en `--fondo-panel`), con una sección "Entrega" nueva entre "Tus datos" y "Nota": radio "Recoger en el local" / "Domicilio"; si elige domicilio, aparece un campo "Barrio" obligatorio — **nunca** dirección exacta ni código postal, igual que la regla general de la sección 4. El resto es igual: contacto (correo), datos (nombre y celular), nota opcional, bloque de pago manual, casilla de autorización de datos (Ley 1581), y el resumen de la derecha lista cada producto con su cantidad y subtotal, más el total. El botón final dice "Confirmar pedido", no "Confirmar reserva".
+- **Éxito**: igual que la sección 5 (ícono de verificación, tarjeta con el resumen), pero sin "Agregar a mi calendario" (no aplica a un pedido): queda "Cómo llegar" solo si la entrega es "recoger" (con dirección) y "Escribir por WhatsApp" siempre que el negocio tenga número. Título "¡Tu pedido quedó registrado!" y texto "Te avisaremos cuando tu pedido esté listo."
+- El pedido completo (todos los productos del carrito, cantidades y datos) se envía en **una sola petición** al confirmar — no hay un carrito con cuenta en el servidor antes de eso.
+- **Celular**: mismo resumen plegable ("Ver resumen · $Total") que la sección 4.
+
 ## 6. Bloques de la página pública
 
 Cada bloque es un componente registrado por tipo. El super admin arma la página agregando, quitando y reordenando bloques de este catálogo en el Builder — **ningún bloque es obligatorio para todos los negocios**: si un negocio no vende productos, no agrega ese bloque; si otro sí, lo agrega. Reglas comunes: ancho máximo 1200 px centrado, relleno vertical 64 px (40 px en celular), título de sección en 30-36 px peso 700 según pantalla (o el `colorTexto` libre del bloque, ver más abajo).
@@ -164,7 +175,7 @@ Cada bloque es un componente registrado por tipo. El super admin arma la página
 | `equipo` | Color libre. Cuadrícula de `Tarjeta` con foto cuadrada, nombre, especialidad y botón "Reservar con {nombre}". |
 | `servicios` | Color libre. Tarjetas con ícono de tijeras, foto cuadrada, nombre, descripción, "$20.000 · 45 min" y botón "Agendar". |
 | `cursos` | Color libre. Tarjeta por fecha: nombre, fecha y hora, "Quedan 3 cupos" en `--secundario`, precio, botón "Inscribirme"; agotado en gris. |
-| `productos` | Color libre. Cuadrícula de tarjetas con foto, nombre, precio y botón "Agregar". |
+| `productos` | Color libre. Cuadrícula de tarjetas con foto, nombre, precio y botón "Agregar al carrito" (ver sección 5.1). |
 | `texto` | Color libre. Título y párrafo de máximo 70 caracteres por línea. |
 | `texto_con_imagen` | Color libre. Modo simple (párrafo con una frase resaltada) o modo "motivos" (etiqueta + título + grid 2×2 de ícono/título/descripción) si se agrega al menos un motivo — mismo bloque, dos formas de verse. Foto con texto decorativo opcional del otro lado. |
 | `galeria` | Color libre. Cuadrícula de fotos cuadradas con vista ampliada al tocar. |
@@ -206,8 +217,11 @@ Igual de detallado que la ventana de reserva (sección 3), porque esta plantilla
 - Ícono fijo de tijeras + foto + nombre + descripción + precio/duración + botón "Agendar", en `Tarjeta`.
 - **Celular**: cuadrícula de 1 columna (ya lo hacía).
 
-**`equipo`, `cursos`, `productos`, `ubicacion`, `whatsapp`** (sin cambios de diseño en esta plantilla, solo color libre)
+**`equipo`, `cursos`, `ubicacion`, `whatsapp`** (sin cambios de diseño en esta plantilla, solo color libre)
 - Mismo diseño que ya tenían (ver tabla de arriba); el color libre no cambia su comportamiento responsive.
+
+**`productos`**
+- Mismo diseño de tarjeta que ya tenía (ver tabla de arriba), ahora con datos reales: "Agregar al carrito" abre el flujo de la sección 5.1 en vez de no hacer nada.
 
 **`texto`**
 - Color libre. Título y párrafo **centrados**, mismo contenedor (`max-w-3xl` centrado), espaciado consistente (margen superior en el párrafo, no margen inferior solo en el título) para que ambos compartan la misma alineación en cualquier tamaño de pantalla.
@@ -283,6 +297,8 @@ Los dos paneles son Laravel + React, sin Filament — mismos tokens que el resto
 **Editar horario semanal** (del perfil del profesional): en vez de una lista de 7 tarjetas de día todas abiertas a la vez, una fila de 7 círculos de día (Do-Sá, mismo componente visual que los círculos de `CalendarioMes`: seleccionado con borde `--primario` y fondo `--celeste`, un punto debajo del día si ya tiene horario configurado) — al tocar un día aparecen debajo su interruptor de disponible/no disponible y sus rangos de hora, igual que en la reserva pública aparecen las horas debajo del día elegido en el calendario.
 
 **Builder de bloques de página** (panel admin, RF-BLQ-03): componente React propio (`BuilderBloques`) — formulario por tipo de bloque, botones para moverlo arriba/abajo (sin arrastrar), vista previa en una pestaña nueva y publicar.
+
+**Productos y Pedidos** (dueño, módulo de tienda v1): CRUD de productos mirror exacto del de Servicios (lista con foto/nombre/precio/visible y reordenar, crear, editar) — sin categoría ni campos de duración/márgenes, que no aplican. Pantalla "Pedidos": tabla (fecha, cliente, productos, entrega, total, estado) sin acciones sueltas en la fila; un botón "Acciones" por pedido abre el modal "Acciones del pedido" con el resumen arriba, el formulario de "Marcar como pagado" (método + valor) si aplica, y un botón por cada estado al que puede pasar — mismo espíritu que el modal de acciones de una cita, pero sin reprogramación ni distinción de "propio profesional" (no existen para un pedido).
 
 ## 8. Estados obligatorios en cada pantalla
 

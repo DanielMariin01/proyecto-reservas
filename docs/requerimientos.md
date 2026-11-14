@@ -152,6 +152,7 @@ Cada requerimiento tiene un código (RF-módulo-número) y una fase, para que lo
 - **RF-TIE-01 (Fase 3)** Productos con fotos, precio, variantes (50 g / 100 g) e inventario con alerta de stock bajo.
 - **RF-TIE-02 (Fase 3)** Carrito y pedido con “recoger en el local” sin pedir dirección ni código postal; domicilio opcional por barrio.
 - **RF-TIE-03 (Fase 3)** Buscador local que filtra por nombre y categoría, sin tildes ni mayúsculas.
+- **RF-TIE-04** El módulo de tienda se construyó en un v1 más simple que RF-TIE-01: productos con foto, nombre, descripción y precio, **sin variantes ni inventario** (esa parte de RF-TIE-01 queda pendiente para una fase posterior, incluida la tabla `variantes_producto` de la sección 10). RF-TIE-02 (carrito completo, recoger en el local o domicilio por barrio) y el pago manual del pedido (RF-PAG-01) sí se construyeron completos, igual que el estado del pedido (pendiente/pagado/entregado/cancelado, patrón Estado como `Cita`). RF-TIE-03 (buscador por categoría) no aplica todavía porque el producto no tiene categoría en este alcance. Esta nota no estaba en el documento original; el alcance se decidió y aprobó en esta tarea.
 
 ### 4.8 Pagos y caja
 
@@ -301,7 +302,7 @@ Los casos marcados MVP son los primeros que deben pasar sus criterios de aceptac
 | CU-11 | Inscribirse a un curso | Alumna | Fase 2 |
 | CU-12 | Sincronizar con Google Calendar | Profesional | Fase 2 |
 | CU-13 | Ver reportes de ingresos | Dueño | Fase 2 |
-| CU-14 | Comprar un producto | Cliente final | Fase 3 |
+| CU-14 | Comprar un producto | Cliente final | Fase 3 (v1 construido, ver RF-TIE-04) |
 
 ### CU-01 Reservar una cita
 
@@ -351,7 +352,17 @@ Los casos marcados MVP son los primeros que deben pasar sus criterios de aceptac
 - **Alternos:** cupo lleno mientras llena el formulario → mensaje y otras fechas del mismo curso; inscripción sin pagar al vencer el plazo → se libera el cupo.
 - **Criterios:** el cupo nunca queda negativo; la lista de inscritas se exporta a CSV con nombre, celular y estado de pago.
 
-Los casos CU-06, 07, 09, 10, 12, 13 y 14 siguen el mismo formato y se detallan al iniciar su fase.
+### CU-14 Comprar un producto
+
+- **Precondiciones:** el negocio está publicado y tiene al menos un producto visible.
+- **Flujo principal:** "Agregar al carrito" en el bloque `productos` → carrito (cantidades) → datos y entrega (recoger en el local o domicilio con barrio) → confirmar pedido → éxito.
+- **Alternos:** carrito vacío → no se puede continuar; domicilio sin barrio → error de validación; producto que ya no existe o se ocultó → el pedido lo rechaza (RF-TIE-04: v1 sin variantes ni inventario).
+- **Criterios de aceptación:**
+  - El pedido guarda una copia del nombre y precio de cada producto al momento de la compra, no una referencia viva (si el producto cambia después, el pedido no cambia).
+  - El total del pedido siempre es la suma de los subtotales reales, nunca un valor que mande el cliente.
+  - El dueño puede cambiar el estado del pedido (pendiente → pagado → entregado, o cancelar) y registrar el pago manual, igual que con una cita.
+
+Los casos CU-06, 07, 09, 10, 12 y 13 siguen el mismo formato y se detallan al iniciar su fase.
 
 ## 8. Usabilidad y experiencia
 
@@ -539,7 +550,7 @@ Un patrón se usa cuando resuelve un problema real del código; si un agente pro
 - Clases, métodos, funciones, variables, propiedades, constantes, enums, eventos, componentes de React y pruebas se nombran en español.
 - Sin tildes ni ñ en los identificadores, para evitar problemas de codificación: `anio`, `numeroTelefono`, `duracionMinutos`.
 - Convenciones: clases y componentes en `PascalCase` (`ServicioReservas`, `SelectorDeHora`); métodos y variables en `camelCase` (`obtenerFranjasDisponibles`, `fechaInicio`); columnas y tablas en `snake_case`; constantes en `MAYUSCULAS_CON_GUION`.
-- Las tablas del modelo de la sección 10 se crean con su nombre en español: `negocios`, `usuarios`, `profesionales`, `categorias_servicio`, `servicios`, `horarios_trabajo`, `bloqueos`, `clientes`, `citas`, `pagos`, `festivos`, `registros_auditoria`, `secciones_pagina`, `cursos`, `sesiones_curso`, `inscripciones`, `productos`, `variantes_producto`, `pedidos`, `cierres_caja`.
+- Las tablas del modelo de la sección 10 se crean con su nombre en español: `negocios`, `usuarios`, `profesionales`, `categorias_servicio`, `servicios`, `horarios_trabajo`, `bloqueos`, `clientes`, `citas`, `pagos`, `festivos`, `registros_auditoria`, `secciones_pagina`, `cursos`, `sesiones_curso`, `inscripciones`, `productos`, `items_pedido`, `pedidos`, `cierres_caja`. `variantes_producto` queda pendiente (ver RF-TIE-04): el v1 del módulo de tienda no tiene variantes.
 - Se mantienen en inglés solo los nombres que exige el framework: métodos heredados (`handle`, `boot`, `rules`), claves de configuración y palabras reservadas.
 - Booleanos con prefijo de pregunta: `estaActivo`, `tieneCupo`, `puedeCancelar`.
 - Funciones con verbo que dice lo que hacen: `calcularPrecioTotal`, no `procesar` ni `hacerCosas`.
@@ -773,7 +784,9 @@ La página de cada negocio es una lista de bloques guardada en la base de datos 
 | GET | `/disponibilidad?servicio=&empleado=&fecha=` | Horas libres de ese día, calculadas por el motor de la sección 5 |
 | POST | `/reservas` | Verifica de nuevo la hora, crea la cita y dispara el evento `CitaCreada` |
 | GET / POST | `/reservas/{token}` | Ver, cancelar o reprogramar una cita desde el enlace firmado del correo |
-| GET | `/cursos` y `/productos` | Fechas con cupos y productos con existencias (fases 2 y 3) |
+| GET | `/cursos` | Fechas con cupos (Fase 2, todavía no construido) |
+| GET | `/productos` | Productos visibles con foto, nombre, descripción y precio (v1, sin existencias — ver RF-TIE-04) |
+| POST | `/pedidos` | Verifica cada producto, crea el pedido con sus items y dispara el evento `PedidoCreado` |
 
 La página nunca calcula horas ni guarda citas: solo muestra y pregunta.
 
