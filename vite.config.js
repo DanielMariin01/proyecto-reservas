@@ -46,6 +46,7 @@ export default defineConfig({
                 'resources/js/panel-negocio-panel-del-dia.tsx',
                 'resources/js/panel-negocio-agenda-del-dia.tsx',
                 'resources/js/panel-negocio-mis-citas-hoy.tsx',
+                'resources/js/panel-negocio-mi-agenda.tsx',
                 'resources/js/panel-negocio-citas.tsx',
                 'resources/js/panel-negocio-citas-crear.tsx',
                 'resources/js/panel-negocio-pagina-web.tsx',

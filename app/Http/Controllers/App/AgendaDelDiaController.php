@@ -7,27 +7,27 @@ namespace App\Http\Controllers\App;
 use App\Enums\DiaSemana;
 use App\Enums\Permiso;
 use App\Http\Controllers\Controller;
-use App\Http\Resources\App\RecursoCita;
-use App\Models\Cita;
 use App\Models\Negocio;
 use App\Models\Profesional;
 use App\Models\Usuario;
-use App\Services\ServicioAccionesCita;
+use App\Services\ServicioColumnaAgenda;
 use App\Support\Fecha;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
 
 /**
  * RF-RES-07: la agenda visual del dueño, columnas por profesional. Las
  * acciones sobre cada cita viven en CitaAccionesController, compartidas
- * con la lista general de citas — nunca duplicar esa lógica.
+ * con la lista general de citas — nunca duplicar esa lógica. Construir
+ * cada columna (horario del día + sus citas) vive en ServicioColumnaAgenda,
+ * compartido con MiHorarioController (la misma columna, pero solo la
+ * propia, para el profesional).
  */
 final class AgendaDelDiaController extends Controller
 {
-    public function __construct(private readonly ServicioAccionesCita $servicioAccionesCita) {}
+    public function __construct(private readonly ServicioColumnaAgenda $servicioColumnaAgenda) {}
 
     public function mostrar(Request $request, Negocio $negocio): JsonResponse
     {
@@ -49,25 +49,13 @@ final class AgendaDelDiaController extends Controller
             ->where('activo', true)
             ->orderBy('nombre')
             ->get()
-            ->map(function (Profesional $profesional) use ($inicioDiaUtc, $finDiaUtc, $usuario, $diaSemana): array {
-                $rangosDelDia = $profesional->horariosTrabajo()->where('dia_semana', $diaSemana->value)->get();
-
-                return [
-                    'profesionalId' => $profesional->id,
-                    'profesionalNombre' => $profesional->nombre,
-                    'profesionalColor' => $profesional->color,
-                    'profesionalFoto' => $profesional->foto !== null ? Storage::disk('public')->url($profesional->foto) : null,
-                    'horaInicio' => $rangosDelDia->isEmpty() ? null : mb_substr((string) $rangosDelDia->min('hora_inicio'), 0, 5),
-                    'horaFin' => $rangosDelDia->isEmpty() ? null : mb_substr((string) $rangosDelDia->max('hora_fin'), 0, 5),
-                    'citas' => Cita::query()
-                        ->where('profesional_id', $profesional->id)
-                        ->where('inicio', '>=', $inicioDiaUtc)
-                        ->where('inicio', '<', $finDiaUtc)
-                        ->orderBy('inicio')
-                        ->get()
-                        ->map(fn (Cita $cita): RecursoCita => new RecursoCita($cita, $usuario, $this->servicioAccionesCita)),
-                ];
-            })
+            ->map(fn (Profesional $profesional): array => $this->servicioColumnaAgenda->construir(
+                $profesional,
+                $diaSemana->value,
+                $inicioDiaUtc,
+                $finDiaUtc,
+                $usuario,
+            ))
             ->values();
 
         return response()->json([

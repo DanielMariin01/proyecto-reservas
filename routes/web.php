@@ -32,6 +32,7 @@ use App\Http\Controllers\App\PaginaAgendaDelDiaController;
 use App\Http\Controllers\App\PaginaCategoriaServicioController;
 use App\Http\Controllers\App\PaginaCitaController;
 use App\Http\Controllers\App\PaginaFinanzasController;
+use App\Http\Controllers\App\PaginaMiAgendaController;
 use App\Http\Controllers\App\PaginaMiHorarioController;
 use App\Http\Controllers\App\PaginaMisCitasHoyController;
 use App\Http\Controllers\App\PaginaPaginaWebController;
@@ -234,6 +235,7 @@ Route::middleware(['auth', ResolverNegocioDesdeRuta::class])->prefix('app/{negoc
     // compartidas con la lista general de citas: nunca duplicar esa logica.
     Route::get('/agenda', [PaginaAgendaDelDiaController::class, 'mostrar'])->name('app.agenda');
     Route::get('/mis-citas-hoy', [PaginaMisCitasHoyController::class, 'mostrar'])->name('app.mis-citas-hoy');
+    Route::get('/mi-agenda', [PaginaMiAgendaController::class, 'mostrar'])->name('app.mi-agenda');
 
     // T28 (migracion de Filament): lista general de citas (RF-RES-06) y
     // creacion manual de una cita desde el panel.
@@ -301,6 +303,9 @@ Route::middleware(['auth', ResolverNegocioDesdeRuta::class])->prefix('app/{negoc
         Route::post('/mi-horario/bloqueos', [MiHorarioController::class, 'crearBloqueo']);
         Route::delete('/mi-horario/bloqueos/{bloqueo}', [MiHorarioController::class, 'eliminarBloqueo']);
         Route::get('/mi-horario/vista-previa-disponibilidad', [MiHorarioController::class, 'vistaPreviaDisponibilidad']);
+        Route::get('/mi-horario/horario', [MiHorarioController::class, 'mostrarHorario']);
+        Route::put('/mi-horario/horario', [MiHorarioController::class, 'actualizarHorario']);
+        Route::get('/mi-horario/agenda', [MiHorarioController::class, 'agenda']);
 
         Route::get('/panel-del-dia', [PanelDelDiaController::class, 'mostrar']);
 
