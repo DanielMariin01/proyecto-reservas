@@ -7,6 +7,7 @@ namespace App\Http\Resources\App;
 use App\Models\Profesional;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * @mixin Profesional
@@ -22,7 +23,7 @@ final class RecursoProfesional extends JsonResource
             'id' => $this->id,
             'nombre' => $this->nombre,
             'especialidad' => $this->especialidad,
-            'foto' => $this->foto,
+            'foto' => $this->foto !== null ? Storage::disk('public')->url($this->foto) : null,
             'biografia' => $this->biografia,
             'certificaciones' => $this->certificaciones,
             'color' => $this->color,
