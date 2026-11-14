@@ -28,6 +28,7 @@ Antes de escribir una pantalla:
   --tinta: #3E4043;
   --blanco: #FFFFFF;
   --fondo-panel: #F6F8FC;
+  --exito: #22C55E;
 
   /* Tipografía */
   --fuente-base: 'Asap', sans-serif;
@@ -45,6 +46,7 @@ Reglas:
 - Prohibido escribir colores hexadecimales, sombras o radios sueltos en los componentes. Todo sale de estos tokens (en Tailwind: `bg-primario`, `text-tinta`, `rounded-tarjeta`, `rounded-boton`, `shadow-tarjeta`).
 - Fuente Asap desde Google Fonts, pesos 400, 500, 600 y 700.
 - Espaciados en múltiplos de 4 px (4, 8, 12, 16, 24, 32, 48).
+- `--exito` es el único verde de la paleta: solo para el estado ON de un interruptor (`CampoInterruptor`). No se usa en texto ni en botones — por eso no entra en la tabla de contraste de abajo, que es solo para texto.
 
 **Excepción puntual — página pública (`/{slug}` y el flujo de reserva, sección 3 a 5):** usa la pila de fuentes del sistema (`-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif`) en vez de Asap, vía la clase `.fuente-publica` (`resources/css/app.css`) aplicada en el `<main>` de `resources/js/PaginaNegocio.tsx`. Es para que la página pública cargue sin depender de la descarga de Asap vía Google Fonts y se sienta nativa en cada dispositivo — los paneles de Filament no tienen ese objetivo y **siguen con Asap** (su propio `->font('Asap', ...)` en `AdminPanelProvider`/`AppPanelProvider`, sin relación con esta clase). **No uses esto como precedente** para cambiar la fuente en ningún panel ni en ningún otro componente: es una excepción acotada a este único contenedor.
 

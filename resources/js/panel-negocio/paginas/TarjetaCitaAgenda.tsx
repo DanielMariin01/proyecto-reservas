@@ -23,7 +23,9 @@ export default function TarjetaCitaAgenda({ cita, colorProfesional, onAbrirMenu 
             style={{ borderLeftColor: colorProfesional ?? '#673DE6' }}
         >
             <div className="flex items-center justify-between gap-2">
-                <span className="text-sm font-semibold text-tinta">{cita.hora}</span>
+                <span className="truncate text-xs font-semibold text-tinta">
+                    {cita.hora} a {cita.finHora} · {cita.duracionMinutos} minutos
+                </span>
                 {esEstadoConInsignia(cita.estado) && <Insignia estado={cita.estado} texto={cita.estadoEtiqueta} />}
             </div>
 
