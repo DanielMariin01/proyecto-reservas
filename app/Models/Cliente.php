@@ -61,6 +61,14 @@ final class Cliente extends Model
     }
 
     /**
+     * @return HasMany<Pedido, $this>
+     */
+    public function pedidos(): HasMany
+    {
+        return $this->hasMany(Pedido::class);
+    }
+
+    /**
      * @return BelongsTo<CuentaCliente, $this>
      */
     public function cuentaCliente(): BelongsTo
