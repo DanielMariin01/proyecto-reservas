@@ -24,6 +24,8 @@ export interface AccionesCita {
 export interface CitaConAcciones {
     id: number;
     hora: string;
+    finHora: string;
+    duracionMinutos: number;
     clienteNombre: string | null;
     servicioNombre: string | null;
     notas: string | null;

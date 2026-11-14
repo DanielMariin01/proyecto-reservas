@@ -50,7 +50,7 @@ export default function CampoImagenesPaginaWeb({ slug, etiqueta, value, onChange
                                 type="button"
                                 aria-label="Quitar foto"
                                 onClick={() => quitar(indice)}
-                                className="absolute -right-2 -top-2 rounded-full bg-tinta p-1 text-blanco"
+                                className="absolute -right-2 -top-2 flex h-7 w-7 items-center justify-center rounded-full bg-tinta text-blanco transition-colors hover:bg-tinta/80"
                             >
                                 <X size={14} strokeWidth={1.75} />
                             </button>

@@ -25,11 +25,13 @@ use App\Http\Controllers\App\BloqueoController;
 use App\Http\Controllers\App\CategoriaServicioController;
 use App\Http\Controllers\App\CitaAccionesController;
 use App\Http\Controllers\App\CitaController;
+use App\Http\Controllers\App\FinanzasController;
 use App\Http\Controllers\App\MiHorarioController;
 use App\Http\Controllers\App\MisCitasHoyController;
 use App\Http\Controllers\App\PaginaAgendaDelDiaController;
 use App\Http\Controllers\App\PaginaCategoriaServicioController;
 use App\Http\Controllers\App\PaginaCitaController;
+use App\Http\Controllers\App\PaginaFinanzasController;
 use App\Http\Controllers\App\PaginaMiAgendaController;
 use App\Http\Controllers\App\PaginaMiHorarioController;
 use App\Http\Controllers\App\PaginaMisCitasHoyController;
@@ -47,6 +49,7 @@ use App\Http\Controllers\App\ProfesionalHorarioController;
 use App\Http\Controllers\App\ProfesionalServicioController;
 use App\Http\Controllers\App\ResenaController as ResenaAppController;
 use App\Http\Controllers\App\ServicioController;
+use App\Http\Controllers\App\UsuarioActualController;
 use App\Http\Controllers\App\UsuarioController as UsuarioAppController;
 use App\Http\Controllers\Cliente\AreaClienteController;
 use App\Http\Controllers\Cliente\CitasClienteController;
@@ -220,6 +223,12 @@ Route::middleware(['auth', ResolverNegocioDesdeRuta::class])->prefix('app/{negoc
     // libres por profesional.
     Route::get('/panel-del-dia', [PaginaPanelDelDiaController::class, 'mostrar'])->name('app.panel-del-dia');
 
+    // T32: Finanzas, el desglose de ingresos por metodo de pago y los
+    // gastos del negocio, con rango de fechas (adelanta RF-REP-02 de
+    // Fase 2). Pantalla aparte de panel-del-dia: esa es el resumen
+    // operativo de hoy, esta es el reporte financiero por periodo.
+    Route::get('/finanzas', [PaginaFinanzasController::class, 'mostrar'])->name('app.finanzas');
+
     // T27 (migracion de Filament): agenda visual del dueno (RF-RES-07) y
     // mis citas de hoy, el autoservicio del profesional (CU-04). Las
     // acciones sobre cada cita viven en CitaAccionesController (T28),
@@ -240,12 +249,18 @@ Route::middleware(['auth', ResolverNegocioDesdeRuta::class])->prefix('app/{negoc
     Route::get('/pagina-web', [PaginaPaginaWebController::class, 'mostrar'])->name('app.pagina-web');
 
     Route::prefix('api')->group(function (): void {
+        Route::get('/usuario-actual', [UsuarioActualController::class, 'mostrar']);
+
         Route::get('/servicios', [ServicioController::class, 'index']);
         Route::post('/servicios', [ServicioController::class, 'store']);
         Route::put('/servicios/{servicio}', [ServicioController::class, 'update']);
         Route::delete('/servicios/{servicio}', [ServicioController::class, 'destroy']);
         Route::post('/servicios/reordenar', [ServicioController::class, 'reordenar']);
         Route::post('/servicios/imagenes', [ServicioController::class, 'subirImagen']);
+
+        Route::get('/finanzas', [FinanzasController::class, 'mostrar']);
+        Route::post('/finanzas/gastos', [FinanzasController::class, 'registrarGasto']);
+        Route::delete('/finanzas/gastos/{gasto}', [FinanzasController::class, 'eliminarGasto']);
 
         Route::get('/categorias-servicio', [CategoriaServicioController::class, 'index']);
         Route::post('/categorias-servicio', [CategoriaServicioController::class, 'store']);

@@ -28,7 +28,12 @@ export default function BloqueBarraPromocion({ datos }: PropiedadesBloque): Reac
                 </a>
             )}
 
-            <button type="button" onClick={() => setVisible(false)} aria-label="Cerrar" className="ml-2 shrink-0">
+            <button
+                type="button"
+                onClick={() => setVisible(false)}
+                aria-label="Cerrar"
+                className="ml-2 shrink-0 transition-opacity hover:opacity-75"
+            >
                 <X size={16} strokeWidth={1.75} />
             </button>
         </div>

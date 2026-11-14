@@ -22,7 +22,7 @@ export default function CampoInterruptor({ etiqueta, ayuda, value, onChange }: P
                 aria-checked={value}
                 aria-label={etiqueta}
                 onClick={() => onChange(!value)}
-                className={`relative h-7 w-12 shrink-0 rounded-full transition-colors ${value ? 'bg-exito' : 'bg-gris-claro'}`}
+                className={`relative h-7 w-12 shrink-0 rounded-full transition-colors ${value ? 'bg-exito hover:opacity-90' : 'bg-gris-claro hover:bg-texto-suave'}`}
             >
                 <span
                     className={`absolute top-1 flex h-5 w-5 items-center justify-center rounded-full bg-blanco transition-transform ${value ? 'translate-x-6' : 'translate-x-1'}`}

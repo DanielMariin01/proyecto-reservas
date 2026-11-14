@@ -1,6 +1,22 @@
 import type { ReactElement, ReactNode } from 'react';
-import { Calendar, CalendarCheck, CalendarDays, ClipboardList, Clock, Globe, LayoutDashboard, Scissors, Star, Tags, UserCog, Users } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import {
+    Calendar,
+    CalendarCheck,
+    CalendarDays,
+    ClipboardList,
+    Clock,
+    Globe,
+    LayoutDashboard,
+    Scissors,
+    Star,
+    Tags,
+    UserCog,
+    Users,
+    Wallet,
+} from 'lucide-react';
 import LayoutConMenuLateral, { type EnlaceMenuLateral } from '@/componentes/LayoutConMenuLateral';
+import { obtenerUsuarioActual } from './api/usuarioActual';
 
 interface Propiedades {
     negocioNombre: string;
@@ -11,16 +27,29 @@ interface Propiedades {
 }
 
 export default function LayoutPanelNegocio({ negocioNombre, negocioSlug, urlSalir, tokenCsrf, children }: Propiedades): ReactElement {
+    const consultaUsuario = useQuery({
+        queryKey: ['panel-usuario-actual', negocioSlug],
+        queryFn: () => obtenerUsuarioActual(negocioSlug),
+    });
+
+    const esProfesional = consultaUsuario.data?.esProfesional ?? false;
+    const puedeVerFinanzas = consultaUsuario.data?.puedeVerFinanzas ?? false;
+
     const enlaces: EnlaceMenuLateral[] = [
         { etiqueta: 'Panel del día', href: `/app/${negocioSlug}/panel-del-dia`, Icono: LayoutDashboard },
+        ...(puedeVerFinanzas ? [{ etiqueta: 'Finanzas', href: `/app/${negocioSlug}/finanzas`, Icono: Wallet }] : []),
         { etiqueta: 'Agenda', href: `/app/${negocioSlug}/agenda`, Icono: Calendar },
-        { etiqueta: 'Mis citas de hoy', href: `/app/${negocioSlug}/mis-citas-hoy`, Icono: ClipboardList },
-        { etiqueta: 'Mi agenda', href: `/app/${negocioSlug}/mi-agenda`, Icono: CalendarDays },
+        ...(esProfesional
+            ? [
+                  { etiqueta: 'Mis citas de hoy', href: `/app/${negocioSlug}/mis-citas-hoy`, Icono: ClipboardList },
+                  { etiqueta: 'Mi agenda', href: `/app/${negocioSlug}/mi-agenda`, Icono: CalendarDays },
+              ]
+            : []),
         { etiqueta: 'Citas', href: `/app/${negocioSlug}/citas`, Icono: CalendarCheck },
         { etiqueta: 'Profesionales', href: `/app/${negocioSlug}/profesionales`, Icono: Users },
         { etiqueta: 'Servicios', href: `/app/${negocioSlug}/servicios`, Icono: Scissors },
         { etiqueta: 'Categorías de servicio', href: `/app/${negocioSlug}/categorias-servicio`, Icono: Tags },
-        { etiqueta: 'Mi horario', href: `/app/${negocioSlug}/mi-horario`, Icono: Clock },
+        ...(esProfesional ? [{ etiqueta: 'Mi horario', href: `/app/${negocioSlug}/mi-horario`, Icono: Clock }] : []),
         { etiqueta: 'Página web', href: `/app/${negocioSlug}/pagina-web`, Icono: Globe },
         { etiqueta: 'Reseñas', href: `/app/${negocioSlug}/resenas`, Icono: Star },
         { etiqueta: 'Usuarios', href: `/app/${negocioSlug}/usuarios`, Icono: UserCog },

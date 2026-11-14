@@ -41,7 +41,9 @@ export default function FormularioResena({ enviando, error, onConfirmar, onVolve
                             <Star
                                 size={32}
                                 strokeWidth={1.75}
-                                className={valorEstrella <= calificacion ? 'fill-secundario text-secundario' : 'text-gris-claro'}
+                                className={`transition-colors ${
+                                    valorEstrella <= calificacion ? 'fill-secundario text-secundario' : 'text-gris-claro hover:text-secundario'
+                                }`}
                             />
                         </button>
                     );

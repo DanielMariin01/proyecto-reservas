@@ -46,6 +46,8 @@ final class RecursoCita extends JsonResource
             'id' => $cita->id,
             'inicioVisible' => $inicioLocal->format('d/m/Y H:i'),
             'hora' => Hora::formatear($cita->inicio, $zonaHoraria),
+            'finHora' => Hora::formatear($cita->fin, $zonaHoraria),
+            'duracionMinutos' => (int) $cita->inicio->diffInMinutes($cita->fin),
             'clienteNombre' => $cita->cliente?->nombre,
             'servicioNombre' => $cita->servicio?->nombre,
             'profesionalNombre' => $cita->profesional?->nombre,

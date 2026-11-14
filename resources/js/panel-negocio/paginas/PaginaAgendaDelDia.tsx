@@ -57,7 +57,7 @@ export default function PaginaAgendaDelDia({ negocioNombre, negocioSlug, urlSali
                             type="button"
                             aria-label="Día anterior"
                             onClick={() => setFecha((actual) => sumarDias(actual, -1))}
-                            className="flex h-11 w-11 items-center justify-center rounded-boton border border-gris-claro text-tinta"
+                            className="flex h-11 w-11 items-center justify-center rounded-boton border border-gris-claro text-tinta transition-colors hover:bg-fondo-panel"
                         >
                             <ChevronLeft size={18} strokeWidth={1.75} />
                         </button>
@@ -66,7 +66,7 @@ export default function PaginaAgendaDelDia({ negocioNombre, negocioSlug, urlSali
                             type="button"
                             aria-label="Día siguiente"
                             onClick={() => setFecha((actual) => sumarDias(actual, 1))}
-                            className="flex h-11 w-11 items-center justify-center rounded-boton border border-gris-claro text-tinta"
+                            className="flex h-11 w-11 items-center justify-center rounded-boton border border-gris-claro text-tinta transition-colors hover:bg-fondo-panel"
                         >
                             <ChevronRight size={18} strokeWidth={1.75} />
                         </button>

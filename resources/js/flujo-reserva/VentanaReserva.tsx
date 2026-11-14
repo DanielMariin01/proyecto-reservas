@@ -51,7 +51,7 @@ export default function VentanaReserva({
                 type="button"
                 onClick={onCerrar}
                 aria-label="Cerrar"
-                className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full bg-tinta text-blanco"
+                className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full bg-tinta text-blanco transition-colors hover:bg-tinta/80"
             >
                 <X size={18} />
             </button>

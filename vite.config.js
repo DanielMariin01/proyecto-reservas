@@ -50,6 +50,7 @@ export default defineConfig({
                 'resources/js/panel-negocio-citas.tsx',
                 'resources/js/panel-negocio-citas-crear.tsx',
                 'resources/js/panel-negocio-pagina-web.tsx',
+                'resources/js/panel-negocio-finanzas.tsx',
             ],
             refresh: true,
         }),
