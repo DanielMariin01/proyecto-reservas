@@ -6,6 +6,8 @@ namespace App\Models;
 
 use App\Enums\EstadoPedidoValor;
 use App\Enums\TipoEntregaValor;
+use App\Estados\Pedido\EstadoPedido;
+use App\Estados\Pedido\FabricaEstadoPedido;
 use App\Models\Concerns\PerteneceANegocio;
 use Database\Factories\PedidoFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -68,5 +70,10 @@ final class Pedido extends Model
     public function pagos(): HasMany
     {
         return $this->hasMany(Pago::class);
+    }
+
+    public function obtenerEstado(): EstadoPedido
+    {
+        return app(FabricaEstadoPedido::class)->paraValor($this->estado);
     }
 }

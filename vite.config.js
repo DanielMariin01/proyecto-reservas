@@ -34,6 +34,7 @@ export default defineConfig({
                 'resources/js/panel-negocio-productos.tsx',
                 'resources/js/panel-negocio-productos-crear.tsx',
                 'resources/js/panel-negocio-productos-editar.tsx',
+                'resources/js/panel-negocio-pedidos.tsx',
                 'resources/js/panel-negocio-categorias-servicio.tsx',
                 'resources/js/panel-negocio-categorias-servicio-crear.tsx',
                 'resources/js/panel-negocio-categorias-servicio-editar.tsx',

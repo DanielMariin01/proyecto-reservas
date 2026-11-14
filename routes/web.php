@@ -37,6 +37,7 @@ use App\Http\Controllers\App\PaginaMiHorarioController;
 use App\Http\Controllers\App\PaginaMisCitasHoyController;
 use App\Http\Controllers\App\PaginaPaginaWebController;
 use App\Http\Controllers\App\PaginaPanelDelDiaController;
+use App\Http\Controllers\App\PaginaPedidoController;
 use App\Http\Controllers\App\PaginaProductoController;
 use App\Http\Controllers\App\PaginaProfesionalController;
 use App\Http\Controllers\App\PaginaResenaController as PaginaResenaAppController;
@@ -45,6 +46,8 @@ use App\Http\Controllers\App\PaginaUsuarioController as PaginaUsuarioAppControll
 use App\Http\Controllers\App\PaginaWebController as PaginaWebAppController;
 use App\Http\Controllers\App\PanelDelDiaController;
 use App\Http\Controllers\App\PanelNegocioController;
+use App\Http\Controllers\App\PedidoAccionesController;
+use App\Http\Controllers\App\PedidoController;
 use App\Http\Controllers\App\ProductoController;
 use App\Http\Controllers\App\ProfesionalController;
 use App\Http\Controllers\App\ProfesionalHorarioController;
@@ -200,6 +203,8 @@ Route::middleware(['auth', ResolverNegocioDesdeRuta::class])->prefix('app/{negoc
     Route::get('/productos/create', [PaginaProductoController::class, 'create'])->name('app.productos.create');
     Route::get('/productos/{producto}/edit', [PaginaProductoController::class, 'edit'])->name('app.productos.edit');
 
+    Route::get('/pedidos', [PaginaPedidoController::class, 'index'])->name('app.pedidos.index');
+
     Route::get('/categorias-servicio', [PaginaCategoriaServicioController::class, 'index'])->name('app.categorias-servicio.index');
     Route::get('/categorias-servicio/create', [PaginaCategoriaServicioController::class, 'create'])->name('app.categorias-servicio.create');
     Route::get('/categorias-servicio/{categoriaServicio}/edit', [PaginaCategoriaServicioController::class, 'edit'])
@@ -273,6 +278,10 @@ Route::middleware(['auth', ResolverNegocioDesdeRuta::class])->prefix('app/{negoc
         Route::delete('/productos/{producto}', [ProductoController::class, 'destroy']);
         Route::post('/productos/reordenar', [ProductoController::class, 'reordenar']);
         Route::post('/productos/imagenes', [ProductoController::class, 'subirImagen']);
+
+        Route::get('/pedidos', [PedidoController::class, 'index']);
+        Route::put('/pedidos/{pedido}/estado', [PedidoAccionesController::class, 'cambiarEstado']);
+        Route::post('/pedidos/{pedido}/marcar-pagado', [PedidoAccionesController::class, 'marcarPagado']);
 
         Route::get('/finanzas', [FinanzasController::class, 'mostrar']);
         Route::post('/finanzas/gastos', [FinanzasController::class, 'registrarGasto']);

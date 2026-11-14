@@ -7,6 +7,7 @@ namespace App\Http\Controllers\App;
 use App\Http\Controllers\Controller;
 use App\Models\Gasto;
 use App\Models\Negocio;
+use App\Models\Pedido;
 use App\Models\Producto;
 use App\Models\Usuario;
 use Illuminate\Http\JsonResponse;
@@ -17,7 +18,8 @@ use Illuminate\Support\Facades\Auth;
  * interfaz que no justifican una llamada propia: si el menú debe mostrar
  * "Mi horario" y "Mis citas de hoy" (exclusivas de quien tiene un
  * Profesional vinculado), si debe mostrar "Finanzas" (quien puede ver
- * reportes, ver PoliticaGasto::viewAny) y "Productos" (PoliticaProducto::viewAny).
+ * reportes, ver PoliticaGasto::viewAny), "Productos" (PoliticaProducto::viewAny)
+ * y "Pedidos" (PoliticaPedido::viewAny).
  */
 final class UsuarioActualController extends Controller
 {
@@ -37,6 +39,7 @@ final class UsuarioActualController extends Controller
             'esProfesional' => $usuario->profesional !== null,
             'puedeVerFinanzas' => $usuario->can('viewAny', Gasto::class),
             'puedeGestionarProductos' => $usuario->can('viewAny', Producto::class),
+            'puedeGestionarPedidos' => $usuario->can('viewAny', Pedido::class),
         ]);
     }
 }
