@@ -1,5 +1,16 @@
 import axios, { AxiosError } from 'axios';
-import type { CitaCreada, DatosDelCliente, ErrorReserva, HoraDisponible, Profesional, Servicio } from '@/tipos';
+import type {
+    CitaCreada,
+    DatosDelCliente,
+    DatosDelClienteCompra,
+    ErrorReserva,
+    HoraDisponible,
+    ItemCarrito,
+    PedidoCreado,
+    Producto,
+    Profesional,
+    Servicio,
+} from '@/tipos';
 
 export class ErrorDeReservaPublica extends Error {
     horasCercanas: string[];
@@ -18,6 +29,44 @@ export async function obtenerServicios(slug: string): Promise<Servicio[]> {
     const respuesta = await axios.get<{ data: Servicio[] }>(`/api/publico/${slug}/servicios`);
 
     return respuesta.data.data;
+}
+
+export async function obtenerProductos(slug: string): Promise<Producto[]> {
+    const respuesta = await axios.get<{ data: Producto[] }>(`/api/publico/${slug}/productos`);
+
+    return respuesta.data.data;
+}
+
+export class ErrorDePedidoPublico extends Error {}
+
+export function esErrorDePedidoPublico(error: unknown): error is ErrorDePedidoPublico {
+    return error instanceof ErrorDePedidoPublico;
+}
+
+export async function crearPedido(slug: string, carrito: ItemCarrito[], datosDelCliente: DatosDelClienteCompra): Promise<PedidoCreado> {
+    try {
+        const respuesta = await axios.post<{ data: PedidoCreado }>(`/api/publico/${slug}/pedidos`, {
+            items: carrito.map((item) => ({ producto_id: item.producto.id, cantidad: item.cantidad })),
+            nombre: datosDelCliente.nombre,
+            celular: datosDelCliente.celular,
+            correo: datosDelCliente.correo || undefined,
+            nota: datosDelCliente.nota || undefined,
+            tipo_entrega: datosDelCliente.tipoEntrega,
+            barrio: datosDelCliente.barrio || undefined,
+            autorizacion_datos: datosDelCliente.autorizacionDatos,
+        });
+
+        return respuesta.data.data;
+    } catch (error) {
+        if (error instanceof AxiosError && error.response?.status === 422) {
+            const datos = error.response.data as { mensaje?: string; errors?: Record<string, string[]> };
+            const primerError = datos.errors ? Object.values(datos.errors)[0]?.[0] : undefined;
+
+            throw new ErrorDePedidoPublico(datos.mensaje ?? primerError ?? 'No se pudo crear el pedido.');
+        }
+
+        throw error;
+    }
 }
 
 export async function obtenerProfesionales(slug: string, servicioId: number): Promise<Profesional[]> {
