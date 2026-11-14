@@ -161,7 +161,7 @@ Cada bloque es un componente registrado por tipo. El super admin arma la página
 | `barra_promocion` | Franja angosta, color libre. Texto corto + botón de texto opcional + botón de cerrar (x). |
 | `encabezado` | Color libre. Logo a la izquierda, enlaces de navegación al centro, ícono `log-in` a la derecha (enlaza a `/ingresar`, sin verificar sesión). |
 | `portada` | Foto de fondo a pantalla completa con capa de legibilidad (ver sección 1). Insignia con el tipo de negocio + título muy grande arriba a la izquierda; fila de ubicación/horario; descripción; 2 botones; fila de hasta 4 íconos con etiqueta; texto decorativo opcional. |
-| `equipo` | Color libre. Cuadrícula de `Tarjeta` con foto cuadrada, nombre, especialidad y botón "Reservar con {nombre}". |
+| `equipo` | Color libre. Carrusel (componente base `Carrusel`) de `Tarjeta` con avatar circular, nombre, especialidad, nota con estrella (si tiene reseñas publicadas) y botón "Reservar con {nombre}". |
 | `servicios` | Color libre. Tarjetas con ícono de tijeras, foto cuadrada, nombre, descripción, "$20.000 · 45 min" y botón "Agendar". |
 | `cursos` | Color libre. Tarjeta por fecha: nombre, fecha y hora, "Quedan 3 cupos" en `--secundario`, precio, botón "Inscribirme"; agotado en gris. |
 | `productos` | Color libre. Cuadrícula de tarjetas con foto, nombre, precio y botón "Agregar". |
@@ -206,7 +206,12 @@ Igual de detallado que la ventana de reserva (sección 3), porque esta plantilla
 - Ícono fijo de tijeras + foto + nombre + descripción + precio/duración + botón "Agendar", en `Tarjeta`.
 - **Celular**: cuadrícula de 1 columna (ya lo hacía).
 
-**`equipo`, `cursos`, `productos`, `ubicacion`, `whatsapp`** (sin cambios de diseño en esta plantilla, solo color libre)
+**`equipo`** (carrusel con nota real, en vez del grid fijo anterior)
+- Componente base `Carrusel` (flechas circulares 40 px, gap 16, scroll nativo con scroll-snap) con tarjetas de ancho fijo: avatar circular (o ícono de respaldo si no hay foto), nombre, especialidad y, si el profesional tiene reseñas publicadas, una fila con estrella `--secundario` + nota (`4.7`). Sin reseñas, esa fila simplemente no aparece — no se inventa una nota en cero.
+- La nota viene de `promedio_calificacion`/`total_resenas`, ya cacheados en `Profesional` (ver sección 14.6/observador de reseñas) — no es un dato manual.
+- **Celular**: el carrusel se desliza con el dedo (scroll nativo), sin flechas visibles.
+
+**`cursos`, `productos`, `ubicacion`, `whatsapp`** (sin cambios de diseño en esta plantilla, solo color libre)
 - Mismo diseño que ya tenían (ver tabla de arriba); el color libre no cambia su comportamiento responsive.
 
 **`texto`**
