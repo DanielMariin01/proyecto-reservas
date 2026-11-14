@@ -1,4 +1,5 @@
 import { Scissors } from 'lucide-react';
+import { useState } from 'react';
 import type { ReactElement } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { obtenerServicios } from '@/flujo-reserva/api/clientePublico';
@@ -6,6 +7,28 @@ import Boton from '@/componentes/Boton';
 import Tarjeta from '@/componentes/Tarjeta';
 import { obtenerEstiloColor } from './colorLibre';
 import type { PropiedadesBloque } from './tipos';
+
+const CLASES_FOTO_SERVICIO = 'h-24 w-24 shrink-0 rounded-boton object-cover sm:h-32 sm:w-32';
+
+/**
+ * `servicio.foto` puede apuntar a un archivo que ya no existe en disco
+ * (borrado aparte, symlink de storage distinto en otro entorno, etc.) —
+ * en vez de confiar en el string y mostrar el ícono roto del navegador,
+ * se cae al mismo respaldo que cuando no hay foto.
+ */
+function FotoServicio({ foto }: { foto: string | null }): ReactElement {
+    const [fallo, setFallo] = useState(false);
+
+    if (!foto || fallo) {
+        return (
+            <span className={`flex items-center justify-center bg-fondo-panel text-primario ${CLASES_FOTO_SERVICIO}`}>
+                <Scissors size={28} strokeWidth={1.75} />
+            </span>
+        );
+    }
+
+    return <img src={foto} alt="" onError={() => setFallo(true)} className={CLASES_FOTO_SERVICIO} />;
+}
 
 export default function BloqueServicios({ datos, slug, onReservar }: PropiedadesBloque): ReactElement {
     const serviciosQuery = useQuery({
@@ -36,17 +59,7 @@ export default function BloqueServicios({ datos, slug, onReservar }: Propiedades
                     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                         {serviciosQuery.data.map((servicio) => (
                             <Tarjeta key={servicio.id} className="flex flex-row gap-4">
-                                {servicio.foto ? (
-                                    <img
-                                        src={servicio.foto}
-                                        alt=""
-                                        className="h-24 w-24 shrink-0 rounded-boton object-cover sm:h-32 sm:w-32"
-                                    />
-                                ) : (
-                                    <span className="flex h-24 w-24 shrink-0 items-center justify-center rounded-boton bg-fondo-panel text-primario sm:h-32 sm:w-32">
-                                        <Scissors size={28} strokeWidth={1.75} />
-                                    </span>
-                                )}
+                                <FotoServicio foto={servicio.foto} />
 
                                 <div className="flex min-w-0 flex-1 flex-col">
                                     {servicio.categoria && (
