@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import Boton from '@/componentes/Boton';
 import CampoInterruptor from '@/componentes/CampoInterruptor';
 import Modal from '@/componentes/Modal';
-import { type DiasHorario, esErrorDeHorario, obtenerHorarioSemanal } from '../api/horarioSemanal';
+import { type DiasHorario, esErrorDeHorario } from '../api/horarioSemanal';
 
 const DIAS = [
     { valor: '0', abreviatura: 'Do', etiqueta: 'Domingo' },
@@ -21,21 +21,29 @@ function diaDeHoy(): string {
 }
 
 interface Propiedades {
-    slug: string;
-    profesionalId: number;
+    queryKey: readonly unknown[];
+    onObtener: () => Promise<DiasHorario>;
     enviando: boolean;
     onGuardar: (dias: DiasHorario) => Promise<unknown>;
     onCerrar: () => void;
 }
 
-export default function ModalEditarHorarioSemanal({ slug, profesionalId, enviando, onGuardar, onCerrar }: Propiedades): ReactElement {
+/**
+ * Agnostico de a quien pertenece el horario (el propio o el de otro
+ * profesional): recibe como obtenerlo (onObtener) en vez de construir la
+ * URL internamente, para que el dueño (edita el de un profesional, con
+ * su id en la URL) y el propio profesional (edita el suyo, sin ningun id
+ * en la URL) reutilicen el mismo componente sin que ninguno de los dos
+ * pueda terminar apuntando al horario de otro por accidente.
+ */
+export default function ModalEditarHorarioSemanal({ queryKey, onObtener, enviando, onGuardar, onCerrar }: Propiedades): ReactElement {
     const [dias, setDias] = useState<DiasHorario | null>(null);
     const [errorGeneral, setErrorGeneral] = useState<string | null>(null);
     const [diaSeleccionado, setDiaSeleccionado] = useState(diaDeHoy());
 
     const consulta = useQuery({
-        queryKey: ['panel-horario-semanal', slug, profesionalId],
-        queryFn: () => obtenerHorarioSemanal(slug, profesionalId),
+        queryKey,
+        queryFn: onObtener,
     });
 
     useEffect(() => {

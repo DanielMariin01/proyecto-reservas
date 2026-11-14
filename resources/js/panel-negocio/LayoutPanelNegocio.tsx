@@ -1,5 +1,5 @@
 import type { ReactElement, ReactNode } from 'react';
-import { Calendar, CalendarCheck, ClipboardList, Clock, Globe, LayoutDashboard, Scissors, Star, Tags, UserCog, Users } from 'lucide-react';
+import { Calendar, CalendarCheck, CalendarDays, ClipboardList, Clock, Globe, LayoutDashboard, Scissors, Star, Tags, UserCog, Users } from 'lucide-react';
 import LayoutConMenuLateral, { type EnlaceMenuLateral } from '@/componentes/LayoutConMenuLateral';
 
 interface Propiedades {
@@ -15,6 +15,7 @@ export default function LayoutPanelNegocio({ negocioNombre, negocioSlug, urlSali
         { etiqueta: 'Panel del día', href: `/app/${negocioSlug}/panel-del-dia`, Icono: LayoutDashboard },
         { etiqueta: 'Agenda', href: `/app/${negocioSlug}/agenda`, Icono: Calendar },
         { etiqueta: 'Mis citas de hoy', href: `/app/${negocioSlug}/mis-citas-hoy`, Icono: ClipboardList },
+        { etiqueta: 'Mi agenda', href: `/app/${negocioSlug}/mi-agenda`, Icono: CalendarDays },
         { etiqueta: 'Citas', href: `/app/${negocioSlug}/citas`, Icono: CalendarCheck },
         { etiqueta: 'Profesionales', href: `/app/${negocioSlug}/profesionales`, Icono: Users },
         { etiqueta: 'Servicios', href: `/app/${negocioSlug}/servicios`, Icono: Scissors },
