@@ -14,7 +14,7 @@ export default function BloqueServicios({ datos, slug, onReservar }: Propiedades
     });
 
     return (
-        <section style={obtenerEstiloColor(datos)}>
+        <section id="servicios" style={obtenerEstiloColor(datos)}>
             <div className="mx-auto max-w-5xl px-4 py-10 sm:py-16">
                 <h2 className="mb-6 text-3xl font-bold sm:text-4xl">Servicios</h2>
 

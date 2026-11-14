@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Resources\Publico;
 
+use App\DatosTransferencia\DatosPopularidadServicio;
 use App\Enums\EstadoResenaValor;
 use App\Enums\FuenteTestimonios;
 use App\Enums\TipoBloque;
@@ -11,12 +12,20 @@ use App\Models\Cliente;
 use App\Models\Negocio;
 use App\Models\Pagina;
 use App\Models\Resena;
+use App\Models\Servicio;
+use App\Services\ServicioPopularidadServicios;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Storage;
 
 final class RecursoPaginaPublica extends JsonResource
 {
+    private const CANTIDAD_SERVICIOS_DESTACADOS_POR_DEFECTO = 4;
+
+    private const MINIMO_SERVICIOS_DESTACADOS = 2;
+
+    private const MAXIMO_SERVICIOS_DESTACADOS = 8;
+
     public function __construct(
         private readonly Negocio $negocio,
         private readonly ?Pagina $pagina,
@@ -69,6 +78,10 @@ final class RecursoPaginaPublica extends JsonResource
                     $datos['resumen'] = $this->resumenResenas();
                 }
 
+                if ($tipo === TipoBloque::ServiciosDestacados->value) {
+                    $datos['servicios'] = $this->serviciosDestacados($datos);
+                }
+
                 return ['tipo' => $tipo, 'datos' => $datos];
             },
             $bloquesCrudos,
@@ -115,6 +128,44 @@ final class RecursoPaginaPublica extends JsonResource
             'promedio' => $this->negocio->promedio_calificacion,
             'total' => $this->negocio->total_resenas,
         ];
+    }
+
+    /**
+     * Resuelve el bloque `servicios_destacados`: toma el ranking real de
+     * `ServicioPopularidadServicios` y lo combina con los datos del
+     * servicio (igual forma que `RecursoServicioPublico`, para que React
+     * reutilice el mismo tipo `Servicio`), descartando cualquier servicio
+     * que ya no esté visible aunque siga apareciendo en citas pasadas.
+     *
+     * @param  array<string, mixed>  $datos
+     * @return array<int, array<string, mixed>>
+     */
+    private function serviciosDestacados(array $datos): array
+    {
+        $cantidad = is_int($datos['cantidad'] ?? null)
+            ? max(self::MINIMO_SERVICIOS_DESTACADOS, min(self::MAXIMO_SERVICIOS_DESTACADOS, $datos['cantidad']))
+            : self::CANTIDAD_SERVICIOS_DESTACADOS_POR_DEFECTO;
+
+        $ranking = app(ServicioPopularidadServicios::class)->topServicios($this->negocio, $cantidad);
+
+        $servicios = Servicio::query()
+            ->where('negocio_id', $this->negocio->id)
+            ->where('visible', true)
+            ->whereIn('id', $ranking->pluck('servicioId'))
+            ->with('categoriaServicio')
+            ->get()
+            ->keyBy('id');
+
+        return $ranking
+            ->filter(fn (DatosPopularidadServicio $fila): bool => $servicios->has($fila->servicioId))
+            ->map(fn (DatosPopularidadServicio $fila): array => [
+                ...RecursoServicioPublico::make($servicios->get($fila->servicioId))->resolve(),
+                'puesto' => $fila->puesto,
+                'totalReservas' => $fila->totalReservas,
+                'clientesDistintos' => $fila->clientesDistintos,
+            ])
+            ->values()
+            ->all();
     }
 
     /**

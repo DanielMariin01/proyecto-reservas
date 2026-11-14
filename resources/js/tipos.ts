@@ -8,6 +8,12 @@ export interface Servicio {
     foto: string | null;
 }
 
+export interface ServicioDestacado extends Servicio {
+    puesto: number;
+    totalReservas: number;
+    clientesDistintos: number;
+}
+
 export interface Profesional {
     id: number;
     nombre: string;

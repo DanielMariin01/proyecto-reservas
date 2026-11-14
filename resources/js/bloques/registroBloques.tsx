@@ -8,6 +8,7 @@ import BloquePieDePagina from './BloquePieDePagina';
 import BloquePortada from './BloquePortada';
 import BloqueProximamente from './BloqueProximamente';
 import BloqueServicios from './BloqueServicios';
+import BloqueServiciosDestacados from './BloqueServiciosDestacados';
 import BloqueTarjetas from './BloqueTarjetas';
 import BloqueTestimonios from './BloqueTestimonios';
 import BloqueTexto from './BloqueTexto';
@@ -27,6 +28,7 @@ const registroBloques: Record<string, ComponentType<PropiedadesBloque>> = {
     portada: BloquePortada,
     equipo: BloqueEquipo,
     servicios: BloqueServicios,
+    servicios_destacados: BloqueServiciosDestacados,
     texto: BloqueTexto,
     texto_con_imagen: BloqueTextoConImagen,
     galeria: BloqueGaleria,

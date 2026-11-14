@@ -63,7 +63,7 @@ Reglas:
 
 ### Color libre de bloque (única excepción a "nunca colores sueltos")
 
-Todos los bloques de contenido (sección 6.1: `barra_promocion`, `texto`, `texto_con_imagen`, `banner_oferta`, `testimonios`, `tarjetas`, `equipo`, `servicios`, `cursos`, `productos`, `galeria`, `ubicacion`, `whatsapp`) no usan los tokens de color en su fondo/texto — cada uno tiene 2 campos de color libre (`colorFondo`/`colorTexto`, un `ColorPicker` en el Builder, reutilizando el mismo helper `camposColorLibre()`) para que el super admin arme la paleta exacta de cada sección. Esta es la **única** excepción permitida a la regla de "prohibido escribir colores sueltos" de arriba; el resto del sistema (botones, tarjetas, paneles, componentes base) sigue solo con tokens — incluidas las tarjetas blancas dentro de estos bloques (`equipo`, `servicios`, `testimonios`, `tarjetas`), que mantienen su texto `--tinta` fijo sin importar el color del fondo de la sección.
+Todos los bloques de contenido (sección 6.1: `barra_promocion`, `texto`, `texto_con_imagen`, `banner_oferta`, `testimonios`, `tarjetas`, `equipo`, `servicios`, `servicios_destacados`, `cursos`, `productos`, `galeria`, `ubicacion`, `whatsapp`) no usan los tokens de color en su fondo/texto — cada uno tiene 2 campos de color libre (`colorFondo`/`colorTexto`, un `ColorPicker` en el Builder, reutilizando el mismo helper `camposColorLibre()`) para que el super admin arme la paleta exacta de cada sección. Esta es la **única** excepción permitida a la regla de "prohibido escribir colores sueltos" de arriba; el resto del sistema (botones, tarjetas, paneles, componentes base) sigue solo con tokens — incluidas las tarjetas blancas dentro de estos bloques (`equipo`, `servicios`, `testimonios`, `tarjetas`), que mantienen su texto `--tinta` fijo sin importar el color del fondo de la sección.
 
 `encabezado`, `pie_de_pagina` y `portada` quedan fuera de este sistema (fondo fijo o capa de legibilidad, ver abajo) — no son "contenido de marca" sino chrome del sitio o una foto de fondo.
 
@@ -163,6 +163,7 @@ Cada bloque es un componente registrado por tipo. El super admin arma la página
 | `portada` | Foto de fondo a pantalla completa con capa de legibilidad (ver sección 1). Insignia con el tipo de negocio + título muy grande arriba a la izquierda; fila de ubicación/horario; descripción; 2 botones; fila de hasta 4 íconos con etiqueta; texto decorativo opcional. |
 | `equipo` | Color libre. Cuadrícula de `Tarjeta` con foto cuadrada, nombre, especialidad y botón "Reservar con {nombre}". |
 | `servicios` | Color libre. Tarjetas con ícono de tijeras, foto cuadrada, nombre, descripción, "$20.000 · 45 min" y botón "Agendar". |
+| `servicios_destacados` | Color libre. Carrusel de "Lo más pedido": ranking real por citas completadas (no manual), con badge "N.º X en reservas" y botón "Ver todos los servicios" que lleva al bloque `servicios`. |
 | `cursos` | Color libre. Tarjeta por fecha: nombre, fecha y hora, "Quedan 3 cupos" en `--secundario`, precio, botón "Inscribirme"; agotado en gris. |
 | `productos` | Color libre. Cuadrícula de tarjetas con foto, nombre, precio y botón "Agregar". |
 | `texto` | Color libre. Título y párrafo de máximo 70 caracteres por línea. |
@@ -205,6 +206,13 @@ Igual de detallado que la ventana de reserva (sección 3), porque esta plantilla
 **`servicios`** (ajuste visual sobre el bloque ya existente, más color libre)
 - Ícono fijo de tijeras + foto + nombre + descripción + precio/duración + botón "Agendar", en `Tarjeta`.
 - **Celular**: cuadrícula de 1 columna (ya lo hacía).
+
+**`servicios_destacados`** (bloque nuevo)
+- Carrusel (mismo componente base `Carrusel` que `equipo`) de tarjetas horizontales (foto o ícono de respaldo + texto): badge "N.º X en reservas" en `--primario`, nombre, precio/duración, "N clientes lo reservaron" si hay datos, botón "Agendar".
+- El ranking **no es manual**: sale de `App\Services\ServicioPopularidadServicios` (citas `completada` reales, últimos 90 días, con caída al histórico completo si el negocio no tiene suficientes). El super admin solo elige la cantidad a mostrar (2 a 6) y el color libre.
+- Encabezado con "Lo más pedido" + botón "Ver todos los servicios" que hace scroll al bloque `servicios` (si el negocio no agregó ese bloque, el botón simplemente no hace nada visible).
+- **Sin calificación de estrellas/reseñas**: igual que `portada`, no se mezcla con el sistema de reseñas.
+- **Celular**: el carrusel se desliza con el dedo (scroll nativo), sin flechas visibles (mismo comportamiento que `equipo`).
 
 **`equipo`, `cursos`, `productos`, `ubicacion`, `whatsapp`** (sin cambios de diseño en esta plantilla, solo color libre)
 - Mismo diseño que ya tenían (ver tabla de arriba); el color libre no cambia su comportamiento responsive.
