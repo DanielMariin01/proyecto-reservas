@@ -772,6 +772,7 @@ La página de cada negocio es una lista de bloques guardada en la base de datos 
 - **RF-BLQ-03 (MVP)** El super admin arma la página en Filament con el componente *Builder*: un formulario por tipo de bloque, arrastrar para ordenar, vista previa y publicar.
 - **RF-BLQ-04 (MVP)** React dibuja cada bloque con un registro de componentes por tipo (patrón Registro/Fábrica); agregar un tipo de bloque nuevo no modifica los existentes.
 - **RF-BLQ-05 (MVP)** Un solo componente `FlujoReserva` abre la reserva desde cualquier bloque, recibiendo lo ya elegido (servicio o empleado).
+- **RF-BLQ-06** El bloque `servicios_destacados` muestra un carrusel de "lo más pedido" con un ranking real (no manual): `App\Services\ServicioPopularidadServicios` cuenta citas `completada` por servicio en los últimos 90 días, y cae al histórico completo si el negocio no tuvo ninguna en ese periodo. El super admin solo elige cuántos mostrar (2 a 6); el resto del contenido (nombre, precio, duración, cuántos clientes distintos lo reservaron) se consulta al mostrarse, igual que `RF-BLQ-02`.
 
 **API pública (todas las rutas bajo `/api/publico/{slug}`)**
 

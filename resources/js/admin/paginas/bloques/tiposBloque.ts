@@ -1,6 +1,7 @@
 import {
     Columns3,
     FileText,
+    Flame,
     GraduationCap,
     Image,
     Images,
@@ -43,6 +44,7 @@ export const TIPOS_BLOQUE: MetaTipoBloque[] = [
     { tipo: 'portada', etiqueta: 'Portada', Icono: Image, disponible: true },
     { tipo: 'equipo', etiqueta: 'Nuestro equipo', Icono: Users, disponible: true },
     { tipo: 'servicios', etiqueta: 'Servicios', Icono: Sparkles, disponible: true },
+    { tipo: 'servicios_destacados', etiqueta: 'Servicios destacados', Icono: Flame, disponible: true },
     { tipo: 'cursos', etiqueta: 'Cursos (próximamente)', Icono: GraduationCap, disponible: false },
     { tipo: 'productos', etiqueta: 'Productos', Icono: ShoppingBag, disponible: true },
     { tipo: 'texto', etiqueta: 'Texto', Icono: FileText, disponible: true },

@@ -3,15 +3,23 @@
 declare(strict_types=1);
 
 use App\Actions\PublicarPagina;
+use App\Enums\EstadoCitaValor;
 use App\Enums\EstadoSuscripcion;
 use App\Enums\RolNegocio;
 use App\Enums\TipoBloque;
 use App\Enums\TipoNegocio;
+use App\Models\Cita;
 use App\Models\Negocio;
 use App\Models\Pagina;
 use App\Models\PaletaMarca;
 use App\Models\Resena;
+use App\Models\Servicio;
 use App\Models\Usuario;
+use Carbon\CarbonImmutable;
+
+afterEach(function (): void {
+    CarbonImmutable::setTestNow();
+});
 
 function negocioConPaginaBorradorYPublicada(): array
 {
@@ -190,6 +198,90 @@ test('con fuente manual, el bloque testimonios no incluye el resumen de reseñas
     $respuesta = $this->getJson("/api/publico/{$negocio->slug}/pagina");
 
     $respuesta->assertJsonMissingPath('data.bloques.0.datos.resumen');
+});
+
+test('el bloque servicios_destacados devuelve el ranking real ordenado por puesto', function (): void {
+    CarbonImmutable::setTestNow('2026-11-14 12:00:00');
+    $negocio = Negocio::factory()->create();
+    $masPedido = Servicio::factory()->create(['negocio_id' => $negocio->id, 'nombre' => 'Corte clásico']);
+    $menosPedido = Servicio::factory()->create(['negocio_id' => $negocio->id, 'nombre' => 'Barba']);
+
+    Cita::factory()->count(3)->create([
+        'negocio_id' => $negocio->id,
+        'servicio_id' => $masPedido->id,
+        'estado' => EstadoCitaValor::Completada,
+        'inicio' => CarbonImmutable::now()->subDays(5),
+    ]);
+    Cita::factory()->create([
+        'negocio_id' => $negocio->id,
+        'servicio_id' => $menosPedido->id,
+        'estado' => EstadoCitaValor::Completada,
+        'inicio' => CarbonImmutable::now()->subDays(5),
+    ]);
+
+    $pagina = Pagina::factory()->create([
+        'negocio_id' => $negocio->id,
+        'bloques' => [[
+            'type' => TipoBloque::ServiciosDestacados->value,
+            'data' => ['cantidad' => 2],
+        ]],
+    ]);
+    app(PublicarPagina::class)->ejecutar($pagina);
+
+    $respuesta = $this->getJson("/api/publico/{$negocio->slug}/pagina");
+
+    $respuesta->assertJsonCount(2, 'data.bloques.0.datos.servicios');
+    $respuesta->assertJsonPath('data.bloques.0.datos.servicios.0.nombre', 'Corte clásico');
+    $respuesta->assertJsonPath('data.bloques.0.datos.servicios.0.puesto', 1);
+    $respuesta->assertJsonPath('data.bloques.0.datos.servicios.0.totalReservas', 3);
+    $respuesta->assertJsonPath('data.bloques.0.datos.servicios.0.clientesDistintos', 3);
+    $respuesta->assertJsonPath('data.bloques.0.datos.servicios.1.nombre', 'Barba');
+    $respuesta->assertJsonPath('data.bloques.0.datos.servicios.1.puesto', 2);
+});
+
+test('el bloque servicios_destacados no incluye un servicio que ya no esta visible', function (): void {
+    CarbonImmutable::setTestNow('2026-11-14 12:00:00');
+    $negocio = Negocio::factory()->create();
+    $servicioOculto = Servicio::factory()->create(['negocio_id' => $negocio->id, 'visible' => false]);
+
+    Cita::factory()->create([
+        'negocio_id' => $negocio->id,
+        'servicio_id' => $servicioOculto->id,
+        'estado' => EstadoCitaValor::Completada,
+        'inicio' => CarbonImmutable::now()->subDays(5),
+    ]);
+
+    $pagina = Pagina::factory()->create([
+        'negocio_id' => $negocio->id,
+        'bloques' => [[
+            'type' => TipoBloque::ServiciosDestacados->value,
+            'data' => ['cantidad' => 4],
+        ]],
+    ]);
+    app(PublicarPagina::class)->ejecutar($pagina);
+
+    $respuesta = $this->getJson("/api/publico/{$negocio->slug}/pagina");
+
+    $respuesta->assertJsonCount(0, 'data.bloques.0.datos.servicios');
+});
+
+test('sin citas completadas, el bloque servicios_destacados devuelve una lista vacia sin error', function (): void {
+    $negocio = Negocio::factory()->create();
+    Servicio::factory()->create(['negocio_id' => $negocio->id]);
+
+    $pagina = Pagina::factory()->create([
+        'negocio_id' => $negocio->id,
+        'bloques' => [[
+            'type' => TipoBloque::ServiciosDestacados->value,
+            'data' => ['cantidad' => 4],
+        ]],
+    ]);
+    app(PublicarPagina::class)->ejecutar($pagina);
+
+    $respuesta = $this->getJson("/api/publico/{$negocio->slug}/pagina");
+
+    $respuesta->assertOk();
+    $respuesta->assertJsonCount(0, 'data.bloques.0.datos.servicios');
 });
 
 test('la api expone la etiqueta legible del tipo de negocio', function (): void {

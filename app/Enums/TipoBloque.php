@@ -20,6 +20,7 @@ enum TipoBloque: string
     case Portada = 'portada';
     case Equipo = 'equipo';
     case Servicios = 'servicios';
+    case ServiciosDestacados = 'servicios_destacados';
     case Cursos = 'cursos';
     case Productos = 'productos';
     case Texto = 'texto';
@@ -40,6 +41,7 @@ enum TipoBloque: string
             self::Portada => 'Portada',
             self::Equipo => 'Nuestro equipo',
             self::Servicios => 'Servicios',
+            self::ServiciosDestacados => 'Servicios destacados',
             self::Cursos => 'Cursos',
             self::Productos => 'Productos',
             self::Texto => 'Texto',
