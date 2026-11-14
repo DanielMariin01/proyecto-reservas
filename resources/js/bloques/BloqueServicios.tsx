@@ -35,19 +35,36 @@ export default function BloqueServicios({ datos, slug, onReservar }: Propiedades
                 {serviciosQuery.data && serviciosQuery.data.length > 0 && (
                     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                         {serviciosQuery.data.map((servicio) => (
-                            <Tarjeta key={servicio.id}>
-                                {servicio.foto && <img src={servicio.foto} alt="" className="mb-3 aspect-square w-full rounded-boton object-cover" />}
-                                <span className="mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-fondo-panel text-primario">
-                                    <Scissors size={18} strokeWidth={1.75} />
-                                </span>
-                                <p className="font-semibold text-tinta">{servicio.nombre}</p>
-                                {servicio.descripcion && <p className="mt-1 text-sm text-texto-suave">{servicio.descripcion}</p>}
-                                <p className="mt-2 text-sm text-texto-suave">
-                                    ${servicio.precio.toLocaleString('es-CO')} · {servicio.duracionMinutos} min
-                                </p>
-                                <Boton className="mt-3 w-full" onClick={() => onReservar({ servicio })}>
-                                    Agendar
-                                </Boton>
+                            <Tarjeta key={servicio.id} className="flex flex-row gap-4">
+                                {servicio.foto ? (
+                                    <img
+                                        src={servicio.foto}
+                                        alt=""
+                                        className="h-24 w-24 shrink-0 rounded-boton object-cover sm:h-32 sm:w-32"
+                                    />
+                                ) : (
+                                    <span className="flex h-24 w-24 shrink-0 items-center justify-center rounded-boton bg-fondo-panel text-primario sm:h-32 sm:w-32">
+                                        <Scissors size={28} strokeWidth={1.75} />
+                                    </span>
+                                )}
+
+                                <div className="flex min-w-0 flex-1 flex-col">
+                                    {servicio.categoria && (
+                                        <span className="mb-1 w-fit rounded-full bg-celeste px-2 py-0.5 text-xs font-semibold text-primario">
+                                            {servicio.categoria}
+                                        </span>
+                                    )}
+                                    <p className="font-semibold text-tinta">{servicio.nombre}</p>
+                                    {servicio.descripcion && (
+                                        <p className="mt-1 line-clamp-2 text-sm text-texto-suave">{servicio.descripcion}</p>
+                                    )}
+                                    <p className="mt-2 text-sm text-texto-suave">
+                                        ${servicio.precio.toLocaleString('es-CO')} · {servicio.duracionMinutos} min
+                                    </p>
+                                    <Boton className="mt-auto w-full sm:w-fit" onClick={() => onReservar({ servicio })}>
+                                        Agendar
+                                    </Boton>
+                                </div>
                             </Tarjeta>
                         ))}
                     </div>
