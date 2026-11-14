@@ -16,6 +16,8 @@ export interface Profesional {
     color: string | null;
     foto: string | null;
     servicios: number[];
+    notaPromedio: number | null;
+    totalResenas: number;
 }
 
 export interface HoraDisponible {
