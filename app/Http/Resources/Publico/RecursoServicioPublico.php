@@ -24,6 +24,7 @@ final class RecursoServicioPublico extends JsonResource
             'nombre' => $this->nombre,
             'descripcion' => $this->descripcion,
             'categoria' => $this->categoriaServicio?->nombre,
+            'categoriaServicioId' => $this->categoria_servicio_id,
             'precio' => $this->precio,
             'duracionMinutos' => $this->duracion_minutos,
             'foto' => $this->foto !== null ? Storage::disk('public')->url($this->foto) : null,
