@@ -3,6 +3,7 @@ export interface Servicio {
     nombre: string;
     descripcion: string | null;
     categoria: string | null;
+    categoriaServicioId: number | null;
     precio: number;
     duracionMinutos: number;
     foto: string | null;

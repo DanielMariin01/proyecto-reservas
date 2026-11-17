@@ -6,6 +6,7 @@ use App\Actions\CrearProfesional;
 use App\DatosTransferencia\DatosNuevoProfesional;
 use App\Enums\DiaSemana;
 use App\Enums\EstadoSuscripcion;
+use App\Models\CategoriaServicio;
 use App\Models\Cita;
 use App\Models\Cliente;
 use App\Models\HorarioTrabajo;
@@ -63,6 +64,18 @@ test('GET servicios solo devuelve los visibles', function (): void {
     $ids = collect($respuesta->json('data'))->pluck('id');
     expect($ids)->toContain($servicioVisible->id);
     expect($ids)->not->toContain($servicioOculto->id);
+});
+
+test('GET servicios incluye el id de categoria para filtrar en el bloque', function (): void {
+    ['negocio' => $negocio, 'servicio' => $servicio] = negocioPublicoListo();
+    $categoria = CategoriaServicio::factory()->create(['negocio_id' => $negocio->id]);
+    $servicio->update(['categoria_servicio_id' => $categoria->id]);
+
+    $respuesta = $this->getJson("/api/publico/{$negocio->slug}/servicios");
+
+    $respuesta->assertOk();
+    $datoServicio = collect($respuesta->json('data'))->firstWhere('id', $servicio->id);
+    expect($datoServicio['categoriaServicioId'])->toBe($categoria->id);
 });
 
 test('GET profesionales solo devuelve los activos', function (): void {

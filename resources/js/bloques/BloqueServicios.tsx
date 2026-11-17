@@ -1,14 +1,47 @@
-import { Scissors } from 'lucide-react';
-import { useState } from 'react';
+import { Scissors, Search } from 'lucide-react';
+import { useMemo, useState } from 'react';
 import type { ReactElement } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { obtenerServicios } from '@/flujo-reserva/api/clientePublico';
+import type { Servicio } from '@/tipos';
 import Boton from '@/componentes/Boton';
 import Tarjeta from '@/componentes/Tarjeta';
 import { obtenerEstiloColor } from './colorLibre';
 import type { PropiedadesBloque } from './tipos';
 
 const CLASES_FOTO_SERVICIO = 'h-24 w-24 shrink-0 rounded-boton object-cover sm:h-32 sm:w-32';
+
+interface CategoriaFiltro {
+    id: number;
+    nombre: string;
+}
+
+/**
+ * Categorías distintas presentes en los servicios ya cargados, en el orden
+ * en que aparecen — no hay un endpoint propio de categorías todavía, así
+ * que la barra de filtro se construye con los mismos datos del bloque.
+ */
+function categoriasDeServicios(servicios: Servicio[]): CategoriaFiltro[] {
+    const categorias = new Map<number, string>();
+
+    for (const servicio of servicios) {
+        if (servicio.categoriaServicioId !== null && servicio.categoria !== null && !categorias.has(servicio.categoriaServicioId)) {
+            categorias.set(servicio.categoriaServicioId, servicio.categoria);
+        }
+    }
+
+    return Array.from(categorias, ([id, nombre]) => ({ id, nombre }));
+}
+
+function coincideConBusqueda(servicio: Servicio, busqueda: string): boolean {
+    const texto = busqueda.trim().toLowerCase();
+
+    if (texto === '') {
+        return true;
+    }
+
+    return servicio.nombre.toLowerCase().includes(texto) || (servicio.descripcion?.toLowerCase().includes(texto) ?? false);
+}
 
 /**
  * `servicio.foto` puede apuntar a un archivo que ya no existe en disco
@@ -31,15 +64,73 @@ function FotoServicio({ foto }: { foto: string | null }): ReactElement {
 }
 
 export default function BloqueServicios({ datos, slug, onReservar }: PropiedadesBloque): ReactElement {
+    const [busqueda, setBusqueda] = useState('');
+    const [categoriaElegida, setCategoriaElegida] = useState<number | null>(null);
+
     const serviciosQuery = useQuery({
         queryKey: ['servicios', slug],
         queryFn: () => obtenerServicios(slug),
     });
 
+    const categorias = useMemo(() => categoriasDeServicios(serviciosQuery.data ?? []), [serviciosQuery.data]);
+
+    const serviciosFiltrados = useMemo(() => {
+        return (serviciosQuery.data ?? []).filter(
+            (servicio) =>
+                (categoriaElegida === null || servicio.categoriaServicioId === categoriaElegida) && coincideConBusqueda(servicio, busqueda),
+        );
+    }, [serviciosQuery.data, categoriaElegida, busqueda]);
+
     return (
         <section id="servicios" style={obtenerEstiloColor(datos)}>
             <div className="mx-auto max-w-5xl px-4 py-10 sm:py-16">
                 <h2 className="mb-6 text-3xl font-bold sm:text-4xl">Servicios</h2>
+
+                {serviciosQuery.data && serviciosQuery.data.length > 0 && (
+                    <div className="mb-6 space-y-3">
+                        <div className="relative max-w-sm">
+                            <Search size={18} strokeWidth={1.75} className="absolute left-3 top-1/2 -translate-y-1/2 text-texto-suave" />
+                            <input
+                                type="search"
+                                value={busqueda}
+                                onChange={(evento) => setBusqueda(evento.target.value)}
+                                placeholder="Buscar servicio..."
+                                aria-label="Buscar servicio"
+                                className="h-11 w-full rounded-boton border border-gris-claro bg-blanco pl-10 pr-3 text-tinta focus:border-primario focus:outline-none"
+                            />
+                        </div>
+
+                        {categorias.length > 1 && (
+                            <div className="flex flex-wrap gap-2">
+                                <button
+                                    type="button"
+                                    onClick={() => setCategoriaElegida(null)}
+                                    className={`rounded-full border px-3 py-1 text-sm font-semibold ${
+                                        categoriaElegida === null
+                                            ? 'border-primario bg-celeste text-primario'
+                                            : 'border-gris-claro text-texto-suave'
+                                    }`}
+                                >
+                                    Todas
+                                </button>
+                                {categorias.map((categoria) => (
+                                    <button
+                                        key={categoria.id}
+                                        type="button"
+                                        onClick={() => setCategoriaElegida(categoria.id)}
+                                        className={`rounded-full border px-3 py-1 text-sm font-semibold ${
+                                            categoriaElegida === categoria.id
+                                                ? 'border-primario bg-celeste text-primario'
+                                                : 'border-gris-claro text-texto-suave'
+                                        }`}
+                                    >
+                                        {categoria.nombre}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                )}
 
                 {serviciosQuery.isLoading && (
                     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" aria-label="Cargando servicios">
@@ -55,9 +146,13 @@ export default function BloqueServicios({ datos, slug, onReservar }: Propiedades
                     <p className="text-sm opacity-80">Este negocio aún no tiene servicios disponibles.</p>
                 )}
 
-                {serviciosQuery.data && serviciosQuery.data.length > 0 && (
+                {serviciosQuery.data && serviciosQuery.data.length > 0 && serviciosFiltrados.length === 0 && (
+                    <p className="text-sm opacity-80">No encontramos servicios con esos filtros.</p>
+                )}
+
+                {serviciosFiltrados.length > 0 && (
                     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                        {serviciosQuery.data.map((servicio) => (
+                        {serviciosFiltrados.map((servicio) => (
                             <Tarjeta key={servicio.id} className="flex flex-row gap-4">
                                 <FotoServicio foto={servicio.foto} />
 
