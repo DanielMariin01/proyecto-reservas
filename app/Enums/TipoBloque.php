@@ -26,6 +26,7 @@ enum TipoBloque: string
     case Texto = 'texto';
     case TextoConImagen = 'texto_con_imagen';
     case Galeria = 'galeria';
+    case MisDisenos = 'mis_disenos';
     case Tarjetas = 'tarjetas';
     case BannerOferta = 'banner_oferta';
     case Testimonios = 'testimonios';
@@ -47,6 +48,7 @@ enum TipoBloque: string
             self::Texto => 'Texto',
             self::TextoConImagen => 'Texto con imagen',
             self::Galeria => 'Galería',
+            self::MisDisenos => 'Mis diseños',
             self::Tarjetas => 'Tarjetas en columnas',
             self::BannerOferta => 'Banner de oferta',
             self::Testimonios => 'Testimonios',

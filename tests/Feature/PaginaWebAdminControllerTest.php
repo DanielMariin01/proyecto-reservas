@@ -46,6 +46,26 @@ test('guardar bloques crea la pagina si todavia no existe', function (): void {
     expect($pagina->bloques[0]['type'])->toBe('portada');
 });
 
+test('guardar un bloque mis_disenos con sus items funciona', function (): void {
+    $superAdmin = Usuario::factory()->superAdmin()->create();
+    $negocio = Negocio::factory()->create();
+
+    $respuesta = $this->actingAs($superAdmin)->putJson("/admin/api/negocios/{$negocio->slug}/pagina", [
+        'bloques' => [
+            [
+                'type' => 'mis_disenos',
+                'data' => ['items' => [['imagen' => null, 'titulo' => 'Diseño 1', 'descripcion' => 'Uñas francesas']]],
+            ],
+        ],
+    ]);
+
+    $respuesta->assertOk();
+
+    $pagina = Pagina::query()->where('negocio_id', $negocio->id)->firstOrFail();
+    expect($pagina->bloques[0]['type'])->toBe('mis_disenos');
+    expect($pagina->bloques[0]['data']['items'][0]['titulo'])->toBe('Diseño 1');
+});
+
 test('guardar bloques sin el campo requerido de un tipo falla la validacion', function (): void {
     $superAdmin = Usuario::factory()->superAdmin()->create();
     $negocio = Negocio::factory()->create();

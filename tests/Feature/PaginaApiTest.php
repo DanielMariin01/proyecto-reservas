@@ -144,6 +144,25 @@ test('la api traduce la imagen de cada tarjeta a una url completa', function ():
     expect($url)->toContain('/storage/paginas/paso1.jpg');
 });
 
+test('la api traduce la imagen de cada diseno del bloque mis_disenos a una url completa', function (): void {
+    $negocio = Negocio::factory()->create();
+    $pagina = Pagina::factory()->create([
+        'negocio_id' => $negocio->id,
+        'bloques' => [[
+            'type' => TipoBloque::MisDisenos->value,
+            'data' => ['items' => [
+                ['imagen' => 'paginas/disenio1.jpg', 'titulo' => 'Francesas', 'descripcion' => 'Uñas francesas en gel'],
+            ]],
+        ]],
+    ]);
+    app(PublicarPagina::class)->ejecutar($pagina);
+
+    $respuesta = $this->getJson("/api/publico/{$negocio->slug}/pagina");
+
+    $url = $respuesta->json('data.bloques.0.datos.items.0.imagen');
+    expect($url)->toContain('/storage/paginas/disenio1.jpg');
+});
+
 test('con fuente sistema, el bloque testimonios muestra las reseñas reales publicadas', function (): void {
     $negocio = Negocio::factory()->create();
     Resena::factory()->create(['negocio_id' => $negocio->id, 'calificacion' => 5, 'comentario' => 'Reseña publicada visible']);
