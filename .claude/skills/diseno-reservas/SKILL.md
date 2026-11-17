@@ -216,6 +216,8 @@ Igual de detallado que la ventana de reserva (sección 3), porque esta plantilla
 
 **`servicios`** (ajuste visual sobre el bloque ya existente, más color libre)
 - Ícono fijo de tijeras + foto + nombre + descripción + precio/duración + botón "Agendar", en `Tarjeta`.
+- Buscador de texto (siempre visible si hay al menos 1 servicio) y barra de categorías en píldoras (filtro client-side por `categoria_servicio_id`, oculta si el negocio tiene 1 categoría o ninguna).
+- El bloque suma 3 campos de color libre propios, además de `colorFondo`/`colorTexto` de la sección: `colorTitulo` (color del "Servicios", por defecto el mismo `colorTexto`) y `colorFondoCategorias`/`colorTextoCategorias` (la píldora de la categoría activa — por defecto `--celeste`/`--primario`, el mismo aspecto que ya tenía). Las píldoras inactivas quedan siempre neutras (`--gris-claro`/`--texto-suave`), sin personalizar.
 - **Celular**: cuadrícula de 1 columna (ya lo hacía).
 
 **`servicios_destacados`** (bloque nuevo)
