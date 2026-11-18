@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\App;
 
 use App\Disponibilidad\BloqueLibre;
+use App\Enums\FranjaHoraria;
 use App\Enums\Permiso;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\App\RecursoCitaDelDia;
@@ -13,6 +14,7 @@ use App\Models\Profesional;
 use App\Models\Usuario;
 use App\Services\ServicioPanelDelDia;
 use App\Support\Hora;
+use Carbon\CarbonImmutable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -38,15 +40,16 @@ final class PanelDelDiaController extends Controller
     }
 
     /**
-     * @return list<array{profesionalId: int, profesionalNombre: string, bloques: list<string>}>
+     * @return list<array{profesionalId: int, profesionalNombre: string, bloques: list<array{franja: string, texto: string}>}>
      */
     private function formatearHuecosLibres(Negocio $negocio): array
     {
         $zonaHoraria = $negocio->zona_horaria;
+        $fechaLocal = CarbonImmutable::now($zonaHoraria)->startOfDay();
 
         return array_values(
             $this->servicioPanelDelDia->huecosLibres($negocio)
-                ->map(function (array $columna) use ($zonaHoraria): array {
+                ->map(function (array $columna) use ($zonaHoraria, $fechaLocal): array {
                     /** @var Profesional $profesional */
                     $profesional = $columna['profesional'];
                     /** @var Collection<int, BloqueLibre> $bloques */
@@ -55,15 +58,43 @@ final class PanelDelDiaController extends Controller
                     return [
                         'profesionalId' => $profesional->id,
                         'profesionalNombre' => $profesional->nombre,
-                        'bloques' => array_values(
-                            $bloques
-                                ->map(fn (BloqueLibre $bloque): string => Hora::formatear($bloque->inicio, $zonaHoraria).' – '.Hora::formatear($bloque->fin, $zonaHoraria))
-                                ->all(),
-                        ),
+                        'bloques' => $this->repartirPorFranja($bloques, $fechaLocal, $zonaHoraria),
                     ];
                 })
                 ->all(),
         );
+    }
+
+    /**
+     * Un hueco libre que cruza dos franjas (ej. 11:00 a. m.-1:00 p. m.) se
+     * reparte entre ambas en vez de quedar entero en la de inicio: cada
+     * franja solo muestra lo que realmente le pertenece.
+     *
+     * @param  Collection<int, BloqueLibre>  $bloques
+     * @return list<array{franja: string, texto: string}>
+     */
+    private function repartirPorFranja(Collection $bloques, CarbonImmutable $fechaLocal, string $zonaHoraria): array
+    {
+        $resultado = [];
+
+        foreach (FranjaHoraria::cases() as $franja) {
+            [$inicioFranja, $finFranja] = $franja->rangoUtc($fechaLocal);
+
+            foreach ($bloques as $bloque) {
+                $interseccion = $bloque->interseccionCon($inicioFranja, $finFranja);
+
+                if ($interseccion === null) {
+                    continue;
+                }
+
+                $resultado[] = [
+                    'franja' => $franja->value,
+                    'texto' => Hora::formatear($interseccion->inicio, $zonaHoraria).' – '.Hora::formatear($interseccion->fin, $zonaHoraria),
+                ];
+            }
+        }
+
+        return $resultado;
     }
 
     private function autorizar(): void
