@@ -18,4 +18,14 @@ enum TipoNegocio: string
             self::Salon => 'Salón',
         };
     }
+
+    /**
+     * RF-HCL-01: el módulo de historia clínica solo aplica a negocios de
+     * este tipo. Queda aquí para que agregar otro tipo que también lo
+     * necesite sea un cambio de una sola línea.
+     */
+    public function requiereHistoriaClinica(): bool
+    {
+        return $this === self::Spa;
+    }
 }

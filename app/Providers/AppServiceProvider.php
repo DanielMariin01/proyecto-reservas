@@ -11,6 +11,7 @@ use App\Disponibilidad\ReglaVentanaMaxima;
 use App\Models\CategoriaServicio;
 use App\Models\Cita;
 use App\Models\Gasto;
+use App\Models\HistoriaClinica;
 use App\Models\Negocio;
 use App\Models\Pago;
 use App\Models\PagoSuscripcion;
@@ -25,6 +26,7 @@ use App\Observabilidad\ContextoObservabilidad;
 use App\Policies\PoliticaCategoriaServicio;
 use App\Policies\PoliticaCita;
 use App\Policies\PoliticaGasto;
+use App\Policies\PoliticaHistoriaClinica;
 use App\Policies\PoliticaNegocio;
 use App\Policies\PoliticaPago;
 use App\Policies\PoliticaPagoSuscripcion;
@@ -82,5 +84,6 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Gasto::class, PoliticaGasto::class);
         Gate::policy(Producto::class, PoliticaProducto::class);
         Gate::policy(Pedido::class, PoliticaPedido::class);
+        Gate::policy(HistoriaClinica::class, PoliticaHistoriaClinica::class);
     }
 }

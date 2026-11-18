@@ -35,6 +35,7 @@ enum RolNegocio: string
                 Permiso::GestionarResenas,
                 Permiso::VerReportes,
                 Permiso::GestionarCursosProductos,
+                Permiso::GestionarHistoriasClinicas,
             ],
             self::Recepcion => [
                 Permiso::GestionarCitasTodas,
@@ -43,6 +44,7 @@ enum RolNegocio: string
             ],
             self::Profesional => [
                 Permiso::GestionarCitasPropias,
+                Permiso::GestionarHistoriasClinicas,
             ],
         };
     }
