@@ -2,7 +2,7 @@ import type { ReactElement } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import Boton from '@/componentes/Boton';
 import { obtenerSesion } from './api/clienteCuenta';
-import PanelCitas from './PanelCitas';
+import PanelCuenta from './PanelCuenta';
 import PantallaIngresar from './PantallaIngresar';
 
 const CLAVE_SESION = ['mi-cuenta-sesion'];
@@ -31,5 +31,5 @@ export default function AreaCliente(): ReactElement {
         return <PantallaIngresar />;
     }
 
-    return <PanelCitas cuenta={sesionQuery.data} onSalir={() => sesionQuery.refetch()} />;
+    return <PanelCuenta cuenta={sesionQuery.data} onSalir={() => sesionQuery.refetch()} />;
 }

@@ -62,7 +62,10 @@ use App\Http\Controllers\App\UsuarioActualController;
 use App\Http\Controllers\App\UsuarioController as UsuarioAppController;
 use App\Http\Controllers\Cliente\AreaClienteController;
 use App\Http\Controllers\Cliente\CitasClienteController;
+use App\Http\Controllers\Cliente\DisenoFavoritoController;
+use App\Http\Controllers\Cliente\EstadisticasController;
 use App\Http\Controllers\Cliente\GoogleAuthController;
+use App\Http\Controllers\Cliente\HistorialClinicoController;
 use App\Http\Controllers\Cliente\SesionClienteController;
 use App\Http\Controllers\ElegirNegocioController;
 use App\Http\Controllers\EstadoController;
@@ -403,6 +406,20 @@ Route::prefix('mi-cuenta/api')->group(function (): void {
         Route::post('/citas/{cita}/cancelar', [CitasClienteController::class, 'cancelar']);
         Route::post('/citas/{cita}/reprogramar', [CitasClienteController::class, 'reprogramar']);
         Route::post('/citas/{cita}/resena', [CitasClienteController::class, 'resena']);
+
+        // T34: historial clinico de solo lectura, diseños favoritos y el
+        // panel de estadisticas (seccion 19 de requerimientos.md, RF-HCL-08).
+        Route::get('/historial-clinico', [HistorialClinicoController::class, 'index']);
+        Route::get('/historial-clinico/{historiaClinica}/firma-clienta', [HistorialClinicoController::class, 'mostrarFirmaClienta'])
+            ->name('mi-cuenta.historial-clinico.firma-clienta');
+        Route::get('/historial-clinico/{historiaClinica}/firma-profesional', [HistorialClinicoController::class, 'mostrarFirmaProfesional'])
+            ->name('mi-cuenta.historial-clinico.firma-profesional');
+
+        Route::get('/disenos-favoritos', [DisenoFavoritoController::class, 'index']);
+        Route::get('/disenos-favoritos/negocio/{negocio:slug}', [DisenoFavoritoController::class, 'idsDelNegocio']);
+        Route::post('/disenos-favoritos/alternar', [DisenoFavoritoController::class, 'alternar']);
+
+        Route::get('/estadisticas', [EstadisticasController::class, 'mostrar']);
     });
 });
 

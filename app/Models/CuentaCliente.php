@@ -39,4 +39,12 @@ final class CuentaCliente extends Authenticatable
     {
         return $this->hasMany(Cliente::class);
     }
+
+    /**
+     * @return HasMany<DisenoFavorito, $this>
+     */
+    public function disenosFavoritos(): HasMany
+    {
+        return $this->hasMany(DisenoFavorito::class);
+    }
 }
