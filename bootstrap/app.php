@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Actions\RegistrarErrorSistema;
 use App\Exceptions\ManejadorRespuestaDeError;
 use App\Http\Middleware\AsignarIdPeticion;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -40,12 +41,20 @@ return Application::configure(basePath: dirname(__DIR__))
         /**
          * RNF-OBS-07: mensaje en lenguaje simple + código de referencia.
          * Se deja pasar a la gestión normal de Laravel en modo debug (para
-         * seguir viendo la traza completa en local) y los errores de
+         * seguir viendo la traza completa en local), los errores de
          * validación (su forma con `errors` por campo la usan los
-         * formularios de la página pública).
+         * formularios de la página pública) y AuthenticationException: no
+         * es un "error del sistema" ni implementa HttpExceptionInterface
+         * (ManejadorRespuestaDeError la trataría como un 500 genérico), es
+         * la redirección normal a /ingresar (o el 401 JSON si la petición
+         * espera JSON) que Laravel ya resuelve bien por su cuenta.
          */
         $exceptions->render(function (Throwable $excepcion, Request $peticion) {
-            if (config('app.debug') || $excepcion instanceof ValidationException) {
+            if (
+                config('app.debug')
+                || $excepcion instanceof ValidationException
+                || $excepcion instanceof AuthenticationException
+            ) {
                 return null;
             }
 
