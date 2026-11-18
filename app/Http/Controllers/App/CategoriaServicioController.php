@@ -37,7 +37,10 @@ final class CategoriaServicioController extends Controller
 
         $categoria = CategoriaServicio::create([...$solicitud->validated(), 'negocio_id' => $negocio->id]);
 
-        return response()->json(['data' => new RecursoCategoriaServicio($categoria)], 201);
+        // fresh(): sin esto, si el payload no mando 'orden' (es opcional),
+        // el objeto en memoria se queda con ese atributo en null aunque la
+        // fila real ya tenga el default de la columna (0).
+        return response()->json(['data' => new RecursoCategoriaServicio($categoria->fresh())], 201);
     }
 
     public function update(SolicitudCategoriaServicio $solicitud, Negocio $negocio, int $categoriaServicio): JsonResponse

@@ -88,6 +88,24 @@ test('crear un servicio lo asocia al negocio actual', function (): void {
     $this->assertDatabaseHas('servicios', ['negocio_id' => $negocio->id, 'nombre' => 'Corte + Barba']);
 });
 
+test('la respuesta de creacion refleja los valores por defecto de visible y orden, no null', function (): void {
+    $negocio = Negocio::factory()->create();
+    $dueno = crearUsuarioConRol($negocio, RolNegocio::Dueno);
+
+    // 'visible' y 'orden' se omiten a proposito: son opcionales, y antes
+    // del fix la respuesta los devolvia en null aunque la base de datos
+    // ya tuviera el default de la columna (true/0).
+    $respuesta = $this->actingAs($dueno)->postJson("/app/{$negocio->slug}/api/servicios", [
+        'nombre' => 'Corte simple',
+        'duracion_minutos' => 30,
+        'precio' => 20000,
+    ]);
+
+    $respuesta->assertCreated();
+    expect($respuesta->json('data.visible'))->toBeTrue();
+    expect($respuesta->json('data.orden'))->toBe(0);
+});
+
 test('no se puede asignar una categoria de otro negocio al crear un servicio', function (): void {
     $negocioA = Negocio::factory()->create();
     $negocioB = Negocio::factory()->create();

@@ -40,7 +40,11 @@ final class ProductoController extends Controller
 
         $producto = Producto::create([...$solicitud->validated(), 'negocio_id' => $negocio->id]);
 
-        return response()->json(['data' => new RecursoProducto($producto)], 201);
+        // fresh(): sin esto, si el payload no mando 'visible'/'orden' (son
+        // opcionales), el objeto en memoria se queda con esos atributos en
+        // null aunque la fila real en la base de datos ya tenga el default
+        // de la columna (true/0).
+        return response()->json(['data' => new RecursoProducto($producto->fresh())], 201);
     }
 
     public function update(SolicitudProducto $solicitud, Negocio $negocio, int $producto): JsonResponse
