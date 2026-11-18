@@ -12,6 +12,10 @@
             <div class="w-full max-w-sm rounded-tarjeta bg-blanco p-8 shadow-tarjeta">
                 <h1 class="mb-6 text-center text-xl font-semibold text-tinta">Ingresar</h1>
 
+                @if (session('status'))
+                    <p class="mb-4 text-center text-sm text-tinta">{{ session('status') }}</p>
+                @endif
+
                 @if ($errors->any())
                     <div class="mb-4 rounded-boton bg-celeste p-3 text-sm text-tinta">
                         @foreach ($errors->all() as $error)
@@ -47,10 +51,13 @@
                         >
                     </div>
 
-                    <label class="flex items-center gap-2 text-sm text-texto-suave">
-                        <input type="checkbox" name="recordarme">
-                        Recordarme
-                    </label>
+                    <div class="flex items-center justify-between text-sm">
+                        <label class="flex items-center gap-2 text-texto-suave">
+                            <input type="checkbox" name="recordarme">
+                            Recordarme
+                        </label>
+                        <a href="{{ route('password.request') }}" class="text-primario hover:underline">¿Olvidaste tu contraseña?</a>
+                    </div>
 
                     <button
                         type="submit"
