@@ -40,7 +40,12 @@ final class ServicioController extends Controller
 
         $servicio = Servicio::create([...$solicitud->validated(), 'negocio_id' => $negocio->id]);
 
-        return response()->json(['data' => new RecursoServicio($servicio)], 201);
+        // fresh(): sin esto, si el payload no mando 'visible'/'orden' (son
+        // opcionales), el objeto en memoria se queda con esos atributos en
+        // null aunque la fila real en la base de datos ya tenga el default
+        // de la columna (true/0) - la respuesta de creacion mostraria un
+        // servicio recien creado como oculto o mal ordenado.
+        return response()->json(['data' => new RecursoServicio($servicio->fresh())], 201);
     }
 
     public function update(SolicitudServicio $solicitud, Negocio $negocio, int $servicio): JsonResponse
