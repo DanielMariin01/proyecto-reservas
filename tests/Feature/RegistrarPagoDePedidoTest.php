@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Actions\RegistrarPagoDePedido;
 use App\Enums\EstadoPedidoValor;
 use App\Enums\MetodoPago;
+use App\Exceptions\MontoDePagoIncorrectoException;
 use App\Exceptions\PedidoNoPagadoException;
 use App\Models\Negocio;
 use App\Models\Pedido;
@@ -30,4 +31,24 @@ test('no se puede registrar el pago de un pedido que no esta marcado como pagado
     $ejecutar = fn () => app(RegistrarPagoDePedido::class)->ejecutar($pedido, MetodoPago::Efectivo, 20000);
 
     expect($ejecutar)->toThrow(PedidoNoPagadoException::class);
+});
+
+test('no se puede registrar un pago por un monto distinto al total del pedido', function (): void {
+    $negocio = Negocio::factory()->create();
+    $pedido = Pedido::factory()->create(['negocio_id' => $negocio->id, 'estado' => EstadoPedidoValor::Pagado, 'total' => 30000]);
+
+    $ejecutar = fn () => app(RegistrarPagoDePedido::class)->ejecutar($pedido, MetodoPago::Efectivo, 15000);
+
+    expect($ejecutar)->toThrow(MontoDePagoIncorrectoException::class);
+});
+
+test('validar() lanza si el monto no coincide con el total, sin importar el estado del pedido', function (): void {
+    $negocio = Negocio::factory()->create();
+    $pedido = Pedido::factory()->create(['negocio_id' => $negocio->id, 'estado' => EstadoPedidoValor::Pendiente, 'total' => 30000]);
+
+    app(RegistrarPagoDePedido::class)->validar($pedido, 30000);
+
+    $validarConMontoIncorrecto = fn () => app(RegistrarPagoDePedido::class)->validar($pedido, 29000);
+
+    expect($validarConMontoIncorrecto)->toThrow(MontoDePagoIncorrectoException::class);
 });

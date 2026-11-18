@@ -8,6 +8,7 @@ use App\Actions\CambiarEstadoPedido;
 use App\Actions\RegistrarPagoDePedido;
 use App\Enums\EstadoPedidoValor;
 use App\Enums\MetodoPago;
+use App\Exceptions\MontoDePagoIncorrectoException;
 use App\Exceptions\PedidoNoPagadoException;
 use App\Exceptions\TransicionDeEstadoPedidoInvalidaException;
 use App\Http\Controllers\Controller;
@@ -51,17 +52,19 @@ final class PedidoAccionesController extends Controller
         $this->authorize('update', $pedidoModelo);
 
         $datos = $solicitud->validated();
+        $valor = (int) $datos['valor'];
 
         try {
             $usuario = $this->usuarioActual();
+            app(RegistrarPagoDePedido::class)->validar($pedidoModelo, $valor);
             app(CambiarEstadoPedido::class)->ejecutar($pedidoModelo, EstadoPedidoValor::Pagado, $usuario);
             app(RegistrarPagoDePedido::class)->ejecutar(
                 pedido: $pedidoModelo,
                 metodo: MetodoPago::from($datos['metodo']),
-                valor: (int) $datos['valor'],
+                valor: $valor,
                 registradoPor: $usuario,
             );
-        } catch (TransicionDeEstadoPedidoInvalidaException|PedidoNoPagadoException $excepcion) {
+        } catch (TransicionDeEstadoPedidoInvalidaException|PedidoNoPagadoException|MontoDePagoIncorrectoException $excepcion) {
             return response()->json(['mensaje' => $excepcion->getMessage()], 422);
         }
 
