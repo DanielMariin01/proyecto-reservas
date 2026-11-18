@@ -6,10 +6,16 @@ import { obtenerServicios } from '@/flujo-reserva/api/clientePublico';
 import type { Servicio } from '@/tipos';
 import Boton from '@/componentes/Boton';
 import Tarjeta from '@/componentes/Tarjeta';
-import { obtenerEstiloColor } from './colorLibre';
+import { obtenerColoresLibres, obtenerEstiloColor } from './colorLibre';
 import type { PropiedadesBloque } from './tipos';
 
 const CLASES_FOTO_SERVICIO = 'h-24 w-24 shrink-0 rounded-boton object-cover sm:h-32 sm:w-32';
+const COLOR_FONDO_CATEGORIAS_POR_DEFECTO = '#E1EEFF';
+const COLOR_TEXTO_CATEGORIAS_POR_DEFECTO = '#673DE6';
+
+function leerColorTexto(datos: Record<string, unknown>, campo: string, porDefecto: string): string {
+    return typeof datos[campo] === 'string' && datos[campo] !== '' ? (datos[campo] as string) : porDefecto;
+}
 
 interface CategoriaFiltro {
     id: number;
@@ -74,6 +80,11 @@ export default function BloqueServicios({ datos, slug, onReservar }: Propiedades
 
     const categorias = useMemo(() => categoriasDeServicios(serviciosQuery.data ?? []), [serviciosQuery.data]);
 
+    const { colorTexto } = obtenerColoresLibres(datos);
+    const colorTitulo = leerColorTexto(datos, 'colorTitulo', colorTexto);
+    const colorFondoCategorias = leerColorTexto(datos, 'colorFondoCategorias', COLOR_FONDO_CATEGORIAS_POR_DEFECTO);
+    const colorTextoCategorias = leerColorTexto(datos, 'colorTextoCategorias', COLOR_TEXTO_CATEGORIAS_POR_DEFECTO);
+
     const serviciosFiltrados = useMemo(() => {
         return (serviciosQuery.data ?? []).filter(
             (servicio) =>
@@ -84,7 +95,9 @@ export default function BloqueServicios({ datos, slug, onReservar }: Propiedades
     return (
         <section id="servicios" style={obtenerEstiloColor(datos)}>
             <div className="mx-auto max-w-5xl px-4 py-10 sm:py-16">
-                <h2 className="mb-6 text-3xl font-bold sm:text-4xl">Servicios</h2>
+                <h2 className="mb-6 text-3xl font-bold sm:text-4xl" style={{ color: colorTitulo }}>
+                    Servicios
+                </h2>
 
                 {serviciosQuery.data && serviciosQuery.data.length > 0 && (
                     <div className="mb-6 space-y-3">
@@ -105,10 +118,13 @@ export default function BloqueServicios({ datos, slug, onReservar }: Propiedades
                                 <button
                                     type="button"
                                     onClick={() => setCategoriaElegida(null)}
-                                    className={`rounded-full border px-3 py-1 text-sm font-semibold ${
+                                    style={
                                         categoriaElegida === null
-                                            ? 'border-primario bg-celeste text-primario'
-                                            : 'border-gris-claro text-texto-suave'
+                                            ? { borderColor: colorTextoCategorias, backgroundColor: colorFondoCategorias, color: colorTextoCategorias }
+                                            : undefined
+                                    }
+                                    className={`rounded-full border px-4 py-1.5 text-base font-semibold ${
+                                        categoriaElegida === null ? '' : 'border-gris-claro text-texto-suave'
                                     }`}
                                 >
                                     Todas
@@ -118,10 +134,17 @@ export default function BloqueServicios({ datos, slug, onReservar }: Propiedades
                                         key={categoria.id}
                                         type="button"
                                         onClick={() => setCategoriaElegida(categoria.id)}
-                                        className={`rounded-full border px-3 py-1 text-sm font-semibold ${
+                                        style={
                                             categoriaElegida === categoria.id
-                                                ? 'border-primario bg-celeste text-primario'
-                                                : 'border-gris-claro text-texto-suave'
+                                                ? {
+                                                      borderColor: colorTextoCategorias,
+                                                      backgroundColor: colorFondoCategorias,
+                                                      color: colorTextoCategorias,
+                                                  }
+                                                : undefined
+                                        }
+                                        className={`rounded-full border px-4 py-1.5 text-base font-semibold ${
+                                            categoriaElegida === categoria.id ? '' : 'border-gris-claro text-texto-suave'
                                         }`}
                                     >
                                         {categoria.nombre}
