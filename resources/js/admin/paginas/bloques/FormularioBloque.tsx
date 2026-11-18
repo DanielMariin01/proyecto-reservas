@@ -4,6 +4,7 @@ import BloqueBarraPromocionForm from './BloqueBarraPromocionForm';
 import BloqueColorLibreForm from './BloqueColorLibreForm';
 import BloqueEncabezadoForm from './BloqueEncabezadoForm';
 import BloqueGaleriaForm from './BloqueGaleriaForm';
+import BloqueMisDisenosForm from './BloqueMisDisenosForm';
 import BloquePieDePaginaForm from './BloquePieDePaginaForm';
 import BloquePortadaForm from './BloquePortadaForm';
 import BloqueServiciosDestacadosForm from './BloqueServiciosDestacadosForm';
@@ -36,6 +37,8 @@ export default function FormularioBloque({ slug, tipo, datos, onChange }: Propie
             return <BloqueTextoConImagenForm slug={slug} datos={datos} onChange={onChange} />;
         case 'galeria':
             return <BloqueGaleriaForm slug={slug} datos={datos} onChange={onChange} />;
+        case 'mis_disenos':
+            return <BloqueMisDisenosForm slug={slug} datos={datos} onChange={onChange} />;
         case 'tarjetas':
             return <BloqueTarjetasForm slug={slug} datos={datos} onChange={onChange} />;
         case 'banner_oferta':

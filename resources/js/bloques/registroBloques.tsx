@@ -4,6 +4,7 @@ import BloqueBarraPromocion from './BloqueBarraPromocion';
 import BloqueEncabezado from './BloqueEncabezado';
 import BloqueEquipo from './BloqueEquipo';
 import BloqueGaleria from './BloqueGaleria';
+import BloqueMisDisenos from './BloqueMisDisenos';
 import BloquePieDePagina from './BloquePieDePagina';
 import BloquePortada from './BloquePortada';
 import BloqueProductos from './BloqueProductos';
@@ -33,6 +34,7 @@ const registroBloques: Record<string, ComponentType<PropiedadesBloque>> = {
     texto: BloqueTexto,
     texto_con_imagen: BloqueTextoConImagen,
     galeria: BloqueGaleria,
+    mis_disenos: BloqueMisDisenos,
     tarjetas: BloqueTarjetas,
     banner_oferta: BloqueBannerOferta,
     testimonios: BloqueTestimonios,

@@ -180,6 +180,7 @@ Cada bloque es un componente registrado por tipo. El super admin arma la página
 | `texto` | Color libre. Título y párrafo de máximo 70 caracteres por línea. |
 | `texto_con_imagen` | Color libre. Modo simple (párrafo con una frase resaltada) o modo "motivos" (etiqueta + título + grid 2×2 de ícono/título/descripción) si se agrega al menos un motivo — mismo bloque, dos formas de verse. Foto con texto decorativo opcional del otro lado. |
 | `galeria` | Color libre. Cuadrícula de fotos cuadradas con vista ampliada al tocar. |
+| `mis_disenos` | Color libre. Igual que `galeria` (cuadrícula con vista ampliada al tocar) pero cada ítem tiene imagen + título + descripción — portafolio de trabajos del negocio (ej. diseños de uñas), contenido manual. |
 | `tarjetas` | Color libre. Tarjetas repetidas genéricas (imagen + título opcional + descripción), 1 a 3 columnas elegidas por el super admin — contenido manual, sin atarse a ningún modelo. |
 | `banner_oferta` | Color libre. Etiqueta + título + descripción + botón de un lado; foto con texto decorativo opcional del otro. |
 | `testimonios` | Color libre. Tarjetas con cita, estrellas (1-5), foto y nombre — contenido manual (ver sección 6.1). |
@@ -249,6 +250,10 @@ Igual de detallado que la ventana de reserva (sección 3), porque esta plantilla
 
 **`galeria`** (sin cambios de diseño en esta plantilla, solo color libre)
 - Cuadrícula de fotos cuadradas, 2 columnas en celular, 4 en escritorio, con vista ampliada al tocar.
+
+**`mis_disenos`** (bloque nuevo)
+- Misma cuadrícula y vista ampliada que `galeria`, pero cada ítem agrega título y descripción centrados debajo de la imagen (se repiten también en la vista ampliada, como pie de foto) — portafolio de trabajos (ej. diseños de uñas), contenido 100 % manual (imagen, título y descripción elegidos a mano por el super admin, `Repetidor` + `CampoImagenBloque`, máximo 12 ítems).
+- **Celular**: 2 columnas, igual que `galeria`.
 
 **`tarjetas`**
 - Genérico y manual (servicios destacados, pasos de un proceso, lo que el negocio necesite) — no se ata a ningún modelo de datos. Cada tarjeta: imagen arriba (relación 1:1, solo `--radio-boton` en la imagen — menos pronunciado que `--radio-tarjeta` a propósito, para que la foto se sienta más grande y menos "enmarcada") + título opcional + descripción corta, **centrados** debajo de la imagen — **sin** el contenedor `Tarjeta` (sin fondo blanco, sombra ni radio en un recuadro propio): la imagen y el texto quedan directo sobre el fondo de la sección.

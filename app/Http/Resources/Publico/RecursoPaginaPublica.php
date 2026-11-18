@@ -188,12 +188,13 @@ final class RecursoPaginaPublica extends JsonResource
             );
         }
 
-        // `testimonios` y `tarjetas` guardan la foto de cada item en una
-        // ruta anidada (datos.testimonios[].foto, datos.tarjetas[].imagen),
-        // no en las claves de nivel superior que cubre el resto de este
-        // método.
+        // `testimonios`, `tarjetas` y `mis_disenos` guardan la foto de cada
+        // item en una ruta anidada (datos.testimonios[].foto,
+        // datos.tarjetas[].imagen, datos.items[].imagen), no en las claves
+        // de nivel superior que cubre el resto de este método.
         $datos = $this->traducirRutaAnidada($datos, 'testimonios', 'foto');
         $datos = $this->traducirRutaAnidada($datos, 'tarjetas', 'imagen');
+        $datos = $this->traducirRutaAnidada($datos, 'items', 'imagen');
 
         return $datos;
     }
