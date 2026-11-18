@@ -165,6 +165,8 @@ test('POST reservas exige autorizar el tratamiento de datos', function (): void 
 
     $respuesta->assertStatus(422);
     $respuesta->assertJsonValidationErrors(['autorizacion_datos']);
+    expect($respuesta->json('errors.autorizacion_datos.0'))
+        ->toBe('El campo autorización de tratamiento de datos es obligatorio.');
 });
 
 test('POST reservas rechaza el envio si el campo trampa viene lleno', function (): void {
