@@ -1,9 +1,11 @@
 import { Building2, Clock, User, X } from 'lucide-react';
 import type { ReactElement } from 'react';
+import { useState } from 'react';
 import Boton from '@/componentes/Boton';
 import LineaDetalle from '@/componentes/LineaDetalle';
 import SelectorDeHora from '@/componentes/SelectorDeHora';
-import type { HoraDisponible, Servicio } from '@/tipos';
+import SelectorFranjaHoraria from '@/componentes/SelectorFranjaHoraria';
+import type { FranjaHoraria, HoraDisponible, Servicio } from '@/tipos';
 import CalendarioMes from './CalendarioMes';
 
 interface PropiedadesVentanaReserva {
@@ -45,6 +47,9 @@ export default function VentanaReserva({
     onContinuar,
     onCerrar,
 }: PropiedadesVentanaReserva): ReactElement {
+    const [franjaSeleccionada, setFranjaSeleccionada] = useState<FranjaHoraria>('manana');
+    const horasEnFranja = horas.filter((hora) => hora.franja === franjaSeleccionada);
+
     return (
         <div className="relative flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-tarjeta bg-blanco sm:flex-row">
             <button
@@ -107,18 +112,29 @@ export default function VentanaReserva({
                             {!cargandoHoras && !diaSeleccionado && <p className="text-sm text-texto-suave">Elige un día en el calendario.</p>}
 
                             {!cargandoHoras && horas.length > 0 && (
-                                <div className="space-y-2">
-                                    {horas.map((hora) => (
-                                        <SelectorDeHora
-                                            key={`${hora.profesionalId}-${hora.inicio}`}
-                                            texto={hora.horaVisible}
-                                            seleccionado={
-                                                horaSeleccionada?.inicio === hora.inicio && horaSeleccionada?.profesionalId === hora.profesionalId
-                                            }
-                                            onElegir={() => onSeleccionarHora(hora)}
-                                        />
-                                    ))}
-                                </div>
+                                <>
+                                    <div className="mb-3">
+                                        <SelectorFranjaHoraria franjaSeleccionada={franjaSeleccionada} onSeleccionar={setFranjaSeleccionada} />
+                                    </div>
+
+                                    {horasEnFranja.length === 0 ? (
+                                        <p className="text-sm text-texto-suave">No hay horas en esta franja.</p>
+                                    ) : (
+                                        <div className="space-y-2">
+                                            {horasEnFranja.map((hora) => (
+                                                <SelectorDeHora
+                                                    key={`${hora.profesionalId}-${hora.inicio}`}
+                                                    texto={hora.horaVisible}
+                                                    seleccionado={
+                                                        horaSeleccionada?.inicio === hora.inicio &&
+                                                        horaSeleccionada?.profesionalId === hora.profesionalId
+                                                    }
+                                                    onElegir={() => onSeleccionarHora(hora)}
+                                                />
+                                            ))}
+                                        </div>
+                                    )}
+                                </>
                             )}
                         </div>
                     </div>

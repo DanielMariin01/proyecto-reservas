@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Resources\Publico;
 
 use App\Disponibilidad\HoraDisponible;
+use App\Enums\FranjaHoraria;
 use App\Models\Negocio;
 use App\Support\Fecha;
 use App\Support\Hora;
@@ -31,6 +32,7 @@ final class RecursoHoraDisponible extends JsonResource
             'fechaVisible' => Fecha::formatear($this->inicio, $negocio->zona_horaria),
             'horaVisible' => Hora::formatear($this->inicio, $negocio->zona_horaria),
             'horaFinVisible' => Hora::formatear($this->fin, $negocio->zona_horaria),
+            'franja' => FranjaHoraria::paraHora($this->inicio, $negocio->zona_horaria)->value,
         ];
     }
 }

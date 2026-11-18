@@ -3,10 +3,11 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Banknote, CalendarCheck, CalendarX, Clock } from 'lucide-react';
 import Insignia from '@/componentes/Insignia';
+import SelectorFranjaHoraria from '@/componentes/SelectorFranjaHoraria';
 import Tarjeta from '@/componentes/Tarjeta';
-import { type CitaDelDia, type FranjaHoraria, obtenerPanelDelDia } from '../api/panelDelDia';
+import type { FranjaHoraria } from '@/tipos';
+import { type CitaDelDia, obtenerPanelDelDia } from '../api/panelDelDia';
 import LayoutPanelNegocio from '../LayoutPanelNegocio';
-import SelectorFranjaHoraria from './SelectorFranjaHoraria';
 
 const ESTADOS_CON_INSIGNIA = ['confirmada', 'pendiente', 'cancelada', 'no_asistio', 'completada', 'en_atencion'] as const;
 

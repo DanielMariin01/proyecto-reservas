@@ -27,6 +27,8 @@ export interface Profesional {
     totalResenas: number;
 }
 
+export type FranjaHoraria = 'manana' | 'tarde' | 'noche';
+
 export interface HoraDisponible {
     profesionalId: number;
     inicio: string;
@@ -34,6 +36,7 @@ export interface HoraDisponible {
     fechaVisible: string;
     horaVisible: string;
     horaFinVisible: string;
+    franja: FranjaHoraria;
 }
 
 export interface CitaCreada {

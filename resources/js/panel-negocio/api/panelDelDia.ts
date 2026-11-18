@@ -1,4 +1,5 @@
 import axios from 'axios';
+import type { FranjaHoraria } from '@/tipos';
 
 export interface CitaDelDia {
     id: number;
@@ -9,8 +10,6 @@ export interface CitaDelDia {
     estado: string;
     estadoEtiqueta: string;
 }
-
-export type FranjaHoraria = 'manana' | 'tarde' | 'noche';
 
 export interface BloqueLibreFranja {
     franja: FranjaHoraria;

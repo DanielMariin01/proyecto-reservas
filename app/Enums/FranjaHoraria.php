@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Enums;
 
 use Carbon\CarbonImmutable;
+use Carbon\CarbonInterface;
 
 /**
  * "Huecos libres de hoy" (sección 7 de la skill de diseño, item 9 del QA
@@ -56,5 +57,24 @@ enum FranjaHoraria: string
             $fechaLocal->setTime($this->horaInicio(), 0)->utc(),
             $fechaLocal->setTime($this->horaFin(), 0)->utc(),
         ];
+    }
+
+    /**
+     * La franja a la que pertenece $momento, según la hora local del
+     * negocio (ej. una reserva a las 11:30 a. m. cae en Mañana, aunque
+     * Mañana termine a las 12:00). Una hora fuera de las 3 franjas (antes
+     * de las 6 a. m.) cae en Noche, la más cercana por el otro extremo.
+     */
+    public static function paraHora(CarbonInterface $momento, string $zonaHoraria): self
+    {
+        $horaLocal = $momento->setTimezone($zonaHoraria)->hour;
+
+        foreach (self::cases() as $franja) {
+            if ($horaLocal >= $franja->horaInicio() && $horaLocal < $franja->horaFin()) {
+                return $franja;
+            }
+        }
+
+        return self::Noche;
     }
 }

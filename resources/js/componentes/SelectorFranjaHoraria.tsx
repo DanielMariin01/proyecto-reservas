@@ -1,6 +1,6 @@
 import type { ReactElement } from 'react';
 import { Moon, Sun, Sunrise } from 'lucide-react';
-import type { FranjaHoraria } from '../api/panelDelDia';
+import type { FranjaHoraria } from '@/tipos';
 
 const FRANJAS: { valor: FranjaHoraria; etiqueta: string; Icono: typeof Sunrise }[] = [
     { valor: 'manana', etiqueta: 'Mañana', Icono: Sunrise },
