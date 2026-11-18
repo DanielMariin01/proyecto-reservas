@@ -158,7 +158,7 @@ final class HistoriaClinicaController extends Controller
             valor: (int) $datos['valor'],
             abono: (int) $datos['abono'],
             saldo: (int) $datos['saldo'],
-            revisioResultado: (bool) ($datos['revisio_resultado'] ?? false),
+            revisionResultado: (bool) ($datos['revision_resultado'] ?? false),
             recibioCuidados: (bool) ($datos['recibio_cuidados'] ?? false),
             fechaSeguimiento: isset($datos['fecha_seguimiento']) ? CarbonImmutable::parse($datos['fecha_seguimiento']) : null,
             proximoMantenimientoSugerido: isset($datos['proximo_mantenimiento_sugerido'])

@@ -46,7 +46,7 @@ export interface HistoriaClinica {
     valor: number;
     abono: number;
     saldo: number;
-    revisioResultado: boolean;
+    revisionResultado: boolean;
     recibioCuidados: boolean;
     fechaSeguimiento: string | null;
     proximoMantenimientoSugerido: string | null;
@@ -102,7 +102,7 @@ export interface DatosHistoriaClinica {
     valor: number;
     abono: number;
     saldo: number;
-    revisio_resultado: boolean;
+    revision_resultado: boolean;
     recibio_cuidados: boolean;
     fecha_seguimiento: string;
     proximo_mantenimiento_sugerido: string;
