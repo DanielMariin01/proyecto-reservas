@@ -200,6 +200,39 @@ test('rechaza una hora que no es una franja valida', function (): void {
 
     expect($ejecutar)->toThrow(HoraInvalidaException::class);
     expect(Cita::query()->count())->toBe(0);
+    // El cliente no debe quedar creado si la reserva nunca se concreto:
+    // antes del fix, resolverOCrearCliente corria incondicionalmente
+    // antes de validar la franja, dejando un Cliente huerfano sin cita.
+    expect(Cliente::query()->count())->toBe(0);
+});
+
+test('rechaza una hora ya tomada por otra cita activa y no deja un cliente huerfano', function (): void {
+    ['negocio' => $negocio, 'profesional' => $profesional, 'servicio' => $servicio, 'fecha' => $fecha] = negocioConHorarioMartes();
+
+    Cita::factory()->create([
+        'negocio_id' => $negocio->id,
+        'profesional_id' => $profesional->id,
+        'servicio_id' => $servicio->id,
+        'cliente_id' => Cliente::factory()->create(['negocio_id' => $negocio->id])->id,
+        'inicio' => $fecha->copy()->setTime(10, 0)->utc(),
+        'fin' => $fecha->copy()->setTime(11, 0)->utc(),
+        'estado' => EstadoCitaValor::Confirmada,
+    ]);
+
+    $ejecutar = fn () => app(CrearReserva::class)->ejecutar(new DatosReserva(
+        negocio: $negocio,
+        servicio: $servicio,
+        nombreCliente: 'Cliente Nuevo',
+        celularCliente: '3005551234',
+        correoCliente: null,
+        inicio: $fecha->copy()->setTime(10, 0)->utc(),
+        origen: OrigenCita::Web,
+        profesional: $profesional,
+    ));
+
+    expect($ejecutar)->toThrow(HoraInvalidaException::class);
+    expect(Cita::query()->count())->toBe(1);
+    expect(Cliente::query()->where('celular', '3005551234')->count())->toBe(0);
 });
 
 test('forzar permite reservar una hora fuera de las franjas validas', function (): void {
