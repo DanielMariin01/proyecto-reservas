@@ -83,14 +83,37 @@ test('actualizar una paleta con su propio nombre no falla por unicidad', functio
     expect($paleta->refresh()->color_secundario)->toBe('#000000');
 });
 
-test('eliminar una paleta en uso deja el negocio sin paleta en vez de bloquear', function (): void {
+test('eliminar una paleta en uso se bloquea, el negocio no se queda sin paleta en silencio', function (): void {
     $superAdmin = Usuario::factory()->superAdmin()->create();
     $paleta = PaletaMarca::factory()->create();
     $negocio = Negocio::factory()->create(['paleta_marca_id' => $paleta->id]);
 
     $respuesta = $this->actingAs($superAdmin)->deleteJson("/admin/api/paleta-marcas/{$paleta->id}");
 
+    $respuesta->assertStatus(422);
+    $respuesta->assertJson(['mensaje' => 'No puedes eliminar esta paleta: 1 negocio la está usando. Cámbiales la paleta antes de eliminarla.']);
+    expect(PaletaMarca::query()->find($paleta->id))->not->toBeNull();
+    expect($negocio->refresh()->paleta_marca_id)->toBe($paleta->id);
+});
+
+test('eliminar una paleta en uso por varios negocios cuenta todos en el mensaje', function (): void {
+    $superAdmin = Usuario::factory()->superAdmin()->create();
+    $paleta = PaletaMarca::factory()->create();
+    Negocio::factory()->count(3)->create(['paleta_marca_id' => $paleta->id]);
+
+    $respuesta = $this->actingAs($superAdmin)->deleteJson("/admin/api/paleta-marcas/{$paleta->id}");
+
+    $respuesta->assertStatus(422);
+    $respuesta->assertJson(['mensaje' => 'No puedes eliminar esta paleta: 3 negocios la están usando. Cámbiales la paleta antes de eliminarla.']);
+    expect(PaletaMarca::query()->find($paleta->id))->not->toBeNull();
+});
+
+test('eliminar una paleta que ningun negocio usa funciona normal', function (): void {
+    $superAdmin = Usuario::factory()->superAdmin()->create();
+    $paleta = PaletaMarca::factory()->create();
+
+    $respuesta = $this->actingAs($superAdmin)->deleteJson("/admin/api/paleta-marcas/{$paleta->id}");
+
     $respuesta->assertOk();
     expect(PaletaMarca::query()->find($paleta->id))->toBeNull();
-    expect($negocio->refresh()->paleta_marca_id)->toBeNull();
 });
