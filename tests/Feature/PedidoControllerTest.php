@@ -72,6 +72,24 @@ test('marcar pagado cambia el estado y registra el pago', function (): void {
     $this->assertDatabaseHas('pagos', ['pedido_id' => $pedido->id, 'valor' => 25000]);
 });
 
+test('marcar pagado con un monto que no coincide con el total se rechaza y el pedido se queda pendiente', function (): void {
+    $negocio = Negocio::factory()->create();
+    $dueno = crearUsuarioConRol($negocio, RolNegocio::Dueno);
+    $pedido = Pedido::factory()->create(['negocio_id' => $negocio->id, 'estado' => EstadoPedidoValor::Pendiente, 'total' => 25000]);
+
+    $respuesta = $this->actingAs($dueno)->postJson("/app/{$negocio->slug}/api/pedidos/{$pedido->id}/marcar-pagado", [
+        'metodo' => 'efectivo',
+        'valor' => 1000,
+    ]);
+
+    $respuesta->assertStatus(422);
+    $respuesta->assertJson(['mensaje' => 'El monto pagado ($1.000) no coincide con el total a cobrar ($25.000).']);
+    // El pedido se queda Pendiente, no "Pagado sin pago": Pagado solo
+    // puede pasar a Entregado o Cancelado, nunca de vuelta a Pendiente.
+    expect($pedido->refresh()->estado)->toBe(EstadoPedidoValor::Pendiente);
+    $this->assertDatabaseMissing('pagos', ['pedido_id' => $pedido->id]);
+});
+
 test('un dueno no puede cambiar el estado de un pedido de otro negocio aunque adivine el id', function (): void {
     $negocioA = Negocio::factory()->create();
     $negocioB = Negocio::factory()->create();

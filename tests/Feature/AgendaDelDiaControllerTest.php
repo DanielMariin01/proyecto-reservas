@@ -183,6 +183,36 @@ test('el dueno puede completar una cita con pago desde la agenda', function (): 
     expect($cita->pagoActivo()?->valor)->toBe(30000);
 });
 
+test('completar con un monto que no coincide con el precio se rechaza y la cita no queda completada', function (): void {
+    $negocio = Negocio::factory()->create();
+    $dueno = crearUsuarioConRol($negocio, RolNegocio::Dueno);
+    $profesional = app(CrearProfesional::class)->ejecutar(new DatosNuevoProfesional(negocio: $negocio, nombre: 'Japo'));
+    $servicio = Servicio::factory()->create(['negocio_id' => $negocio->id]);
+    $cliente = Cliente::factory()->create(['negocio_id' => $negocio->id]);
+
+    $cita = Cita::factory()->create([
+        'negocio_id' => $negocio->id,
+        'profesional_id' => $profesional->id,
+        'servicio_id' => $servicio->id,
+        'cliente_id' => $cliente->id,
+        'estado' => EstadoCitaValor::EnAtencion,
+        'precio' => 30000,
+    ]);
+
+    $respuesta = $this->actingAs($dueno)->postJson("/app/{$negocio->slug}/api/citas/{$cita->id}/completar-con-pago", [
+        'metodo' => 'efectivo',
+        'valor' => 1000,
+        'propina' => 0,
+    ]);
+
+    $respuesta->assertStatus(422);
+    $respuesta->assertJson(['mensaje' => 'El monto pagado ($1.000) no coincide con el total a cobrar ($30.000).']);
+    // La cita se queda tal como estaba -EnAtencion-, no "Completada sin pago":
+    // ese estado es terminal y no se podria volver a intentar completarla.
+    expect($cita->refresh()->estado)->toBe(EstadoCitaValor::EnAtencion);
+    expect($cita->pagoActivo())->toBeNull();
+});
+
 test('cambiar a un estado invalido devuelve un error y no cambia nada', function (): void {
     $negocio = Negocio::factory()->create();
     $dueno = crearUsuarioConRol($negocio, RolNegocio::Dueno);

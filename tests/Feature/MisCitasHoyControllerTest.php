@@ -113,6 +113,35 @@ test('marcar en atencion y despues completar con pago actualiza el estado y regi
     expect($pago->propina)->toBe(2000);
 });
 
+test('completar con un monto que no coincide con el precio se rechaza y la cita se queda en atencion', function (): void {
+    $negocio = Negocio::factory()->create();
+    $usuarioProfesional = crearUsuarioConRol($negocio, RolNegocio::Profesional);
+
+    $profesional = app(CrearProfesional::class)->ejecutar(new DatosNuevoProfesional(negocio: $negocio, nombre: 'Japo'));
+    $profesional->update(['usuario_id' => $usuarioProfesional->id]);
+
+    $servicio = Servicio::factory()->create(['negocio_id' => $negocio->id]);
+    $cliente = Cliente::factory()->create(['negocio_id' => $negocio->id]);
+
+    $cita = Cita::factory()->create([
+        'negocio_id' => $negocio->id,
+        'profesional_id' => $profesional->id,
+        'servicio_id' => $servicio->id,
+        'cliente_id' => $cliente->id,
+        'estado' => EstadoCitaValor::EnAtencion,
+        'precio' => 30000,
+    ]);
+
+    $respuesta = $this->actingAs($usuarioProfesional)->postJson(
+        "/app/{$negocio->slug}/api/mis-citas-hoy/citas/{$cita->id}/completar-con-pago",
+        ['metodo' => 'nequi', 'valor' => 5000, 'propina' => 0],
+    );
+
+    $respuesta->assertStatus(422);
+    expect($cita->refresh()->estado)->toBe(EstadoCitaValor::EnAtencion);
+    expect($cita->pagoActivo())->toBeNull();
+});
+
 test('un profesional no puede cambiar el estado de la cita de otro profesional', function (): void {
     $negocio = Negocio::factory()->create();
     $usuarioProfesional = crearUsuarioConRol($negocio, RolNegocio::Profesional);
