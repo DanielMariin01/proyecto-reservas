@@ -42,8 +42,11 @@ use App\Resenas\CadenaReglasResena;
 use App\Resenas\ReglaCitaCompletada;
 use App\Resenas\ReglaDentroDeVentanaDeResena;
 use App\Resenas\ReglaSinResenaPrevia;
+use Illuminate\Queue\Events\JobProcessing;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Str;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -88,5 +91,17 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Pedido::class, PoliticaPedido::class);
         Gate::policy(HistoriaClinica::class, PoliticaHistoriaClinica::class);
         Gate::policy(Cliente::class, PoliticaCliente::class);
+
+        /**
+         * Equivalente a AsignarIdPeticion pero para trabajos en cola: un
+         * worker (php artisan queue:work) es un solo proceso de larga
+         * duración que procesa muchos trabajos, así que sin esto todos
+         * compartirían el id_peticion que generó perezosamente el primero
+         * (ContextoObservabilidad es singleton). Se fija uno nuevo al
+         * empezar cada trabajo, igual que la petición web.
+         */
+        Queue::before(function (JobProcessing $evento): void {
+            app(ContextoObservabilidad::class)->definirIdPeticion((string) Str::uuid());
+        });
     }
 }
