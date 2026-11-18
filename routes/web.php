@@ -25,13 +25,17 @@ use App\Http\Controllers\App\BloqueoController;
 use App\Http\Controllers\App\CategoriaServicioController;
 use App\Http\Controllers\App\CitaAccionesController;
 use App\Http\Controllers\App\CitaController;
+use App\Http\Controllers\App\ClienteController;
 use App\Http\Controllers\App\FinanzasController;
+use App\Http\Controllers\App\HistoriaClinicaController;
 use App\Http\Controllers\App\MiHorarioController;
 use App\Http\Controllers\App\MisCitasHoyController;
 use App\Http\Controllers\App\PaginaAgendaDelDiaController;
 use App\Http\Controllers\App\PaginaCategoriaServicioController;
 use App\Http\Controllers\App\PaginaCitaController;
+use App\Http\Controllers\App\PaginaClienteController;
 use App\Http\Controllers\App\PaginaFinanzasController;
+use App\Http\Controllers\App\PaginaHistoriaClinicaController;
 use App\Http\Controllers\App\PaginaMiAgendaController;
 use App\Http\Controllers\App\PaginaMiHorarioController;
 use App\Http\Controllers\App\PaginaMisCitasHoyController;
@@ -262,6 +266,19 @@ Route::middleware(['auth', ResolverNegocioDesdeRuta::class])->prefix('app/{negoc
     // migracion Filament -> React en el panel app.
     Route::get('/pagina-web', [PaginaPaginaWebController::class, 'mostrar'])->name('app.pagina-web');
 
+    // T33: Historia clinica (solo negocios tipo spa, seccion 19 de
+    // requerimientos.md). "Clientes" es la version minima de RF-CLI-01
+    // (todavia no existia una pantalla propia): lista/busqueda y ficha,
+    // sin crear/editar/eliminar cliente. El formulario de historia clinica
+    // (acordeon de 7 secciones) vive en sus propias paginas de
+    // crear/editar, igual que Servicios o Productos.
+    Route::get('/clientes', [PaginaClienteController::class, 'index'])->name('app.clientes.index');
+    Route::get('/clientes/{cliente}', [PaginaClienteController::class, 'show'])->name('app.clientes.show');
+    Route::get('/clientes/{cliente}/historias-clinicas/create', [PaginaHistoriaClinicaController::class, 'create'])
+        ->name('app.historias-clinicas.create');
+    Route::get('/clientes/{cliente}/historias-clinicas/{historiaClinica}/edit', [PaginaHistoriaClinicaController::class, 'edit'])
+        ->name('app.historias-clinicas.edit');
+
     Route::prefix('api')->group(function (): void {
         Route::get('/usuario-actual', [UsuarioActualController::class, 'mostrar']);
 
@@ -286,6 +303,17 @@ Route::middleware(['auth', ResolverNegocioDesdeRuta::class])->prefix('app/{negoc
         Route::get('/finanzas', [FinanzasController::class, 'mostrar']);
         Route::post('/finanzas/gastos', [FinanzasController::class, 'registrarGasto']);
         Route::delete('/finanzas/gastos/{gasto}', [FinanzasController::class, 'eliminarGasto']);
+
+        Route::get('/clientes', [ClienteController::class, 'index']);
+        Route::get('/clientes/{cliente}', [ClienteController::class, 'show']);
+        Route::get('/clientes/{cliente}/historias-clinicas', [HistoriaClinicaController::class, 'index']);
+        Route::post('/clientes/{cliente}/historias-clinicas', [HistoriaClinicaController::class, 'store']);
+        Route::put('/clientes/{cliente}/historias-clinicas/{historiaClinica}', [HistoriaClinicaController::class, 'update']);
+        Route::delete('/clientes/{cliente}/historias-clinicas/{historiaClinica}', [HistoriaClinicaController::class, 'destroy']);
+        Route::get('/historias-clinicas/{historiaClinica}/firma-clienta', [HistoriaClinicaController::class, 'mostrarFirmaClienta'])
+            ->name('app.historias-clinicas.firma-clienta');
+        Route::get('/historias-clinicas/{historiaClinica}/firma-profesional', [HistoriaClinicaController::class, 'mostrarFirmaProfesional'])
+            ->name('app.historias-clinicas.firma-profesional');
 
         Route::get('/categorias-servicio', [CategoriaServicioController::class, 'index']);
         Route::post('/categorias-servicio', [CategoriaServicioController::class, 'store']);

@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Http\Controllers\App;
 
 use App\Http\Controllers\Controller;
+use App\Models\Cliente;
 use App\Models\Gasto;
+use App\Models\HistoriaClinica;
 use App\Models\Negocio;
 use App\Models\Pedido;
 use App\Models\Producto;
@@ -18,8 +20,10 @@ use Illuminate\Support\Facades\Auth;
  * interfaz que no justifican una llamada propia: si el menú debe mostrar
  * "Mi horario" y "Mis citas de hoy" (exclusivas de quien tiene un
  * Profesional vinculado), si debe mostrar "Finanzas" (quien puede ver
- * reportes, ver PoliticaGasto::viewAny), "Productos" (PoliticaProducto::viewAny)
- * y "Pedidos" (PoliticaPedido::viewAny).
+ * reportes, ver PoliticaGasto::viewAny), "Productos" (PoliticaProducto::viewAny),
+ * "Pedidos" (PoliticaPedido::viewAny) y "Clientes"/"Historial clínico"
+ * (PoliticaCliente::viewAny y PoliticaHistoriaClinica::viewAny, esta última
+ * ya incluye el filtro de RF-HCL-01 por tipo de negocio).
  */
 final class UsuarioActualController extends Controller
 {
@@ -40,6 +44,8 @@ final class UsuarioActualController extends Controller
             'puedeVerFinanzas' => $usuario->can('viewAny', Gasto::class),
             'puedeGestionarProductos' => $usuario->can('viewAny', Producto::class),
             'puedeGestionarPedidos' => $usuario->can('viewAny', Pedido::class),
+            'puedeVerClientes' => $usuario->can('viewAny', Cliente::class),
+            'puedeGestionarHistoriasClinicas' => $usuario->can('viewAny', HistoriaClinica::class),
         ]);
     }
 }

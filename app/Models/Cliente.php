@@ -64,6 +64,21 @@ final class Cliente extends Model
     }
 
     /**
+     * El "código de clienta" (RF-HCL-03) nunca se guarda: se calcula a
+     * partir del id del cliente para no necesitar una columna ni lógica
+     * de colisión.
+     */
+    public function codigoClienta(): string
+    {
+        return self::formatearCodigo($this->id);
+    }
+
+    public static function formatearCodigo(int $clienteId): string
+    {
+        return 'CL-'.str_pad((string) $clienteId, 6, '0', STR_PAD_LEFT);
+    }
+
+    /**
      * @return HasMany<Resena, $this>
      */
     public function resenas(): HasMany

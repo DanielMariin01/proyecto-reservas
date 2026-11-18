@@ -98,6 +98,11 @@ Todas las pantallas se arman con estos componentes. Si falta uno, se crea aquí 
 | `SelectorDeHora` | Botón de ancho completo, alto 44 px, borde `--gris-claro`, radio 8 px, hora en negrita centrada. Seleccionado: fondo `--primario`, texto blanco. |
 | `CalendarioMes` | Ver sección 3. |
 | `LineaDetalle` | Ícono de Lucide de 18 px en `--texto-suave` + texto, para duración, fecha, empleado, dirección, servicio y precio. |
+| `CampoSelect` | Mismo alto/borde/radio que `CampoTexto`, pero `<select>` con lista de opciones `{valor, etiqueta}` y `placeholder` opcional. |
+| `CampoTextoLargo` | Mismo tratamiento visual que `CampoTexto`, pero `<textarea>` (3 filas por defecto) para texto libre largo. |
+| `CampoCasilla` | Casilla de selección múltiple (varias a la vez), distinta de `CampoInterruptor` que es un sí/no único. |
+| `Acordeon` | Sección colapsable: encabezado de 56 px con título y chevron (gira 180° abierta), contenido con borde superior `--gris-claro`. El padre controla qué sección está abierta (una a la vez) — ver "Historia clínica" en la sección 7. |
+| `PadFirma` | Firma dibujada a mano sobre `<canvas>` (160 px de alto, borde `--gris-claro`, radio 8 px): se dibuja con mouse o dedo (eventos de puntero) y se exporta como PNG en base64. Si ya hay una firma guardada, muestra la imagen con un botón "Firmar de nuevo" en vez del canvas en blanco. |
 
 Íconos: solo **Lucide** (`lucide-react`), trazo 1,75, mismo tamaño en cada contexto. `clock` para duración/hora, `calendar` para fecha, `user` para empleado, `building-2` para dirección, `scissors` para el servicio, `banknote` para el precio, `x` para cerrar.
 
@@ -317,6 +322,8 @@ Los dos paneles son Laravel + React, sin Filament — mismos tokens que el resto
 **Editar horario semanal** (del perfil del profesional): en vez de una lista de 7 tarjetas de día todas abiertas a la vez, una fila de 7 círculos de día (Do-Sá, mismo componente visual que los círculos de `CalendarioMes`: seleccionado con borde `--primario` y fondo `--celeste`, un punto debajo del día si ya tiene horario configurado) — al tocar un día aparecen debajo su interruptor de disponible/no disponible y sus rangos de hora, igual que en la reserva pública aparecen las horas debajo del día elegido en el calendario.
 
 **Builder de bloques de página** (panel admin, RF-BLQ-03): componente React propio (`BuilderBloques`) — formulario por tipo de bloque, botones para moverlo arriba/abajo (sin arrastrar), vista previa en una pestaña nueva y publicar.
+
+**Historia clínica** (solo negocios tipo spa, sección 19 de requerimientos.md): el formulario de 7 secciones se arma con `Acordeon` — una sección abierta a la vez, igual que el formulario físico original — en vez de todos los campos en una sola pantalla larga. Las firmas de la clienta y de la profesional usan `PadFirma`. La sección 1 ("Datos básicos") muestra el nombre/documento/celular del cliente como texto de solo lectura (vienen de su ficha, no se repiten ni se editan aquí) y solo deja escoger la fecha de la visita y el profesional.
 
 **Productos y Pedidos** (dueño, módulo de tienda v1): CRUD de productos mirror exacto del de Servicios (lista con foto/nombre/precio/visible y reordenar, crear, editar) — sin categoría ni campos de duración/márgenes, que no aplican. Pantalla "Pedidos": tabla (fecha, cliente, productos, entrega, total, estado) sin acciones sueltas en la fila; un botón "Acciones" por pedido abre el modal "Acciones del pedido" con el resumen arriba, el formulario de "Marcar como pagado" (método + valor) si aplica, y un botón por cada estado al que puede pasar — mismo espíritu que el modal de acciones de una cita, pero sin reprogramación ni distinción de "propio profesional" (no existen para un pedido).
 

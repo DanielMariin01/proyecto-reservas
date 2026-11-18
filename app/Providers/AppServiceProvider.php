@@ -10,6 +10,7 @@ use App\Disponibilidad\ReglaCabeEnBloque;
 use App\Disponibilidad\ReglaVentanaMaxima;
 use App\Models\CategoriaServicio;
 use App\Models\Cita;
+use App\Models\Cliente;
 use App\Models\Gasto;
 use App\Models\HistoriaClinica;
 use App\Models\Negocio;
@@ -25,6 +26,7 @@ use App\Negocios\ContextoNegocioActual;
 use App\Observabilidad\ContextoObservabilidad;
 use App\Policies\PoliticaCategoriaServicio;
 use App\Policies\PoliticaCita;
+use App\Policies\PoliticaCliente;
 use App\Policies\PoliticaGasto;
 use App\Policies\PoliticaHistoriaClinica;
 use App\Policies\PoliticaNegocio;
@@ -85,5 +87,6 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Producto::class, PoliticaProducto::class);
         Gate::policy(Pedido::class, PoliticaPedido::class);
         Gate::policy(HistoriaClinica::class, PoliticaHistoriaClinica::class);
+        Gate::policy(Cliente::class, PoliticaCliente::class);
     }
 }
