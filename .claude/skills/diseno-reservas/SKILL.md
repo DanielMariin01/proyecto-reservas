@@ -257,7 +257,8 @@ Igual de detallado que la ventana de reserva (sección 3), porque esta plantilla
 - Cuadrícula de fotos cuadradas, 2 columnas en celular, 4 en escritorio, con vista ampliada al tocar.
 
 **`mis_disenos`** (bloque nuevo)
-- Misma cuadrícula y vista ampliada que `galeria`, pero cada ítem agrega título y descripción centrados debajo de la imagen (se repiten también en la vista ampliada, como pie de foto) — portafolio de trabajos (ej. diseños de uñas), contenido 100 % manual (imagen, título y descripción elegidos a mano por el super admin, `Repetidor` + `CampoImagenBloque`, máximo 12 ítems).
+- Misma cuadrícula y vista ampliada que `galeria`, pero cada ítem agrega título y descripción centrados debajo de la imagen (se repiten también en la vista ampliada, como pie de foto) — portafolio de trabajos (ej. diseños de uñas), contenido 100 % manual (imagen, título y descripción elegidos a mano por el super admin, `Repetidor` + `CampoImagenBloque`, máximo 12 ítems). Cada ítem lleva además un `id` (ULID) estable, invisible en pantalla, para los diseños favoritos de abajo.
+- **Diseños favoritos (sección 19 de requerimientos.md, RF-HCL-08-b):** si hay una cuenta de cliente con sesión activa, cada ítem suma un corazón (`Heart` de Lucide) en la esquina superior derecha de la imagen — vacío si no es favorito, relleno en `--primario` si ya lo es — que lo marca o desmarca en `/mi-cuenta`. **Esta es la única excepción** a que la página pública nunca verifica sesión de cliente (ver `encabezado`, arriba): el corazón solo existe en este bloque; el resto de la página pública sigue sin saber si hay alguien autenticado. Sin sesión, el bloque se ve exactamente igual que antes de esta tarea, sin corazón.
 - **Celular**: 2 columnas, igual que `galeria`.
 
 **`tarjetas`**
