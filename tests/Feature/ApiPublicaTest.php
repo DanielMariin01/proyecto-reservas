@@ -120,11 +120,12 @@ test('GET disponibilidad por fecha coincide con el motor de disponibilidad', fun
     $respuesta = $this->getJson("/api/publico/{$negocio->slug}/disponibilidad?servicio={$servicio->id}&profesional={$profesional->id}&fecha={$fecha->toDateString()}");
 
     $respuesta->assertOk();
-    $respuesta->assertJsonStructure(['data' => [['profesionalId', 'inicio', 'fin', 'fechaVisible', 'horaVisible', 'horaFinVisible']]]);
+    $respuesta->assertJsonStructure(['data' => [['profesionalId', 'inicio', 'fin', 'fechaVisible', 'horaVisible', 'horaFinVisible', 'franja']]]);
     $horas = collect($respuesta->json('data'))->pluck('horaVisible');
     expect($horas->all())->toBe(['10:00 a. m.', '11:00 a. m.']);
     expect($respuesta->json('data.0.horaFinVisible'))->toBe('11:00 a. m.');
     expect($respuesta->json('data.0.fechaVisible'))->toBe(Fecha::formatear($fecha, 'America/Bogota'));
+    expect($respuesta->json('data.0.franja'))->toBe('manana');
 });
 
 test('GET disponibilidad rechaza mandar mes y fecha juntos', function (): void {
