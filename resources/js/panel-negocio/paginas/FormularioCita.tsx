@@ -177,9 +177,14 @@ export default function FormularioCita({ slug, puedeForzar, enviando, errorGener
                 )}
             </div>
 
-            <Boton onClick={enviar} disabled={enviando}>
-                {enviando ? 'Guardando...' : 'Crear cita'}
-            </Boton>
+            <div className="flex gap-2">
+                <Boton onClick={enviar} disabled={enviando}>
+                    {enviando ? 'Guardando...' : 'Crear cita'}
+                </Boton>
+                <Boton variante="contorno" onClick={() => (window.location.href = `/app/${slug}/citas`)}>
+                    Cancelar
+                </Boton>
+            </div>
         </Tarjeta>
     );
 }
