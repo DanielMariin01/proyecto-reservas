@@ -47,4 +47,22 @@ final readonly class BloqueLibre
             return $restante;
         });
     }
+
+    /**
+     * La parte de este bloque que cae dentro de [$inicio, $fin), o null si
+     * no se solapan en nada — usado para repartir los huecos libres en
+     * franjas (mañana/tarde/noche) sin inventar otro algoritmo de
+     * intervalos.
+     */
+    public function interseccionCon(CarbonImmutable $inicio, CarbonImmutable $fin): ?self
+    {
+        $nuevoInicio = $this->inicio->greaterThan($inicio) ? $this->inicio : $inicio;
+        $nuevoFin = $this->fin->lessThan($fin) ? $this->fin : $fin;
+
+        if ($nuevoInicio->greaterThanOrEqualTo($nuevoFin)) {
+            return null;
+        }
+
+        return new self($nuevoInicio, $nuevoFin);
+    }
 }

@@ -10,10 +10,17 @@ export interface CitaDelDia {
     estadoEtiqueta: string;
 }
 
+export type FranjaHoraria = 'manana' | 'tarde' | 'noche';
+
+export interface BloqueLibreFranja {
+    franja: FranjaHoraria;
+    texto: string;
+}
+
 export interface HuecosLibresDeProfesional {
     profesionalId: number;
     profesionalNombre: string;
-    bloques: string[];
+    bloques: BloqueLibreFranja[];
 }
 
 export interface PanelDelDia {

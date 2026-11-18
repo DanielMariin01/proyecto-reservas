@@ -1,10 +1,12 @@
 import type { ComponentType, ReactElement } from 'react';
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Banknote, CalendarCheck, CalendarX, Clock } from 'lucide-react';
 import Insignia from '@/componentes/Insignia';
 import Tarjeta from '@/componentes/Tarjeta';
-import { type CitaDelDia, obtenerPanelDelDia } from '../api/panelDelDia';
+import { type CitaDelDia, type FranjaHoraria, obtenerPanelDelDia } from '../api/panelDelDia';
 import LayoutPanelNegocio from '../LayoutPanelNegocio';
+import SelectorFranjaHoraria from './SelectorFranjaHoraria';
 
 const ESTADOS_CON_INSIGNIA = ['confirmada', 'pendiente', 'cancelada', 'no_asistio', 'completada', 'en_atencion'] as const;
 
@@ -44,9 +46,12 @@ export default function PaginaPanelDelDia({ negocioNombre, negocioSlug, urlSalir
         queryKey: ['panel-del-dia', negocioSlug],
         queryFn: () => obtenerPanelDelDia(negocioSlug),
     });
+    const [franjaSeleccionada, setFranjaSeleccionada] = useState<FranjaHoraria>('manana');
 
     const datos = consulta.data;
-    const huecosConBloques = (datos?.huecosLibres ?? []).filter((columna) => columna.bloques.length > 0);
+    const huecosConBloques = (datos?.huecosLibres ?? [])
+        .map((columna) => ({ ...columna, bloques: columna.bloques.filter((bloque) => bloque.franja === franjaSeleccionada) }))
+        .filter((columna) => columna.bloques.length > 0);
 
     return (
         <LayoutPanelNegocio negocioNombre={negocioNombre} negocioSlug={negocioSlug} urlSalir={urlSalir} tokenCsrf={tokenCsrf}>
@@ -120,9 +125,13 @@ export default function PaginaPanelDelDia({ negocioNombre, negocioSlug, urlSalir
                                 Huecos libres de hoy
                             </h3>
 
+                            <div className="mb-4">
+                                <SelectorFranjaHoraria franjaSeleccionada={franjaSeleccionada} onSeleccionar={setFranjaSeleccionada} />
+                            </div>
+
                             {huecosConBloques.length === 0 ? (
                                 <p className="text-sm text-texto-suave">
-                                    Sin huecos libres. La agenda de hoy está llena, o no hay profesionales activos.
+                                    Sin huecos libres en esta franja. La agenda está llena, o no hay profesionales activos.
                                 </p>
                             ) : (
                                 <div className="grid gap-4 sm:grid-cols-2">
@@ -130,7 +139,7 @@ export default function PaginaPanelDelDia({ negocioNombre, negocioSlug, urlSalir
                                         <div key={columna.profesionalId}>
                                             <p className="mb-1 text-sm font-semibold text-tinta">{columna.profesionalNombre}</p>
                                             <ul className="space-y-1 text-sm text-texto-suave">
-                                                {columna.bloques.map((bloque, indice) => <li key={indice}>{bloque}</li>)}
+                                                {columna.bloques.map((bloque, indice) => <li key={indice}>{bloque.texto}</li>)}
                                             </ul>
                                         </div>
                                     ))}
