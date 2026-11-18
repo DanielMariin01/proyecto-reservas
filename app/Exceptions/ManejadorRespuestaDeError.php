@@ -43,7 +43,7 @@ final class ManejadorRespuestaDeError
     {
         $estado = $excepcion instanceof HttpExceptionInterface ? $excepcion->getStatusCode() : 500;
         $mensaje = self::MENSAJES_POR_ESTADO[$estado] ?? self::MENSAJE_POR_DEFECTO;
-        $codigoReferencia = $this->generarCodigo->ejecutar($this->contexto->idPeticion() ?? (string) $peticion->header('X-Id-Peticion'));
+        $codigoReferencia = $this->generarCodigo->ejecutar($this->contexto->idPeticion());
 
         if ($peticion->is('api/*') || $peticion->expectsJson()) {
             return response()->json([
