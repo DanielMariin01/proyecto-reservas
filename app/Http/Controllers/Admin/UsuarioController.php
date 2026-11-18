@@ -46,6 +46,8 @@ final class UsuarioController extends Controller
 
     public function destroy(Usuario $usuario): JsonResponse
     {
+        $this->authorize('delete', $usuario);
+
         $usuario->delete();
 
         return response()->json(['mensaje' => 'Usuario eliminado.']);

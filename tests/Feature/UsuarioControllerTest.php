@@ -77,3 +77,22 @@ test('eliminar un usuario lo borra', function (): void {
     $respuesta->assertOk();
     expect(Usuario::query()->find($usuario->id))->toBeNull();
 });
+
+test('un super admin no puede eliminarse a si mismo', function (): void {
+    $superAdmin = Usuario::factory()->superAdmin()->create();
+
+    $respuesta = $this->actingAs($superAdmin)->deleteJson("/admin/api/usuarios/{$superAdmin->id}");
+
+    $respuesta->assertForbidden();
+    expect(Usuario::query()->find($superAdmin->id))->not->toBeNull();
+});
+
+test('un super admin si puede eliminar a otro super admin', function (): void {
+    $superAdmin = Usuario::factory()->superAdmin()->create();
+    $otroSuperAdmin = Usuario::factory()->superAdmin()->create();
+
+    $respuesta = $this->actingAs($superAdmin)->deleteJson("/admin/api/usuarios/{$otroSuperAdmin->id}");
+
+    $respuesta->assertOk();
+    expect(Usuario::query()->find($otroSuperAdmin->id))->toBeNull();
+});
