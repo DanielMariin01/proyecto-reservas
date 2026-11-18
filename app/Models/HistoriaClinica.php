@@ -134,13 +134,8 @@ final class HistoriaClinica extends Model
         return $this->belongsTo(Usuario::class);
     }
 
-    /**
-     * El "código de clienta" (RF-HCL-03) nunca se guarda: se calcula a
-     * partir del id del cliente para no necesitar una columna ni lógica
-     * de colisión.
-     */
     public function codigoClienta(): string
     {
-        return 'CL-'.str_pad((string) $this->cliente_id, 6, '0', STR_PAD_LEFT);
+        return Cliente::formatearCodigo($this->cliente_id);
     }
 }

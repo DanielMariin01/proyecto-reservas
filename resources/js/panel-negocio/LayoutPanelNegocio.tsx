@@ -6,6 +6,7 @@ import {
     CalendarDays,
     ClipboardList,
     Clock,
+    Contact,
     Globe,
     LayoutDashboard,
     PackageCheck,
@@ -38,6 +39,7 @@ export default function LayoutPanelNegocio({ negocioNombre, negocioSlug, urlSali
     const puedeVerFinanzas = consultaUsuario.data?.puedeVerFinanzas ?? false;
     const puedeGestionarProductos = consultaUsuario.data?.puedeGestionarProductos ?? false;
     const puedeGestionarPedidos = consultaUsuario.data?.puedeGestionarPedidos ?? false;
+    const puedeVerClientes = consultaUsuario.data?.puedeVerClientes ?? false;
 
     const enlaces: EnlaceMenuLateral[] = [
         { etiqueta: 'Panel del día', href: `/app/${negocioSlug}/panel-del-dia`, Icono: LayoutDashboard },
@@ -50,6 +52,7 @@ export default function LayoutPanelNegocio({ negocioNombre, negocioSlug, urlSali
               ]
             : []),
         { etiqueta: 'Citas', href: `/app/${negocioSlug}/citas`, Icono: CalendarCheck },
+        ...(puedeVerClientes ? [{ etiqueta: 'Clientes', href: `/app/${negocioSlug}/clientes`, Icono: Contact }] : []),
         { etiqueta: 'Profesionales', href: `/app/${negocioSlug}/profesionales`, Icono: Users },
         { etiqueta: 'Servicios', href: `/app/${negocioSlug}/servicios`, Icono: Scissors },
         { etiqueta: 'Categorías de servicio', href: `/app/${negocioSlug}/categorias-servicio`, Icono: Tags },
