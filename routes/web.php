@@ -73,6 +73,7 @@ use App\Http\Controllers\GestionarCitaVistaController;
 use App\Http\Controllers\PaginaNegocioController;
 use App\Http\Controllers\RestablecimientoContrasenaController;
 use App\Http\Controllers\SesionController;
+use App\Http\Controllers\SolicitarRestablecimientoContrasenaController;
 use App\Http\Controllers\SuplantacionController;
 use App\Http\Middleware\ResolverNegocioDesdeRuta;
 use App\Http\Middleware\VerificarNegocioAceptaReservas;
@@ -91,6 +92,9 @@ Route::post('/ingresar', [SesionController::class, 'iniciar']);
 // paneles eran de Filament.
 Route::redirect('/admin/login', '/ingresar');
 Route::redirect('/app/login', '/ingresar');
+
+Route::get('/olvide-contrasena', [SolicitarRestablecimientoContrasenaController::class, 'mostrar'])->name('password.request');
+Route::post('/olvide-contrasena', [SolicitarRestablecimientoContrasenaController::class, 'enviar'])->name('password.email');
 
 Route::get('/restablecer-contrasena/{token}', [RestablecimientoContrasenaController::class, 'mostrar'])->name('password.reset');
 Route::post('/restablecer-contrasena', [RestablecimientoContrasenaController::class, 'actualizar'])->name('password.update');
