@@ -160,6 +160,29 @@ test('un profesional solo puede actualizar o eliminar las historias clinicas que
         ->assertForbidden();
 });
 
+test('la lista de historias clinicas de un profesional no insinua las de sus companeras', function (): void {
+    $negocio = Negocio::factory()->create(['tipo' => TipoNegocio::Spa]);
+    $usuarioProfesional = crearUsuarioConRol($negocio, RolNegocio::Profesional);
+    $profesionalPropio = Profesional::factory()->create(['negocio_id' => $negocio->id, 'usuario_id' => $usuarioProfesional->id]);
+    $otroProfesional = Profesional::factory()->create(['negocio_id' => $negocio->id]);
+    $cliente = Cliente::factory()->create(['negocio_id' => $negocio->id]);
+
+    HistoriaClinica::factory()->create(['negocio_id' => $negocio->id, 'cliente_id' => $cliente->id, 'profesional_id' => $profesionalPropio->id]);
+    HistoriaClinica::factory()->create(['negocio_id' => $negocio->id, 'cliente_id' => $cliente->id, 'profesional_id' => $otroProfesional->id]);
+
+    $respuestaProfesional = $this->actingAs($usuarioProfesional)
+        ->getJson("/app/{$negocio->slug}/api/clientes/{$cliente->id}/historias-clinicas");
+    $respuestaProfesional->assertOk();
+    expect($respuestaProfesional->json('data'))->toHaveCount(1);
+    expect($respuestaProfesional->json('data.0.profesionalId'))->toBe($profesionalPropio->id);
+
+    $dueno = crearUsuarioConRol($negocio, RolNegocio::Dueno);
+    $respuestaDueno = $this->actingAs($dueno)
+        ->getJson("/app/{$negocio->slug}/api/clientes/{$cliente->id}/historias-clinicas");
+    $respuestaDueno->assertOk();
+    expect($respuestaDueno->json('data'))->toHaveCount(2);
+});
+
 test('un dueno no puede ver ni editar una historia clinica de otro negocio aunque adivine el id', function (): void {
     $negocioA = Negocio::factory()->create(['tipo' => TipoNegocio::Spa]);
     $negocioB = Negocio::factory()->create(['tipo' => TipoNegocio::Spa]);

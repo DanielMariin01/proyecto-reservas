@@ -34,6 +34,22 @@ final class PoliticaHistoriaClinica
         return $this->viewAny($usuario);
     }
 
+    /**
+     * Para el listado (RF-HCL-04): el dueño ve todas las historias del
+     * cliente, el profesional solo debe ver las suyas en la lista, no
+     * solo al intentar abrirlas (`view`/`update`/`delete` ya lo impiden,
+     * pero la lista no debe insinuar fecha ni quién atendió de un
+     * registro ajeno). Devuelve `null` cuando no hay que filtrar.
+     */
+    public function profesionalIdParaFiltrarListado(Usuario $usuario): ?int
+    {
+        if ($usuario->es_super_admin || $usuario->hasRole(RolNegocio::Dueno->value)) {
+            return null;
+        }
+
+        return $usuario->profesional?->id;
+    }
+
     public function update(Usuario $usuario, HistoriaClinica $historiaClinica): bool
     {
         return $this->puedeVerOGestionar($usuario, $historiaClinica);

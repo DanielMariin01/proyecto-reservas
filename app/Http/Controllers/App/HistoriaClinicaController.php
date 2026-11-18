@@ -21,7 +21,9 @@ use App\Models\HistoriaClinica;
 use App\Models\Negocio;
 use App\Models\Profesional;
 use App\Models\Usuario;
+use App\Policies\PoliticaHistoriaClinica;
 use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Auth;
@@ -42,9 +44,14 @@ final class HistoriaClinicaController extends Controller
         $this->authorize('viewAny', HistoriaClinica::class);
 
         $clienteModelo = Cliente::query()->findOrFail($cliente);
+        $profesionalIdFiltro = app(PoliticaHistoriaClinica::class)->profesionalIdParaFiltrarListado($this->usuarioActual());
 
         $historias = HistoriaClinica::query()
             ->where('cliente_id', $clienteModelo->id)
+            ->when(
+                $profesionalIdFiltro !== null,
+                fn (Builder $consulta): Builder => $consulta->where('profesional_id', $profesionalIdFiltro),
+            )
             ->with('profesional')
             ->orderByDesc('fecha')
             ->get();
