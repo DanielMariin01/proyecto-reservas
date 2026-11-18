@@ -65,7 +65,7 @@ final class RecursoHistoriaClinica extends JsonResource
             'valor' => $this->valor,
             'abono' => $this->abono,
             'saldo' => $this->saldo,
-            'revisioResultado' => $this->revisio_resultado,
+            'revisionResultado' => $this->revision_resultado,
             'recibioCuidados' => $this->recibio_cuidados,
             'fechaSeguimiento' => $this->fecha_seguimiento?->toDateString(),
             'proximoMantenimientoSugerido' => $this->proximo_mantenimiento_sugerido?->toDateString(),

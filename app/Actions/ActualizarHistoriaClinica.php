@@ -58,7 +58,7 @@ final class ActualizarHistoriaClinica
             'valor' => $datos->valor,
             'abono' => $datos->abono,
             'saldo' => $datos->saldo,
-            'revisio_resultado' => $datos->revisioResultado,
+            'revision_resultado' => $datos->revisionResultado,
             'recibio_cuidados' => $datos->recibioCuidados,
             'fecha_seguimiento' => $datos->fechaSeguimiento?->toDateString(),
             'proximo_mantenimiento_sugerido' => $datos->proximoMantenimientoSugerido?->toDateString(),

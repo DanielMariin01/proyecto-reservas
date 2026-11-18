@@ -58,7 +58,7 @@ function haciaDatosEscritura(historia: HistoriaClinica): DatosHistoriaClinica {
         valor: historia.valor,
         abono: historia.abono,
         saldo: historia.saldo,
-        revisio_resultado: historia.revisioResultado,
+        revision_resultado: historia.revisionResultado,
         recibio_cuidados: historia.recibioCuidados,
         fecha_seguimiento: historia.fechaSeguimiento ?? '',
         proximo_mantenimiento_sugerido: historia.proximoMantenimientoSugerido ?? '',

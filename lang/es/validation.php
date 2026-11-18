@@ -292,7 +292,7 @@ return [
         'reparaciones_detalle' => 'detalle de reparaciones',
         'respuesta' => 'respuesta',
         'retiro_previo' => 'retiro previo',
-        'revisio_resultado' => 'revisión del resultado',
+        'revision_resultado' => 'revisión del resultado',
         'rol' => 'rol',
         'saldo' => 'saldo',
         'servicio' => 'servicio',

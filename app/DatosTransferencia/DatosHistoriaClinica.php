@@ -63,7 +63,7 @@ final readonly class DatosHistoriaClinica
         public int $valor,
         public int $abono,
         public int $saldo,
-        public bool $revisioResultado,
+        public bool $revisionResultado,
         public bool $recibioCuidados,
         public ?CarbonImmutable $fechaSeguimiento,
         public ?CarbonImmutable $proximoMantenimientoSugerido,

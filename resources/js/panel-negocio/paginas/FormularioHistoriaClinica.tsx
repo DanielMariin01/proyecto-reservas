@@ -141,7 +141,7 @@ function valoresVacios(): DatosHistoriaClinica {
         valor: 0,
         abono: 0,
         saldo: 0,
-        revisio_resultado: false,
+        revision_resultado: false,
         recibio_cuidados: false,
         fecha_seguimiento: '',
         proximo_mantenimiento_sugerido: '',
@@ -356,7 +356,7 @@ export default function FormularioHistoriaClinica({
                     <CampoTexto etiqueta="Saldo" type="number" min={0} value={datos.saldo} onChange={(e) => set('saldo', Number(e.target.value))} />
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2">
-                    <CampoCasilla etiqueta="¿Revisó el resultado?" checked={datos.revisio_resultado} onChange={(v) => set('revisio_resultado', v)} />
+                    <CampoCasilla etiqueta="¿Revisó el resultado?" checked={datos.revision_resultado} onChange={(v) => set('revision_resultado', v)} />
                     <CampoCasilla etiqueta="¿Recibió cuidados?" checked={datos.recibio_cuidados} onChange={(v) => set('recibio_cuidados', v)} />
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2">

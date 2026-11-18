@@ -73,7 +73,7 @@ final class SolicitudHistoriaClinica extends FormRequest
             'valor' => ['required', 'integer', 'min:0'],
             'abono' => ['required', 'integer', 'min:0'],
             'saldo' => ['required', 'integer', 'min:0'],
-            'revisio_resultado' => ['boolean'],
+            'revision_resultado' => ['boolean'],
             'recibio_cuidados' => ['boolean'],
             'fecha_seguimiento' => ['nullable', 'date'],
             'proximo_mantenimiento_sugerido' => ['nullable', 'date'],
