@@ -40,11 +40,16 @@ export default function LayoutPanelNegocio({ negocioNombre, negocioSlug, urlSali
     const puedeGestionarProductos = consultaUsuario.data?.puedeGestionarProductos ?? false;
     const puedeGestionarPedidos = consultaUsuario.data?.puedeGestionarPedidos ?? false;
     const puedeVerClientes = consultaUsuario.data?.puedeVerClientes ?? false;
+    const puedeGestionarCitasTodas = consultaUsuario.data?.puedeGestionarCitasTodas ?? false;
+    const puedeGestionarCatalogo = consultaUsuario.data?.puedeGestionarCatalogo ?? false;
+    const puedeGestionarNegocio = consultaUsuario.data?.puedeGestionarNegocio ?? false;
+    const puedeGestionarResenas = consultaUsuario.data?.puedeGestionarResenas ?? false;
+    const puedeGestionarUsuarios = consultaUsuario.data?.puedeGestionarUsuarios ?? false;
 
     const enlaces: EnlaceMenuLateral[] = [
         { etiqueta: 'Panel del día', href: `/app/${negocioSlug}/panel-del-dia`, Icono: LayoutDashboard },
         ...(puedeVerFinanzas ? [{ etiqueta: 'Finanzas', href: `/app/${negocioSlug}/finanzas`, Icono: Wallet }] : []),
-        { etiqueta: 'Agenda', href: `/app/${negocioSlug}/agenda`, Icono: Calendar },
+        ...(puedeGestionarCitasTodas ? [{ etiqueta: 'Agenda', href: `/app/${negocioSlug}/agenda`, Icono: Calendar }] : []),
         ...(esProfesional
             ? [
                   { etiqueta: 'Mis citas de hoy', href: `/app/${negocioSlug}/mis-citas-hoy`, Icono: ClipboardList },
@@ -53,15 +58,19 @@ export default function LayoutPanelNegocio({ negocioNombre, negocioSlug, urlSali
             : []),
         { etiqueta: 'Citas', href: `/app/${negocioSlug}/citas`, Icono: CalendarCheck },
         ...(puedeVerClientes ? [{ etiqueta: 'Clientes', href: `/app/${negocioSlug}/clientes`, Icono: Contact }] : []),
-        { etiqueta: 'Profesionales', href: `/app/${negocioSlug}/profesionales`, Icono: Users },
-        { etiqueta: 'Servicios', href: `/app/${negocioSlug}/servicios`, Icono: Scissors },
-        { etiqueta: 'Categorías de servicio', href: `/app/${negocioSlug}/categorias-servicio`, Icono: Tags },
+        ...(puedeGestionarCatalogo
+            ? [
+                  { etiqueta: 'Profesionales', href: `/app/${negocioSlug}/profesionales`, Icono: Users },
+                  { etiqueta: 'Servicios', href: `/app/${negocioSlug}/servicios`, Icono: Scissors },
+                  { etiqueta: 'Categorías de servicio', href: `/app/${negocioSlug}/categorias-servicio`, Icono: Tags },
+              ]
+            : []),
         ...(puedeGestionarProductos ? [{ etiqueta: 'Productos', href: `/app/${negocioSlug}/productos`, Icono: ShoppingBag }] : []),
         ...(puedeGestionarPedidos ? [{ etiqueta: 'Pedidos', href: `/app/${negocioSlug}/pedidos`, Icono: PackageCheck }] : []),
         ...(esProfesional ? [{ etiqueta: 'Mi horario', href: `/app/${negocioSlug}/mi-horario`, Icono: Clock }] : []),
-        { etiqueta: 'Página web', href: `/app/${negocioSlug}/pagina-web`, Icono: Globe },
-        { etiqueta: 'Reseñas', href: `/app/${negocioSlug}/resenas`, Icono: Star },
-        { etiqueta: 'Usuarios', href: `/app/${negocioSlug}/usuarios`, Icono: UserCog },
+        ...(puedeGestionarNegocio ? [{ etiqueta: 'Página web', href: `/app/${negocioSlug}/pagina-web`, Icono: Globe }] : []),
+        ...(puedeGestionarResenas ? [{ etiqueta: 'Reseñas', href: `/app/${negocioSlug}/resenas`, Icono: Star }] : []),
+        ...(puedeGestionarUsuarios ? [{ etiqueta: 'Usuarios', href: `/app/${negocioSlug}/usuarios`, Icono: UserCog }] : []),
     ];
 
     return (

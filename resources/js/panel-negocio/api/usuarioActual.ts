@@ -7,6 +7,11 @@ export interface UsuarioActual {
     puedeGestionarPedidos: boolean;
     puedeVerClientes: boolean;
     puedeGestionarHistoriasClinicas: boolean;
+    puedeGestionarCitasTodas: boolean;
+    puedeGestionarCatalogo: boolean;
+    puedeGestionarNegocio: boolean;
+    puedeGestionarResenas: boolean;
+    puedeGestionarUsuarios: boolean;
 }
 
 export async function obtenerUsuarioActual(slug: string): Promise<UsuarioActual> {

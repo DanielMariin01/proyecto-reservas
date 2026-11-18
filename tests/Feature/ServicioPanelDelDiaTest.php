@@ -147,6 +147,27 @@ test('huecosLibres resta las citas activas de los bloques libres del profesional
     expect($horas)->toBe(['09:00-10:00', '11:00-12:00']);
 });
 
+test('huecosLibres no muestra las horas que ya pasaron del dia actual', function (): void {
+    CarbonImmutable::setTestNow(CarbonImmutable::parse('2026-11-03 17:50:00', 'America/Bogota'));
+
+    $negocio = Negocio::factory()->create(['zona_horaria' => 'America/Bogota']);
+    $profesional = app(CrearProfesional::class)->ejecutar(new DatosNuevoProfesional(negocio: $negocio, nombre: 'Japo'));
+
+    HorarioTrabajo::factory()->create([
+        'negocio_id' => $negocio->id,
+        'profesional_id' => $profesional->id,
+        'dia_semana' => DiaSemana::from(CarbonImmutable::now('America/Bogota')->dayOfWeek),
+        'hora_inicio' => '08:00:00',
+        'hora_fin' => '19:00:00',
+    ]);
+
+    $huecos = app(ServicioPanelDelDia::class)->huecosLibres($negocio);
+    $bloquesDeJapo = $huecos->firstWhere(fn ($columna) => $columna['profesional']->id === $profesional->id)['bloques'];
+    $horas = $bloquesDeJapo->map(fn ($bloque) => $bloque->inicio->setTimezone('America/Bogota')->format('H:i').'-'.$bloque->fin->setTimezone('America/Bogota')->format('H:i'))->values()->all();
+
+    expect($horas)->toBe(['17:50-19:00']);
+});
+
 test('huecosLibres no incluye profesionales inactivos ni de otro negocio', function (): void {
     CarbonImmutable::setTestNow(CarbonImmutable::parse('2026-11-03 08:00:00', 'America/Bogota'));
 

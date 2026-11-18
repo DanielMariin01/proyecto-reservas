@@ -48,6 +48,8 @@ export default function PaginaResenas({ negocioNombre, negocioSlug, urlSalir, to
         onSuccess: invalidar,
     });
 
+    const hayFiltrosActivos = estado !== '' || calificacion !== '';
+
     return (
         <LayoutPanelNegocio negocioNombre={negocioNombre} negocioSlug={negocioSlug} urlSalir={urlSalir} tokenCsrf={tokenCsrf}>
             <div className="space-y-4">
@@ -138,7 +140,7 @@ export default function PaginaResenas({ negocioNombre, negocioSlug, urlSalir, to
                     idDeFila={(fila) => fila.id}
                     cargando={consulta.isLoading}
                     error={consulta.isError}
-                    mensajeVacio="No hay reseñas con estos filtros."
+                    mensajeVacio={hayFiltrosActivos ? 'No hay reseñas con estos filtros.' : 'Aún no hay reseñas.'}
                     codigoError="REF-RES1"
                     onReintentar={() => consulta.refetch()}
                     paginaActual={consulta.data?.paginaActual ?? pagina}
