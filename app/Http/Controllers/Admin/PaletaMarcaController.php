@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Admin;
 
+use App\Exceptions\PaletaDeMarcaEnUsoException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\SolicitudPaletaMarca;
 use App\Http\Resources\Admin\RecursoPaletaMarca;
@@ -45,7 +46,17 @@ final class PaletaMarcaController extends Controller
 
     public function destroy(PaletaMarca $paleta): JsonResponse
     {
-        $paleta->delete();
+        try {
+            $cantidadDeNegocios = $paleta->negocios()->count();
+
+            if ($cantidadDeNegocios > 0) {
+                throw new PaletaDeMarcaEnUsoException($cantidadDeNegocios);
+            }
+
+            $paleta->delete();
+        } catch (PaletaDeMarcaEnUsoException $excepcion) {
+            return response()->json(['mensaje' => $excepcion->getMessage()], 422);
+        }
 
         return response()->json(['mensaje' => 'Paleta eliminada.']);
     }
