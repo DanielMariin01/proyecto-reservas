@@ -28,6 +28,8 @@ final class Cliente extends Model
         'cuenta_cliente_id',
         'nombre',
         'celular',
+        'documento',
+        'fecha_nacimiento',
         'correo',
         'notas',
         'veces_no_asistio',
@@ -40,6 +42,7 @@ final class Cliente extends Model
     protected function casts(): array
     {
         return [
+            'fecha_nacimiento' => 'date',
             'consentimiento_datos_en' => 'datetime',
         ];
     }
@@ -50,6 +53,14 @@ final class Cliente extends Model
     public function citas(): HasMany
     {
         return $this->hasMany(Cita::class);
+    }
+
+    /**
+     * @return HasMany<HistoriaClinica, $this>
+     */
+    public function historiasClinicas(): HasMany
+    {
+        return $this->hasMany(HistoriaClinica::class);
     }
 
     /**

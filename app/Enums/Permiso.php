@@ -16,4 +16,5 @@ enum Permiso: string
     case GestionarResenas = 'gestionar_resenas';
     case VerReportes = 'ver_reportes';
     case GestionarCursosProductos = 'gestionar_cursos_productos';
+    case GestionarHistoriasClinicas = 'gestionar_historias_clinicas';
 }
