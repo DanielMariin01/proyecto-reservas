@@ -13,9 +13,9 @@
                 <h1 class="mb-6 text-center text-xl font-semibold text-tinta">Ingresar</h1>
 
                 @if ($errors->any())
-                    <div class="mb-4 rounded-boton bg-celeste p-3 text-sm text-tinta">
+                    <div class="mb-4 space-y-1">
                         @foreach ($errors->all() as $error)
-                            <p>{{ $error }}</p>
+                            <p class="text-sm text-red-600">{{ $error }}</p>
                         @endforeach
                     </div>
                 @endif

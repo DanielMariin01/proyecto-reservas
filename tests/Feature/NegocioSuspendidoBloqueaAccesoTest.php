@@ -31,5 +31,5 @@ test('un negocio activo permite el acceso normal', function (): void {
 
     $respuesta = $this->actingAs($dueno)->get("/app/{$negocio->slug}");
 
-    $respuesta->assertOk();
+    $respuesta->assertRedirect(route('app.panel-del-dia', $negocio));
 });

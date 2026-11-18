@@ -19,6 +19,7 @@ test('el super admin puede entrar como un negocio del que no es miembro', functi
 
     $respuesta = $this->actingAs($superAdmin)
         ->withSession(['negocio_suplantado_id' => $negocio->id])
+        ->followingRedirects()
         ->get("/app/{$negocio->slug}");
 
     $respuesta->assertOk();
