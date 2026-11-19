@@ -3,6 +3,7 @@ import { useState } from 'react';
 import Boton from '@/componentes/Boton';
 import CampoTexto from '@/componentes/CampoTexto';
 import Modal from '@/componentes/Modal';
+import { hoyISO } from '@/utils/fecha';
 import { type ErroresValidacion, ErrorDeValidacion } from '../api/negocios';
 
 const OPCIONES_METODO: Array<{ valor: string; etiqueta: string }> = [
@@ -26,7 +27,7 @@ interface Propiedades {
 }
 
 export default function ModalRegistrarPago({ enviando, onGuardar, onCerrar }: Propiedades): ReactElement {
-    const hoy = new Date().toISOString().slice(0, 10);
+    const hoy = hoyISO();
     const [fecha, setFecha] = useState(hoy);
     const [valor, setValor] = useState('');
     const [metodo, setMetodo] = useState('efectivo');

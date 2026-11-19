@@ -3,6 +3,7 @@ import { useState } from 'react';
 import Boton from '@/componentes/Boton';
 import CampoTexto from '@/componentes/CampoTexto';
 import Modal from '@/componentes/Modal';
+import { hoyISO } from '@/utils/fecha';
 import { type Bloqueo, type DatosBloqueo, ErrorDeValidacion, type ErroresValidacion } from '../api/bloqueos';
 
 interface Propiedades {
@@ -13,7 +14,7 @@ interface Propiedades {
 }
 
 export default function ModalBloqueo({ bloqueo, enviando, onGuardar, onCerrar }: Propiedades): ReactElement {
-    const hoy = new Date().toISOString().slice(0, 10);
+    const hoy = hoyISO();
     const [tipo, setTipo] = useState<string>(bloqueo?.tipo ?? 'bloqueo');
     const [fechaInicio, setFechaInicio] = useState(bloqueo?.fechaInicio ?? hoy);
     const [horaInicio, setHoraInicio] = useState(bloqueo?.horaInicio ?? '09:00');

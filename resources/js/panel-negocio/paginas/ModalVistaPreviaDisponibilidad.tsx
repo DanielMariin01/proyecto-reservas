@@ -2,7 +2,15 @@ import type { ReactElement } from 'react';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import Modal from '@/componentes/Modal';
+import { formatearFechaISO } from '@/utils/fecha';
 import { obtenerServicios } from '../api/servicios';
+
+function mananaISO(): string {
+    const fecha = new Date();
+    fecha.setDate(fecha.getDate() + 1);
+
+    return formatearFechaISO(fecha);
+}
 
 interface Propiedades {
     slug: string;
@@ -11,9 +19,8 @@ interface Propiedades {
 }
 
 export default function ModalVistaPreviaDisponibilidad({ slug, onConsultar, onCerrar }: Propiedades): ReactElement {
-    const mañana = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
     const [servicioId, setServicioId] = useState<number | null>(null);
-    const [fecha, setFecha] = useState(mañana);
+    const [fecha, setFecha] = useState(mananaISO());
 
     const consultaServicios = useQuery({
         queryKey: ['panel-servicios-para-vista-previa', slug],
