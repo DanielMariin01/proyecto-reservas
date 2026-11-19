@@ -1,4 +1,4 @@
-import type { PaginaPublica, Servicio } from '@/tipos';
+import type { PaginaPublica, Producto, Servicio } from '@/tipos';
 
 export interface OpcionesReserva {
     servicio?: Servicio;
@@ -11,4 +11,5 @@ export interface PropiedadesBloque {
     pagina: PaginaPublica;
     slug: string;
     onReservar: (opciones: OpcionesReserva) => void;
+    onAgregarAlCarrito: (producto: Producto) => void;
 }

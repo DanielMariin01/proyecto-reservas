@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Boton from '@/componentes/Boton';
 import CampoTexto from '@/componentes/CampoTexto';
 import Tarjeta from '@/componentes/Tarjeta';
+import { actualizarMiHorarioSemanal, type DiasHorario, obtenerMiHorarioSemanal } from '../api/horarioSemanal';
 import {
     crearBloqueoRapido,
     eliminarBloqueoRapido,
@@ -13,6 +14,7 @@ import {
     obtenerMiVistaPreviaDisponibilidad,
 } from '../api/miHorario';
 import LayoutPanelNegocio from '../LayoutPanelNegocio';
+import ModalEditarHorarioSemanal from './ModalEditarHorarioSemanal';
 import ModalVistaPreviaDisponibilidad from './ModalVistaPreviaDisponibilidad';
 
 interface Propiedades {
@@ -30,6 +32,7 @@ export default function PaginaMiHorario({ negocioNombre, negocioSlug, urlSalir, 
     const [motivo, setMotivo] = useState('');
     const [errores, setErrores] = useState<ErroresValidacion>({});
     const [modalVistaPreviaAbierto, setModalVistaPreviaAbierto] = useState(false);
+    const [modalHorarioAbierto, setModalHorarioAbierto] = useState(false);
     const queryClient = useQueryClient();
 
     const consulta = useQuery({
@@ -40,6 +43,14 @@ export default function PaginaMiHorario({ negocioNombre, negocioSlug, urlSalir, 
     function invalidar(): void {
         queryClient.invalidateQueries({ queryKey: ['panel-mi-horario', negocioSlug] });
     }
+
+    const mutacionGuardarHorario = useMutation({
+        mutationFn: (dias: DiasHorario) => actualizarMiHorarioSemanal(negocioSlug, dias),
+        onSuccess: () => {
+            setModalHorarioAbierto(false);
+            invalidar();
+        },
+    });
 
     const mutacionCrearBloqueo = useMutation({
         mutationFn: () => crearBloqueoRapido(negocioSlug, { fecha, hora_inicio: horaInicio, hora_fin: horaFin, motivo }),
@@ -118,14 +129,17 @@ export default function PaginaMiHorario({ negocioNombre, negocioSlug, urlSalir, 
                 </Tarjeta>
 
                 <Tarjeta>
-                    <h3 className="text-base font-semibold text-tinta">Mi horario semanal</h3>
+                    <div className="flex flex-wrap items-center justify-between gap-4">
+                        <h3 className="text-base font-semibold text-tinta">Mi horario semanal</h3>
+                        <Boton variante="contorno" onClick={() => setModalHorarioAbierto(true)}>
+                            Editar mi horario
+                        </Boton>
+                    </div>
 
                     {consulta.isLoading ? (
                         <p className="mt-4 text-sm text-texto-suave">Cargando...</p>
                     ) : (consulta.data?.horarios ?? []).length === 0 ? (
-                        <p className="mt-4 text-sm text-texto-suave">
-                            Aún no tienes un horario. Pídele al dueño del negocio que lo configure.
-                        </p>
+                        <p className="mt-4 text-sm text-texto-suave">Aún no tienes un horario configurado.</p>
                     ) : (
                         <ul className="mt-4 divide-y divide-gris-claro">
                             {(consulta.data?.horarios ?? []).map((horario) => (
@@ -178,6 +192,16 @@ export default function PaginaMiHorario({ negocioNombre, negocioSlug, urlSalir, 
                     slug={negocioSlug}
                     onConsultar={(servicioId, fechaConsulta) => obtenerMiVistaPreviaDisponibilidad(negocioSlug, servicioId, fechaConsulta)}
                     onCerrar={() => setModalVistaPreviaAbierto(false)}
+                />
+            )}
+
+            {modalHorarioAbierto && (
+                <ModalEditarHorarioSemanal
+                    queryKey={['panel-mi-horario-semanal', negocioSlug]}
+                    onObtener={() => obtenerMiHorarioSemanal(negocioSlug)}
+                    enviando={mutacionGuardarHorario.isPending}
+                    onGuardar={(dias) => mutacionGuardarHorario.mutateAsync(dias)}
+                    onCerrar={() => setModalHorarioAbierto(false)}
                 />
             )}
         </LayoutPanelNegocio>

@@ -47,3 +47,31 @@ export async function obtenerVistaPreviaDisponibilidad(slug: string, profesional
 
     return respuesta.data.franjas;
 }
+
+/**
+ * El horario propio del profesional autenticado: nunca lleva un id en la
+ * URL (a diferencia de obtenerHorarioSemanal/actualizarHorarioSemanal,
+ * que editan el de otro profesional), así que no hay ningún parámetro
+ * que adivinar para tocar el horario de otro.
+ */
+export async function obtenerMiHorarioSemanal(slug: string): Promise<DiasHorario> {
+    const respuesta = await axios.get<{ dias: DiasHorario }>(`/app/${slug}/api/mi-horario/horario`);
+
+    return respuesta.data.dias;
+}
+
+export async function actualizarMiHorarioSemanal(slug: string, dias: DiasHorario): Promise<DiasHorario> {
+    try {
+        const respuesta = await axios.put<{ dias: DiasHorario }>(`/app/${slug}/api/mi-horario/horario`, { dias });
+
+        return respuesta.data.dias;
+    } catch (error) {
+        if (error instanceof AxiosError && error.response?.status === 422) {
+            const datos = error.response.data as { mensaje: string };
+
+            throw new ErrorDeHorario(datos.mensaje);
+        }
+
+        throw error;
+    }
+}

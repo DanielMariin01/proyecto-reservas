@@ -7,17 +7,16 @@ namespace App\Http\Controllers\App;
 use App\Actions\GuardarHorarioSemanal;
 use App\Actions\ObtenerVistaPreviaDisponibilidad;
 use App\DatosTransferencia\DatosHorarioSemanal;
-use App\Enums\DiaSemana;
 use App\Exceptions\RangosDeHorarioSuperpuestosException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\App\SolicitudHorarioSemanal;
 use App\Models\Negocio;
 use App\Models\Profesional;
 use App\Models\Servicio;
+use App\Services\ServicioEstadoHorarioSemanal;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Collection;
 
 /**
  * Horario semanal de un profesional, editado por el dueño desde su perfil
@@ -27,12 +26,14 @@ use Illuminate\Support\Collection;
  */
 final class ProfesionalHorarioController extends Controller
 {
+    public function __construct(private readonly ServicioEstadoHorarioSemanal $servicioEstadoHorarioSemanal) {}
+
     public function mostrar(Negocio $negocio, int $profesional): JsonResponse
     {
         $profesionalModelo = Profesional::query()->findOrFail($profesional);
         $this->authorize('view', $profesionalModelo);
 
-        return response()->json(['dias' => $this->estadoAgrupadoPorDia($profesionalModelo)]);
+        return response()->json(['dias' => $this->servicioEstadoHorarioSemanal->agruparPorDia($profesionalModelo)]);
     }
 
     public function actualizar(SolicitudHorarioSemanal $solicitud, Negocio $negocio, int $profesional): JsonResponse
@@ -43,13 +44,13 @@ final class ProfesionalHorarioController extends Controller
         try {
             app(GuardarHorarioSemanal::class)->ejecutar(new DatosHorarioSemanal(
                 profesional: $profesionalModelo,
-                rangosPorDia: $this->aRangosPorDia($solicitud->validated()['dias']),
+                rangosPorDia: $this->servicioEstadoHorarioSemanal->aRangosPorDia($solicitud->validated()['dias']),
             ));
         } catch (RangosDeHorarioSuperpuestosException $excepcion) {
             return response()->json(['mensaje' => $excepcion->getMessage()], 422);
         }
 
-        return response()->json(['dias' => $this->estadoAgrupadoPorDia($profesionalModelo)]);
+        return response()->json(['dias' => $this->servicioEstadoHorarioSemanal->agruparPorDia($profesionalModelo)]);
     }
 
     public function vistaPreviaDisponibilidad(Request $request, Negocio $negocio, int $profesional): JsonResponse
@@ -68,60 +69,5 @@ final class ProfesionalHorarioController extends Controller
         $franjas = app(ObtenerVistaPreviaDisponibilidad::class)->ejecutar($profesionalModelo, $servicio, $fecha);
 
         return response()->json(['franjas' => $franjas]);
-    }
-
-    /**
-     * @return array<int, array{disponible: bool, rangos: list<array{hora_inicio: string, hora_fin: string}>}>
-     */
-    private function estadoAgrupadoPorDia(Profesional $profesional): array
-    {
-        $horariosPorDia = $profesional->horariosTrabajo()->orderBy('hora_inicio')->get()->groupBy('dia_semana');
-
-        $estado = [];
-
-        foreach (DiaSemana::cases() as $dia) {
-            $horarios = $horariosPorDia->get($dia->value, Collection::make());
-
-            $rangos = [];
-
-            foreach ($horarios as $horario) {
-                $rangos[] = [
-                    'hora_inicio' => mb_substr((string) $horario->hora_inicio, 0, 5),
-                    'hora_fin' => mb_substr((string) $horario->hora_fin, 0, 5),
-                ];
-            }
-
-            $estado[$dia->value] = [
-                'disponible' => $horarios->isNotEmpty(),
-                'rangos' => $rangos,
-            ];
-        }
-
-        return $estado;
-    }
-
-    /**
-     * @param  array<string, array{disponible?: bool, rangos?: list<array{hora_inicio: string, hora_fin: string}>}>  $dias
-     * @return array<int, list<array{hora_inicio: string, hora_fin: string}>>
-     */
-    private function aRangosPorDia(array $dias): array
-    {
-        $rangosPorDia = [];
-
-        foreach ($dias as $diaValor => $datosDelDia) {
-            if (! ($datosDelDia['disponible'] ?? false)) {
-                continue;
-            }
-
-            $rangos = $datosDelDia['rangos'] ?? [];
-
-            if ($rangos === []) {
-                continue;
-            }
-
-            $rangosPorDia[(int) $diaValor] = $rangos;
-        }
-
-        return $rangosPorDia;
     }
 }

@@ -152,6 +152,7 @@ Cada requerimiento tiene un código (RF-módulo-número) y una fase, para que lo
 - **RF-TIE-01 (Fase 3)** Productos con fotos, precio, variantes (50 g / 100 g) e inventario con alerta de stock bajo.
 - **RF-TIE-02 (Fase 3)** Carrito y pedido con “recoger en el local” sin pedir dirección ni código postal; domicilio opcional por barrio.
 - **RF-TIE-03 (Fase 3)** Buscador local que filtra por nombre y categoría, sin tildes ni mayúsculas.
+- **RF-TIE-04** El módulo de tienda se construyó en un v1 más simple que RF-TIE-01: productos con foto, nombre, descripción y precio, **sin variantes ni inventario** (esa parte de RF-TIE-01 queda pendiente para una fase posterior, incluida la tabla `variantes_producto` de la sección 10). RF-TIE-02 (carrito completo, recoger en el local o domicilio por barrio) y el pago manual del pedido (RF-PAG-01) sí se construyeron completos, igual que el estado del pedido (pendiente/pagado/entregado/cancelado, patrón Estado como `Cita`). RF-TIE-03 (buscador por categoría) no aplica todavía porque el producto no tiene categoría en este alcance. Esta nota no estaba en el documento original; el alcance se decidió y aprobó en esta tarea.
 
 ### 4.8 Pagos y caja
 
@@ -301,7 +302,7 @@ Los casos marcados MVP son los primeros que deben pasar sus criterios de aceptac
 | CU-11 | Inscribirse a un curso | Alumna | Fase 2 |
 | CU-12 | Sincronizar con Google Calendar | Profesional | Fase 2 |
 | CU-13 | Ver reportes de ingresos | Dueño | Fase 2 |
-| CU-14 | Comprar un producto | Cliente final | Fase 3 |
+| CU-14 | Comprar un producto | Cliente final | Fase 3 (v1 construido, ver RF-TIE-04) |
 
 ### CU-01 Reservar una cita
 
@@ -351,7 +352,17 @@ Los casos marcados MVP son los primeros que deben pasar sus criterios de aceptac
 - **Alternos:** cupo lleno mientras llena el formulario → mensaje y otras fechas del mismo curso; inscripción sin pagar al vencer el plazo → se libera el cupo.
 - **Criterios:** el cupo nunca queda negativo; la lista de inscritas se exporta a CSV con nombre, celular y estado de pago.
 
-Los casos CU-06, 07, 09, 10, 12, 13 y 14 siguen el mismo formato y se detallan al iniciar su fase.
+### CU-14 Comprar un producto
+
+- **Precondiciones:** el negocio está publicado y tiene al menos un producto visible.
+- **Flujo principal:** "Agregar al carrito" en el bloque `productos` → carrito (cantidades) → datos y entrega (recoger en el local o domicilio con barrio) → confirmar pedido → éxito.
+- **Alternos:** carrito vacío → no se puede continuar; domicilio sin barrio → error de validación; producto que ya no existe o se ocultó → el pedido lo rechaza (RF-TIE-04: v1 sin variantes ni inventario).
+- **Criterios de aceptación:**
+  - El pedido guarda una copia del nombre y precio de cada producto al momento de la compra, no una referencia viva (si el producto cambia después, el pedido no cambia).
+  - El total del pedido siempre es la suma de los subtotales reales, nunca un valor que mande el cliente.
+  - El dueño puede cambiar el estado del pedido (pendiente → pagado → entregado, o cancelar) y registrar el pago manual, igual que con una cita.
+
+Los casos CU-06, 07, 09, 10, 12 y 13 siguen el mismo formato y se detallan al iniciar su fase.
 
 ## 8. Usabilidad y experiencia
 
@@ -539,7 +550,7 @@ Un patrón se usa cuando resuelve un problema real del código; si un agente pro
 - Clases, métodos, funciones, variables, propiedades, constantes, enums, eventos, componentes de React y pruebas se nombran en español.
 - Sin tildes ni ñ en los identificadores, para evitar problemas de codificación: `anio`, `numeroTelefono`, `duracionMinutos`.
 - Convenciones: clases y componentes en `PascalCase` (`ServicioReservas`, `SelectorDeHora`); métodos y variables en `camelCase` (`obtenerFranjasDisponibles`, `fechaInicio`); columnas y tablas en `snake_case`; constantes en `MAYUSCULAS_CON_GUION`.
-- Las tablas del modelo de la sección 10 se crean con su nombre en español: `negocios`, `usuarios`, `profesionales`, `categorias_servicio`, `servicios`, `horarios_trabajo`, `bloqueos`, `clientes`, `citas`, `pagos`, `festivos`, `registros_auditoria`, `secciones_pagina`, `cursos`, `sesiones_curso`, `inscripciones`, `productos`, `variantes_producto`, `pedidos`, `cierres_caja`.
+- Las tablas del modelo de la sección 10 se crean con su nombre en español: `negocios`, `usuarios`, `profesionales`, `categorias_servicio`, `servicios`, `horarios_trabajo`, `bloqueos`, `clientes`, `citas`, `pagos`, `festivos`, `registros_auditoria`, `secciones_pagina`, `cursos`, `sesiones_curso`, `inscripciones`, `productos`, `items_pedido`, `pedidos`, `cierres_caja`. `variantes_producto` queda pendiente (ver RF-TIE-04): el v1 del módulo de tienda no tiene variantes.
 - Se mantienen en inglés solo los nombres que exige el framework: métodos heredados (`handle`, `boot`, `rules`), claves de configuración y palabras reservadas.
 - Booleanos con prefijo de pregunta: `estaActivo`, `tieneCupo`, `puedeCancelar`.
 - Funciones con verbo que dice lo que hacen: `calcularPrecioTotal`, no `procesar` ni `hacerCosas`.
@@ -760,6 +771,7 @@ La página de cada negocio es una lista de bloques guardada en la base de datos 
 - **RF-BLQ-03 (MVP)** El super admin arma la página en el panel admin con un Builder propio en React: un formulario por tipo de bloque, botones para moverlo arriba/abajo, vista previa en una pestaña nueva y publicar.
 - **RF-BLQ-04 (MVP)** React dibuja cada bloque con un registro de componentes por tipo (patrón Registro/Fábrica); agregar un tipo de bloque nuevo no modifica los existentes.
 - **RF-BLQ-05 (MVP)** Un solo componente `FlujoReserva` abre la reserva desde cualquier bloque, recibiendo lo ya elegido (servicio o empleado).
+- **RF-BLQ-06** El bloque `servicios_destacados` muestra un carrusel de "lo más pedido" con un ranking real (no manual): `App\Services\ServicioPopularidadServicios` cuenta citas `completada` por servicio en los últimos 90 días, y cae al histórico completo si el negocio no tuvo ninguna en ese periodo. El super admin solo elige cuántos mostrar (2 a 6); el resto del contenido (nombre, precio, duración, cuántos clientes distintos lo reservaron) se consulta al mostrarse, igual que `RF-BLQ-02`.
 
 **API pública (todas las rutas bajo `/api/publico/{slug}`)**
 
@@ -772,7 +784,9 @@ La página de cada negocio es una lista de bloques guardada en la base de datos 
 | GET | `/disponibilidad?servicio=&empleado=&fecha=` | Horas libres de ese día, calculadas por el motor de la sección 5 |
 | POST | `/reservas` | Verifica de nuevo la hora, crea la cita y dispara el evento `CitaCreada` |
 | GET / POST | `/reservas/{token}` | Ver, cancelar o reprogramar una cita desde el enlace firmado del correo |
-| GET | `/cursos` y `/productos` | Fechas con cupos y productos con existencias (fases 2 y 3) |
+| GET | `/cursos` | Fechas con cupos (Fase 2, todavía no construido) |
+| GET | `/productos` | Productos visibles con foto, nombre, descripción y precio (v1, sin existencias — ver RF-TIE-04) |
+| POST | `/pedidos` | Verifica cada producto, crea el pedido con sus items y dispara el evento `PedidoCreado` |
 
 La página nunca calcula horas ni guarda citas: solo muestra y pregunta.
 
@@ -837,3 +851,23 @@ Tampoco estaba en el documento original; se definió y aprobó en esta tarea. La
 - **RF-CTA-06** Un cliente con sesión puede dejar una reseña de una cita completada suya directo desde el panel, sin el enlace del correo — misma `CrearResena` y la misma cadena de reglas de la sección 17.
 
 **Patrones usados**: Servicio (`ServicioCuentaCliente`, único punto de entrada de la cuenta), Evento auditable (`CuentaClienteCreada`), Adaptador externo ya existente (Socialite detrás de la interfaz del propio paquete). Sin Acción ni DTO de registro — no hay nada que registrar a mano. Sin una `Policy` aparte para este flujo: `Cita` ya tiene `PoliticaCita` atada al guard `web`, y una `Gate::policy` no admite dos políticas para el mismo modelo; la pertenencia se valida como un chequeo simple en el controlador.
+
+## 19. Historia clínica para negocios tipo spa (T12, tarea nueva fuera del MVP, 17 nov 2026)
+
+Tampoco estaba en el documento original; se definió y aprobó en esta tarea, a partir de un formulario físico real de un spa de uñas. Pertenece a `Cliente`, no a `Cita`: existe también para clientas que llegan sin agendar.
+
+- **RF-HCL-01** Solo está disponible para negocios cuyo `TipoNegocio::requiereHistoriaClinica()` devuelva verdadero (hoy, solo `Spa`) — el método queda en el enum para que agregar otro tipo en el futuro sea un cambio de una sola línea. Un negocio que no cumple la condición no ve el menú "Historial clínico" ni puede crear, ver, editar o eliminar registros (403), sin importar el permiso del usuario.
+- **RF-HCL-02** CRUD completo de `HistoriaClinica`, una fila por visita (no una ficha que se sobreescribe): código de clienta, fecha, profesional, información relevante para el servicio (casillas de selección múltiple más texto libre), valoración visual de piel y uña (ambas de selección múltiple), diseño elegido, registro técnico del servicio, pago y revisión, y consentimiento/autorizaciones — exactamente las 7 secciones del formulario físico, en un acordeón que abre una sección a la vez.
+- **RF-HCL-03** `nombre`, `celular` (ya en `Cliente`) y los nuevos `documento`/`fecha_nacimiento` (opcional) viven en `Cliente`, no se repiten por visita. El "código de clienta" no se guarda: se calcula mostrando `Cliente.id` formateado (`CL-000123`).
+- **RF-HCL-04** Dato de salud sensible: solo pueden ver o gestionar historias clínicas quien tiene el permiso nuevo `Permiso::GestionarHistoriasClinicas`, otorgado a `RolNegocio::Dueno` (todas las del negocio) y a `RolNegocio::Profesional` (solo las propias, comparando `historia.profesional_id`, mismo esquema que `PoliticaCita::puedeVerOGestionar`). `RolNegocio::Recepcion` no lo recibe, aunque sí tenga `GestionarClientes`. La restricción "solo las propias" del profesional aplica también al listado (`PoliticaHistoriaClinica::profesionalIdParaFiltrarListado`), no solo a abrir una historia puntual — verificado a mano en el panel: antes de este ajuste, un profesional veía en la lista la fecha y el nombre de quien atendió en historias ajenas, aunque no podía abrirlas. Las firmas (imágenes) se guardan en disco privado y se sirven por una ruta autenticada que pasa por la misma política, nunca por una URL pública de storage. Cada creación, edición o eliminación queda en `RegistroAuditoria` (`ServicioAuditoria`, sin cambios).
+- **RF-HCL-05** El texto de consentimiento informado, el de tratamiento de datos personales y la política de revisión (texto informativo de la sección 7, no un dato por cliente) son **texto fijo del sistema**, no configurable por negocio — se decidió así por ser la opción más simple de construir y de mantener correcta; interpola el nombre del negocio donde haga falta. Sin columna nueva ni builder en el admin.
+- **RF-HCL-06** La firma de la clienta y la de la profesional se capturan con un componente nuevo (`PadFirma`, canvas) y se guardan como imagen PNG mediante `ServicioFirmaDigital` (adaptador propio detrás de una interfaz, registrado en `AppServiceProvider`), nunca directo con `Storage` desde la acción.
+- **RF-HCL-07** Como el panel `app` todavía no tiene una pantalla de clientes (RF-CLI-01 pendiente), esta tarea construye su versión mínima: lista con búsqueda por nombre/celular y detalle, sin etiquetas ni el resto del CRM — eso sigue en Fase 2. La pestaña "Historial clínico" vive dentro del detalle del cliente.
+- **RF-HCL-08** `/mi-cuenta` gana tres secciones nuevas (T34), además de "Citas" que ya existía — las cuatro comparten un encabezado único y un panel de tarjetas de estadísticas siempre visible arriba (`PanelCuenta`, que reemplazó al antiguo `PanelCitas`; la lista de citas en sí sigue intacta en `SeccionCitas`):
+  - **(a) Historial clínico**, de solo lectura, filtrado por las `Cliente` enlazadas a su `CuentaCliente` — cruza negocios igual que "Citas".
+  - **(b) Diseños favoritos**: marcar/desmarcar ítems del bloque público `mis_disenos` de cualquier negocio. Cada ítem de `mis_disenos` ganó un `id` (ULID) estable (generado al crear uno nuevo en el admin, y por backfill para los ya existentes). **Decisión explícita:** el corazón de marcar vive también en la página pública (`/{slug}`, componente `BloqueMisDisenos`), no solo dentro de `/mi-cuenta` — por eso esa página ahora sí verifica sesión de cliente (`obtenerSesion`), la primera vez que lo hace; antes ningún bloque público lo hacía a propósito (sección 1 de la skill `diseno-reservas`). El corazón solo aparece si hay sesión activa; sin sesión, el bloque se ve exactamente igual que antes. El servidor valida igual si hay o no sesión (ruta `auth:cliente`, 401 sin ella) y que el `diseno_id` siga existiendo en la página publicada del negocio antes de guardar el favorito.
+  - **(c) Un panel de tarjetas** con el conteo de sus citas totales, pendientes (pendiente+confirmada+en atención), completadas y canceladas.
+
+**Nota de despliegue (pendiente para cuando se despliegue a producción, sección 16):** el PR que agrega `Permiso::GestionarHistoriasClinicas` (T33/PR1) solo crea el permiso y lo asigna a los roles **en el seeder** — `RolesYPermisosSeeder` no corre solo porque haya una migración nueva. Después de fusionar ese PR, hay que correr `php artisan db:seed --class=RolesYPermisosSeeder --force` en **cada** entorno que ya tenga datos (local, staging y producción), o los roles existentes (`dueno`, `profesional`) se quedan sin el permiso nuevo y todo el módulo queda invisible aunque el código esté bien — así se descubrió en la prueba manual del 17 nov 2026. El comando es idempotente (usa `syncPermissions`), así que no hay riesgo de correrlo de más.
+
+**Patrones usados**: DTO (`DatosHistoriaClinica`, demasiados campos para parámetros sueltos), Acciones (`CrearHistoriaClinica`, `ActualizarHistoriaClinica`, `EliminarHistoriaClinica`), Adaptador (`ServicioFirmaDigital` detrás de interfaz propia), Política (`PoliticaHistoriaClinica`, mismo esquema que `PoliticaCita`), Estrategia (`TipoNegocio::requiereHistoriaClinica()` para la activación por tipo de negocio).

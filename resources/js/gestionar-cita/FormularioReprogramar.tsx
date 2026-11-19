@@ -5,8 +5,9 @@ import { obtenerDiasConDisponibilidad, obtenerHorasDisponibles } from '@/flujo-r
 import CalendarioMes from '@/flujo-reserva/CalendarioMes';
 import Boton from '@/componentes/Boton';
 import SelectorDeHora from '@/componentes/SelectorDeHora';
+import SelectorFranjaHoraria from '@/componentes/SelectorFranjaHoraria';
 import Tarjeta from '@/componentes/Tarjeta';
-import type { CitaPorToken, HoraDisponible } from '@/tipos';
+import type { CitaPorToken, FranjaHoraria, HoraDisponible } from '@/tipos';
 
 interface PropiedadesFormularioReprogramar {
     slug: string;
@@ -30,6 +31,7 @@ export default function FormularioReprogramar({
     const [mes, setMes] = useState(hoy.getMonth() + 1);
     const [diaSeleccionado, setDiaSeleccionado] = useState<string | null>(null);
     const [horaSeleccionada, setHoraSeleccionada] = useState<HoraDisponible | null>(null);
+    const [franjaSeleccionada, setFranjaSeleccionada] = useState<FranjaHoraria>('manana');
 
     const mesTexto = `${anio}-${String(mes).padStart(2, '0')}`;
     const diasQuery = useQuery({
@@ -42,6 +44,8 @@ export default function FormularioReprogramar({
         queryFn: () => obtenerHorasDisponibles(slug, cita.servicioId, cita.profesionalId, diaSeleccionado as string),
         enabled: diaSeleccionado !== null,
     });
+    const horas = horasQuery.data ?? [];
+    const horasEnFranja = horas.filter((hora) => hora.franja === franjaSeleccionada);
 
     function cambiarMes(delta: number): void {
         const fecha = new Date(anio, mes - 1 + delta, 1);
@@ -72,17 +76,26 @@ export default function FormularioReprogramar({
 
             {diaSeleccionado && (
                 <div className="mt-4 space-y-2">
-                    {(horasQuery.data ?? []).length === 0 && !horasQuery.isLoading && (
-                        <p className="text-sm text-texto-suave">No hay horas este día.</p>
+                    {horas.length === 0 && !horasQuery.isLoading && <p className="text-sm text-texto-suave">No hay horas este día.</p>}
+
+                    {horas.length > 0 && (
+                        <>
+                            <SelectorFranjaHoraria franjaSeleccionada={franjaSeleccionada} onSeleccionar={setFranjaSeleccionada} />
+
+                            {horasEnFranja.length === 0 ? (
+                                <p className="text-sm text-texto-suave">No hay horas en esta franja.</p>
+                            ) : (
+                                horasEnFranja.map((hora) => (
+                                    <SelectorDeHora
+                                        key={hora.inicio}
+                                        texto={hora.horaVisible}
+                                        seleccionado={horaSeleccionada?.inicio === hora.inicio}
+                                        onElegir={() => setHoraSeleccionada(hora)}
+                                    />
+                                ))
+                            )}
+                        </>
                     )}
-                    {(horasQuery.data ?? []).map((hora) => (
-                        <SelectorDeHora
-                            key={hora.inicio}
-                            texto={hora.horaVisible}
-                            seleccionado={horaSeleccionada?.inicio === hora.inicio}
-                            onElegir={() => setHoraSeleccionada(hora)}
-                        />
-                    ))}
                 </div>
             )}
 

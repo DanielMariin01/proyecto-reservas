@@ -17,6 +17,7 @@ use App\Exceptions\FueraDePoliticaDeCancelacionException;
 use App\Exceptions\HoraInvalidaException;
 use App\Exceptions\HoraYaTomadaException;
 use App\Exceptions\MaximoDeReprogramacionesException;
+use App\Exceptions\MontoDePagoIncorrectoException;
 use App\Exceptions\PagoYaAnuladoException;
 use App\Exceptions\TransicionDeEstadoInvalidaException;
 use App\Http\Controllers\Controller;
@@ -71,18 +72,20 @@ final class CitaAccionesController extends Controller
         $this->authorize('create', [Pago::class, $citaModelo]);
 
         $datos = $solicitud->validated();
+        $valor = (int) $datos['valor'];
 
         try {
             $usuario = $this->usuarioActual();
+            app(RegistrarPagoDeCita::class)->validar($citaModelo, $valor);
             app(CambiarEstadoCita::class)->ejecutar($citaModelo, EstadoCitaValor::Completada, $usuario);
             app(RegistrarPagoDeCita::class)->ejecutar(
                 cita: $citaModelo,
                 metodo: MetodoPago::from($datos['metodo']),
-                valor: (int) $datos['valor'],
+                valor: $valor,
                 propina: (int) ($datos['propina'] ?? 0),
                 registradoPor: $usuario,
             );
-        } catch (TransicionDeEstadoInvalidaException|CitaNoCompletadaException $excepcion) {
+        } catch (TransicionDeEstadoInvalidaException|CitaNoCompletadaException|MontoDePagoIncorrectoException $excepcion) {
             return response()->json(['mensaje' => $excepcion->getMessage()], 422);
         }
 

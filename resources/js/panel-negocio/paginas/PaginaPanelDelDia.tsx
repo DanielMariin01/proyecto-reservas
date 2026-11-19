@@ -1,7 +1,11 @@
-import type { ReactElement } from 'react';
+import type { ComponentType, ReactElement } from 'react';
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { Banknote, CalendarCheck, CalendarX, Clock } from 'lucide-react';
 import Insignia from '@/componentes/Insignia';
+import SelectorFranjaHoraria from '@/componentes/SelectorFranjaHoraria';
 import Tarjeta from '@/componentes/Tarjeta';
+import type { FranjaHoraria } from '@/tipos';
 import { type CitaDelDia, obtenerPanelDelDia } from '../api/panelDelDia';
 import LayoutPanelNegocio from '../LayoutPanelNegocio';
 
@@ -18,14 +22,37 @@ interface Propiedades {
     tokenCsrf: string;
 }
 
+interface PropiedadesTarjetaMetrica {
+    etiqueta: string;
+    valor: string;
+    Icono: ComponentType<{ size?: number; strokeWidth?: number; className?: string }>;
+    colorFondo: string;
+    colorIcono: string;
+}
+
+function TarjetaMetrica({ etiqueta, valor, Icono, colorFondo, colorIcono }: PropiedadesTarjetaMetrica): ReactElement {
+    return (
+        <Tarjeta>
+            <div className={`mb-3 flex h-10 w-10 items-center justify-center rounded-full ${colorFondo}`}>
+                <Icono size={20} strokeWidth={1.75} className={colorIcono} />
+            </div>
+            <p className="text-sm text-texto-suave">{etiqueta}</p>
+            <p className="text-2xl font-bold text-tinta">{valor}</p>
+        </Tarjeta>
+    );
+}
+
 export default function PaginaPanelDelDia({ negocioNombre, negocioSlug, urlSalir, tokenCsrf }: Propiedades): ReactElement {
     const consulta = useQuery({
         queryKey: ['panel-del-dia', negocioSlug],
         queryFn: () => obtenerPanelDelDia(negocioSlug),
     });
+    const [franjaSeleccionada, setFranjaSeleccionada] = useState<FranjaHoraria>('manana');
 
     const datos = consulta.data;
-    const huecosConBloques = (datos?.huecosLibres ?? []).filter((columna) => columna.bloques.length > 0);
+    const huecosConBloques = (datos?.huecosLibres ?? [])
+        .map((columna) => ({ ...columna, bloques: columna.bloques.filter((bloque) => bloque.franja === franjaSeleccionada) }))
+        .filter((columna) => columna.bloques.length > 0);
 
     return (
         <LayoutPanelNegocio negocioNombre={negocioNombre} negocioSlug={negocioSlug} urlSalir={urlSalir} tokenCsrf={tokenCsrf}>
@@ -39,22 +66,34 @@ export default function PaginaPanelDelDia({ negocioNombre, negocioSlug, urlSalir
                 ) : datos ? (
                     <>
                         <div className="grid gap-4 sm:grid-cols-3">
-                            <Tarjeta>
-                                <p className="text-sm text-texto-suave">Citas de hoy</p>
-                                <p className="text-2xl font-bold text-tinta">{datos.totalCitasHoy}</p>
-                            </Tarjeta>
-                            <Tarjeta>
-                                <p className="text-sm text-texto-suave">Próximas (aún no empiezan)</p>
-                                <p className="text-2xl font-bold text-tinta">{datos.totalProximas}</p>
-                            </Tarjeta>
-                            <Tarjeta>
-                                <p className="text-sm text-texto-suave">Ingresos registrados hoy</p>
-                                <p className="text-2xl font-bold text-tinta">${datos.ingresosRegistrados.toLocaleString('es-CO')}</p>
-                            </Tarjeta>
+                            <TarjetaMetrica
+                                etiqueta="Citas de hoy"
+                                valor={String(datos.totalCitasHoy)}
+                                Icono={CalendarCheck}
+                                colorFondo="bg-primario/15"
+                                colorIcono="text-primario"
+                            />
+                            <TarjetaMetrica
+                                etiqueta="Próximas (aún no empiezan)"
+                                valor={String(datos.totalProximas)}
+                                Icono={Clock}
+                                colorFondo="bg-acento/15"
+                                colorIcono="text-acento"
+                            />
+                            <TarjetaMetrica
+                                etiqueta="Ingresos registrados hoy"
+                                valor={`$${datos.ingresosRegistrados.toLocaleString('es-CO')}`}
+                                Icono={Banknote}
+                                colorFondo="bg-secundario/15"
+                                colorIcono="text-secundario"
+                            />
                         </div>
 
                         <Tarjeta>
-                            <h3 className="mb-3 text-base font-semibold text-tinta">Citas de hoy</h3>
+                            <h3 className="mb-3 flex items-center gap-2 text-base font-semibold text-tinta">
+                                <CalendarCheck size={20} strokeWidth={1.75} className="text-texto-suave" />
+                                Citas de hoy
+                            </h3>
 
                             {datos.citas.length === 0 ? (
                                 <p className="text-sm text-texto-suave">
@@ -82,11 +121,18 @@ export default function PaginaPanelDelDia({ negocioNombre, negocioSlug, urlSalir
                         </Tarjeta>
 
                         <Tarjeta>
-                            <h3 className="mb-3 text-base font-semibold text-tinta">Huecos libres de hoy</h3>
+                            <h3 className="mb-3 flex items-center gap-2 text-base font-semibold text-tinta">
+                                <CalendarX size={20} strokeWidth={1.75} className="text-texto-suave" />
+                                Huecos libres de hoy
+                            </h3>
+
+                            <div className="mb-4">
+                                <SelectorFranjaHoraria franjaSeleccionada={franjaSeleccionada} onSeleccionar={setFranjaSeleccionada} />
+                            </div>
 
                             {huecosConBloques.length === 0 ? (
                                 <p className="text-sm text-texto-suave">
-                                    Sin huecos libres. La agenda de hoy está llena, o no hay profesionales activos.
+                                    Sin huecos libres en esta franja. La agenda está llena, o no hay profesionales activos.
                                 </p>
                             ) : (
                                 <div className="grid gap-4 sm:grid-cols-2">
@@ -94,7 +140,7 @@ export default function PaginaPanelDelDia({ negocioNombre, negocioSlug, urlSalir
                                         <div key={columna.profesionalId}>
                                             <p className="mb-1 text-sm font-semibold text-tinta">{columna.profesionalNombre}</p>
                                             <ul className="space-y-1 text-sm text-texto-suave">
-                                                {columna.bloques.map((bloque, indice) => <li key={indice}>{bloque}</li>)}
+                                                {columna.bloques.map((bloque, indice) => <li key={indice}>{bloque.texto}</li>)}
                                             </ul>
                                         </div>
                                     ))}

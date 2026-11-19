@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\App;
 
+use App\Enums\DiaSemana;
 use App\Enums\Permiso;
 use App\Http\Controllers\Controller;
-use App\Http\Resources\App\RecursoCita;
-use App\Models\Cita;
 use App\Models\Negocio;
 use App\Models\Profesional;
 use App\Models\Usuario;
-use App\Services\ServicioAccionesCita;
+use App\Services\ServicioColumnaAgenda;
 use App\Support\Fecha;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\JsonResponse;
@@ -21,11 +20,14 @@ use Illuminate\Support\Facades\Auth;
 /**
  * RF-RES-07: la agenda visual del dueño, columnas por profesional. Las
  * acciones sobre cada cita viven en CitaAccionesController, compartidas
- * con la lista general de citas — nunca duplicar esa lógica.
+ * con la lista general de citas — nunca duplicar esa lógica. Construir
+ * cada columna (horario del día + sus citas) vive en ServicioColumnaAgenda,
+ * compartido con MiHorarioController (la misma columna, pero solo la
+ * propia, para el profesional).
  */
 final class AgendaDelDiaController extends Controller
 {
-    public function __construct(private readonly ServicioAccionesCita $servicioAccionesCita) {}
+    public function __construct(private readonly ServicioColumnaAgenda $servicioColumnaAgenda) {}
 
     public function mostrar(Request $request, Negocio $negocio): JsonResponse
     {
@@ -40,24 +42,20 @@ final class AgendaDelDiaController extends Controller
         $inicioDiaUtc = $fechaLocal->utc();
         $finDiaUtc = $fechaLocal->endOfDay()->utc();
         $usuario = $this->usuarioActual();
+        $diaSemana = DiaSemana::from($fechaLocal->dayOfWeek);
 
         $columnas = Profesional::query()
             ->where('negocio_id', $negocio->id)
             ->where('activo', true)
             ->orderBy('nombre')
             ->get()
-            ->map(fn (Profesional $profesional): array => [
-                'profesionalId' => $profesional->id,
-                'profesionalNombre' => $profesional->nombre,
-                'profesionalColor' => $profesional->color,
-                'citas' => Cita::query()
-                    ->where('profesional_id', $profesional->id)
-                    ->where('inicio', '>=', $inicioDiaUtc)
-                    ->where('inicio', '<', $finDiaUtc)
-                    ->orderBy('inicio')
-                    ->get()
-                    ->map(fn (Cita $cita): RecursoCita => new RecursoCita($cita, $usuario, $this->servicioAccionesCita)),
-            ])
+            ->map(fn (Profesional $profesional): array => $this->servicioColumnaAgenda->construir(
+                $profesional,
+                $diaSemana->value,
+                $inicioDiaUtc,
+                $finDiaUtc,
+                $usuario,
+            ))
             ->values();
 
         return response()->json([

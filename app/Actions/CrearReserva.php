@@ -12,12 +12,11 @@ use App\Events\CitaCreada;
 use App\Exceptions\HoraInvalidaException;
 use App\Exceptions\HoraYaTomadaException;
 use App\Models\Cita;
-use App\Models\Cliente;
-use App\Models\CuentaCliente;
 use App\Models\Profesional;
 use App\Services\ServicioDisponibilidad;
 use App\Services\ServicioReservas;
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Facades\DB;
 
 final class CrearReserva
 {
@@ -25,68 +24,54 @@ final class CrearReserva
         private readonly ServicioReservas $servicioReservas,
         private readonly ServicioDisponibilidad $servicioDisponibilidad,
         private readonly FabricaEstadoCita $fabricaEstadoCita,
+        private readonly ResolverOCrearCliente $resolverOCrearCliente,
     ) {}
 
+    /**
+     * El Cliente se resuelve/crea solo después de confirmar que la franja
+     * sigue siendo válida, y dentro de la misma transacción que la
+     * reserva en sí (ServicioReservas::reservar() ya abre una, Laravel
+     * anida esta en esa misma conexión): así, si la hora resulta inválida
+     * o -ya con la fila del profesional bloqueada- alguien más la tomó
+     * primero, todo se revierte junto. Antes el Cliente se creaba de
+     * primero, incondicionalmente, así que cualquier intento fallido
+     * (hora pasada, horario ocupado, el profesional elegido sin cupo)
+     * dejaba un Cliente huérfano sin ninguna Cita real.
+     */
     public function ejecutar(DatosReserva $datos): Cita
     {
-        $cliente = $this->resolverCliente($datos);
-        $profesional = $datos->profesional;
+        $cita = DB::transaction(function () use ($datos): Cita {
+            $profesional = $datos->profesional;
 
-        if ($profesional === null) {
-            $profesional = $this->elegirProfesional($datos);
-        }
+            if ($profesional === null) {
+                $profesional = $this->elegirProfesional($datos);
+            }
 
-        if (! $datos->forzar && ! $this->esFranjaValida($profesional, $datos)) {
-            throw new HoraInvalidaException;
-        }
+            if (! $datos->forzar && ! $this->esFranjaValida($profesional, $datos)) {
+                throw new HoraInvalidaException;
+            }
 
-        $cita = $this->servicioReservas->reservar(
-            profesional: $profesional,
-            servicio: $datos->servicio,
-            cliente: $cliente,
-            inicio: $datos->inicio,
-            origen: $datos->origen,
-            notas: $datos->notas,
-            forzar: $datos->forzar,
-        );
+            $cliente = $this->resolverOCrearCliente->ejecutar(
+                $datos->negocio,
+                $datos->nombreCliente,
+                $datos->celularCliente,
+                $datos->correoCliente,
+            );
+
+            return $this->servicioReservas->reservar(
+                profesional: $profesional,
+                servicio: $datos->servicio,
+                cliente: $cliente,
+                inicio: $datos->inicio,
+                origen: $datos->origen,
+                notas: $datos->notas,
+                forzar: $datos->forzar,
+            );
+        });
 
         CitaCreada::dispatch($cita);
 
         return $cita;
-    }
-
-    private function resolverCliente(DatosReserva $datos): Cliente
-    {
-        $clienteExistente = Cliente::query()
-            ->where('negocio_id', $datos->negocio->id)
-            ->where('celular', $datos->celularCliente)
-            ->first();
-
-        if ($clienteExistente !== null) {
-            return $clienteExistente;
-        }
-
-        return Cliente::create([
-            'negocio_id' => $datos->negocio->id,
-            'cuenta_cliente_id' => $this->cuentaClienteParaCorreo($datos->correoCliente),
-            'nombre' => $datos->nombreCliente,
-            'celular' => $datos->celularCliente,
-            'correo' => $datos->correoCliente,
-        ]);
-    }
-
-    /**
-     * T11: si el correo de una reserva nueva (sin cuenta) ya tiene una
-     * CuentaCliente, el Cliente que se crea ahora queda enlazado de una
-     * vez, sin esperar a que esa persona vuelva a entrar con Google.
-     */
-    private function cuentaClienteParaCorreo(?string $correo): ?int
-    {
-        if ($correo === null) {
-            return null;
-        }
-
-        return CuentaCliente::query()->where('correo', $correo)->value('id');
     }
 
     /**

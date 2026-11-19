@@ -18,6 +18,8 @@ export default function PaginaResenas({ urlSalir, tokenCsrf }: Propiedades): Rea
     const [estado, setEstado] = useState('');
     const queryClient = useQueryClient();
 
+    const hayFiltrosActivos = negocioId !== null || estado !== '';
+
     const opcionesNegocio = useQuery({ queryKey: ['admin-negocios-opciones'], queryFn: obtenerOpcionesNegocio });
 
     const consulta = useQuery({
@@ -119,7 +121,7 @@ export default function PaginaResenas({ urlSalir, tokenCsrf }: Propiedades): Rea
                     idDeFila={(fila) => fila.id}
                     cargando={consulta.isLoading}
                     error={consulta.isError}
-                    mensajeVacio="No hay reseñas con estos filtros."
+                    mensajeVacio={hayFiltrosActivos ? 'No hay reseñas con estos filtros.' : 'Aún no hay reseñas.'}
                     codigoError="REF-RES1"
                     onReintentar={() => consulta.refetch()}
                     paginaActual={consulta.data?.paginaActual ?? pagina}

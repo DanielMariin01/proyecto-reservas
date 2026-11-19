@@ -27,6 +27,8 @@ final class RecursoProfesionalPublico extends JsonResource
             'color' => $this->color,
             'foto' => $this->foto !== null ? Storage::disk('public')->url($this->foto) : null,
             'servicios' => $this->servicios->pluck('id'),
+            'notaPromedio' => $this->promedio_calificacion,
+            'totalResenas' => $this->total_resenas,
         ];
     }
 }

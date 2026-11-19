@@ -6,6 +6,7 @@ use App\Actions\CrearProfesional;
 use App\DatosTransferencia\DatosNuevoProfesional;
 use App\Enums\DiaSemana;
 use App\Enums\EstadoSuscripcion;
+use App\Models\CategoriaServicio;
 use App\Models\Cita;
 use App\Models\Cliente;
 use App\Models\HorarioTrabajo;
@@ -65,6 +66,18 @@ test('GET servicios solo devuelve los visibles', function (): void {
     expect($ids)->not->toContain($servicioOculto->id);
 });
 
+test('GET servicios incluye el id de categoria para filtrar en el bloque', function (): void {
+    ['negocio' => $negocio, 'servicio' => $servicio] = negocioPublicoListo();
+    $categoria = CategoriaServicio::factory()->create(['negocio_id' => $negocio->id]);
+    $servicio->update(['categoria_servicio_id' => $categoria->id]);
+
+    $respuesta = $this->getJson("/api/publico/{$negocio->slug}/servicios");
+
+    $respuesta->assertOk();
+    $datoServicio = collect($respuesta->json('data'))->firstWhere('id', $servicio->id);
+    expect($datoServicio['categoriaServicioId'])->toBe($categoria->id);
+});
+
 test('GET profesionales solo devuelve los activos', function (): void {
     ['negocio' => $negocio, 'profesional' => $profesionalActivo] = negocioPublicoListo();
     $profesionalInactivo = Profesional::factory()->inactivo()->create(['negocio_id' => $negocio->id]);
@@ -75,6 +88,21 @@ test('GET profesionales solo devuelve los activos', function (): void {
     $ids = collect($respuesta->json('data'))->pluck('id');
     expect($ids)->toContain($profesionalActivo->id);
     expect($ids)->not->toContain($profesionalInactivo->id);
+});
+
+test('GET profesionales expone la nota promedio cacheada de cada profesional', function (): void {
+    ['negocio' => $negocio, 'profesional' => $profesionalConNota] = negocioPublicoListo();
+    $profesionalConNota->update(['promedio_calificacion' => 4.67, 'total_resenas' => 3]);
+    $profesionalSinResenas = Profesional::factory()->create(['negocio_id' => $negocio->id]);
+
+    $respuesta = $this->getJson("/api/publico/{$negocio->slug}/profesionales");
+
+    $respuesta->assertOk();
+    $datos = collect($respuesta->json('data'))->keyBy('id');
+    expect($datos[$profesionalConNota->id]['notaPromedio'])->toBe(4.67);
+    expect($datos[$profesionalConNota->id]['totalResenas'])->toBe(3);
+    expect($datos[$profesionalSinResenas->id]['notaPromedio'])->toBeNull();
+    expect($datos[$profesionalSinResenas->id]['totalResenas'])->toBe(0);
 });
 
 test('GET disponibilidad por mes devuelve el dia con horario', function (): void {
@@ -92,11 +120,12 @@ test('GET disponibilidad por fecha coincide con el motor de disponibilidad', fun
     $respuesta = $this->getJson("/api/publico/{$negocio->slug}/disponibilidad?servicio={$servicio->id}&profesional={$profesional->id}&fecha={$fecha->toDateString()}");
 
     $respuesta->assertOk();
-    $respuesta->assertJsonStructure(['data' => [['profesionalId', 'inicio', 'fin', 'fechaVisible', 'horaVisible', 'horaFinVisible']]]);
+    $respuesta->assertJsonStructure(['data' => [['profesionalId', 'inicio', 'fin', 'fechaVisible', 'horaVisible', 'horaFinVisible', 'franja']]]);
     $horas = collect($respuesta->json('data'))->pluck('horaVisible');
     expect($horas->all())->toBe(['10:00 a. m.', '11:00 a. m.']);
     expect($respuesta->json('data.0.horaFinVisible'))->toBe('11:00 a. m.');
     expect($respuesta->json('data.0.fechaVisible'))->toBe(Fecha::formatear($fecha, 'America/Bogota'));
+    expect($respuesta->json('data.0.franja'))->toBe('manana');
 });
 
 test('GET disponibilidad rechaza mandar mes y fecha juntos', function (): void {
@@ -137,6 +166,8 @@ test('POST reservas exige autorizar el tratamiento de datos', function (): void 
 
     $respuesta->assertStatus(422);
     $respuesta->assertJsonValidationErrors(['autorizacion_datos']);
+    expect($respuesta->json('errors.autorizacion_datos.0'))
+        ->toBe('El campo autorización de tratamiento de datos es obligatorio.');
 });
 
 test('POST reservas rechaza el envio si el campo trampa viene lleno', function (): void {

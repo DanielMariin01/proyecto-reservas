@@ -6,6 +6,7 @@ use App\Enums\RolNegocio;
 use App\Models\CategoriaServicio;
 use App\Models\Negocio;
 use App\Models\Servicio;
+use Illuminate\Support\Facades\Storage;
 
 test('un profesional no puede ver las paginas de servicios', function (): void {
     $negocio = Negocio::factory()->create();
@@ -43,6 +44,19 @@ test('la api lista solo los servicios del negocio actual', function (): void {
     expect($datos[0]['nombre'])->toBe('Servicio A');
 });
 
+test('la api devuelve la foto del servicio como url servible, no como la ruta cruda del disco', function (): void {
+    Storage::fake('public');
+    $negocio = Negocio::factory()->create();
+    $dueno = crearUsuarioConRol($negocio, RolNegocio::Dueno);
+    $servicio = Servicio::factory()->create(['negocio_id' => $negocio->id, 'foto' => 'servicios/corte.jpg']);
+
+    $respuesta = $this->actingAs($dueno)->getJson("/app/{$negocio->slug}/api/servicios");
+
+    $respuesta->assertOk();
+    expect($respuesta->json('data.0.foto'))->toBe(Storage::disk('public')->url('servicios/corte.jpg'));
+    expect($respuesta->json('data.0.foto'))->not->toBe($servicio->foto);
+});
+
 test('un dueno no puede editar un servicio de otro negocio aunque adivine el id', function (): void {
     $negocioA = Negocio::factory()->create();
     $negocioB = Negocio::factory()->create();
@@ -72,6 +86,24 @@ test('crear un servicio lo asocia al negocio actual', function (): void {
 
     $respuesta->assertCreated();
     $this->assertDatabaseHas('servicios', ['negocio_id' => $negocio->id, 'nombre' => 'Corte + Barba']);
+});
+
+test('la respuesta de creacion refleja los valores por defecto de visible y orden, no null', function (): void {
+    $negocio = Negocio::factory()->create();
+    $dueno = crearUsuarioConRol($negocio, RolNegocio::Dueno);
+
+    // 'visible' y 'orden' se omiten a proposito: son opcionales, y antes
+    // del fix la respuesta los devolvia en null aunque la base de datos
+    // ya tuviera el default de la columna (true/0).
+    $respuesta = $this->actingAs($dueno)->postJson("/app/{$negocio->slug}/api/servicios", [
+        'nombre' => 'Corte simple',
+        'duracion_minutos' => 30,
+        'precio' => 20000,
+    ]);
+
+    $respuesta->assertCreated();
+    expect($respuesta->json('data.visible'))->toBeTrue();
+    expect($respuesta->json('data.orden'))->toBe(0);
 });
 
 test('no se puede asignar una categoria de otro negocio al crear un servicio', function (): void {

@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import Boton from '@/componentes/Boton';
 import Tarjeta from '@/componentes/Tarjeta';
-import { actualizarHorarioSemanal, type DiasHorario, obtenerVistaPreviaDisponibilidad } from '../api/horarioSemanal';
+import { actualizarHorarioSemanal, type DiasHorario, obtenerHorarioSemanal, obtenerVistaPreviaDisponibilidad } from '../api/horarioSemanal';
 import type { Profesional } from '../api/profesionales';
 import LayoutPanelNegocio from '../LayoutPanelNegocio';
 import ModalEditarHorarioSemanal from './ModalEditarHorarioSemanal';
@@ -80,8 +80,8 @@ export default function PaginaVerProfesional({ negocioNombre, negocioSlug, urlSa
 
             {modalHorarioAbierto && (
                 <ModalEditarHorarioSemanal
-                    slug={negocioSlug}
-                    profesionalId={profesional.id}
+                    queryKey={['panel-horario-semanal', negocioSlug, profesional.id]}
+                    onObtener={() => obtenerHorarioSemanal(negocioSlug, profesional.id)}
                     enviando={mutacionGuardarHorario.isPending}
                     onGuardar={(dias) => mutacionGuardarHorario.mutateAsync(dias)}
                     onCerrar={() => setModalHorarioAbierto(false)}

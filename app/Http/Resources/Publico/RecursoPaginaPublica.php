@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Resources\Publico;
 
+use App\DatosTransferencia\DatosPopularidadServicio;
 use App\Enums\EstadoResenaValor;
 use App\Enums\FuenteTestimonios;
 use App\Enums\TipoBloque;
@@ -11,12 +12,20 @@ use App\Models\Cliente;
 use App\Models\Negocio;
 use App\Models\Pagina;
 use App\Models\Resena;
+use App\Models\Servicio;
+use App\Services\ServicioPopularidadServicios;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Storage;
 
 final class RecursoPaginaPublica extends JsonResource
 {
+    private const CANTIDAD_SERVICIOS_DESTACADOS_POR_DEFECTO = 4;
+
+    private const MINIMO_SERVICIOS_DESTACADOS = 2;
+
+    private const MAXIMO_SERVICIOS_DESTACADOS = 8;
+
     public function __construct(
         private readonly Negocio $negocio,
         private readonly ?Pagina $pagina,
@@ -66,6 +75,11 @@ final class RecursoPaginaPublica extends JsonResource
 
                 if ($tipo === TipoBloque::Testimonios->value && ($datos['fuente'] ?? null) === FuenteTestimonios::Sistema->value) {
                     $datos['testimonios'] = $this->testimoniosDelSistema();
+                    $datos['resumen'] = $this->resumenResenas();
+                }
+
+                if ($tipo === TipoBloque::ServiciosDestacados->value) {
+                    $datos['servicios'] = $this->serviciosDestacados($datos);
                 }
 
                 return ['tipo' => $tipo, 'datos' => $datos];
@@ -101,6 +115,60 @@ final class RecursoPaginaPublica extends JsonResource
     }
 
     /**
+     * `promedio_calificacion`/`total_resenas` ya se mantienen cacheados en
+     * `Negocio` por `ServicioResenas::recalcularPromedios` (patrón
+     * Observador, ver `ActualizarPromedioDeCalificaciones`) — aquí solo se
+     * exponen, sin agregación nueva.
+     *
+     * @return array{promedio: float|null, total: int}
+     */
+    private function resumenResenas(): array
+    {
+        return [
+            'promedio' => $this->negocio->promedio_calificacion,
+            'total' => $this->negocio->total_resenas,
+        ];
+    }
+
+    /**
+     * Resuelve el bloque `servicios_destacados`: toma el ranking real de
+     * `ServicioPopularidadServicios` y lo combina con los datos del
+     * servicio (igual forma que `RecursoServicioPublico`, para que React
+     * reutilice el mismo tipo `Servicio`), descartando cualquier servicio
+     * que ya no esté visible aunque siga apareciendo en citas pasadas.
+     *
+     * @param  array<string, mixed>  $datos
+     * @return array<int, array<string, mixed>>
+     */
+    private function serviciosDestacados(array $datos): array
+    {
+        $cantidad = is_int($datos['cantidad'] ?? null)
+            ? max(self::MINIMO_SERVICIOS_DESTACADOS, min(self::MAXIMO_SERVICIOS_DESTACADOS, $datos['cantidad']))
+            : self::CANTIDAD_SERVICIOS_DESTACADOS_POR_DEFECTO;
+
+        $ranking = app(ServicioPopularidadServicios::class)->topServicios($this->negocio, $cantidad);
+
+        $servicios = Servicio::query()
+            ->where('negocio_id', $this->negocio->id)
+            ->where('visible', true)
+            ->whereIn('id', $ranking->pluck('servicioId'))
+            ->with('categoriaServicio')
+            ->get()
+            ->keyBy('id');
+
+        return $ranking
+            ->filter(fn (DatosPopularidadServicio $fila): bool => $servicios->has($fila->servicioId))
+            ->map(fn (DatosPopularidadServicio $fila): array => [
+                ...RecursoServicioPublico::make($servicios->get($fila->servicioId))->resolve(),
+                'puesto' => $fila->puesto,
+                'totalReservas' => $fila->totalReservas,
+                'clientesDistintos' => $fila->clientesDistintos,
+            ])
+            ->values()
+            ->all();
+    }
+
+    /**
      * `imagen` y `fotos` guardan la ruta relativa del disco `public`
      * (igual que Servicio::foto en RecursoServicioPublico), no la URL.
      *
@@ -120,12 +188,13 @@ final class RecursoPaginaPublica extends JsonResource
             );
         }
 
-        // `testimonios` y `tarjetas` guardan la foto de cada item en una
-        // ruta anidada (datos.testimonios[].foto, datos.tarjetas[].imagen),
-        // no en las claves de nivel superior que cubre el resto de este
-        // método.
+        // `testimonios`, `tarjetas` y `mis_disenos` guardan la foto de cada
+        // item en una ruta anidada (datos.testimonios[].foto,
+        // datos.tarjetas[].imagen, datos.items[].imagen), no en las claves
+        // de nivel superior que cubre el resto de este método.
         $datos = $this->traducirRutaAnidada($datos, 'testimonios', 'foto');
         $datos = $this->traducirRutaAnidada($datos, 'tarjetas', 'imagen');
+        $datos = $this->traducirRutaAnidada($datos, 'items', 'imagen');
 
         return $datos;
     }

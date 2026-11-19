@@ -10,6 +10,7 @@ use App\Models\Profesional;
 use App\Models\Usuario;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Storage;
 use Spatie\Permission\PermissionRegistrar;
 
 test('un profesional (usuario con ese rol) no puede ver las paginas de profesionales', function (): void {
@@ -48,6 +49,19 @@ test('la api lista solo los profesionales del negocio actual', function (): void
 
     expect($datos)->toHaveCount(1);
     expect($datos[0]['nombre'])->toBe('De A');
+});
+
+test('la api devuelve la foto del profesional como url servible, no como la ruta cruda del disco', function (): void {
+    Storage::fake('public');
+    $negocio = Negocio::factory()->create();
+    $dueno = crearUsuarioConRol($negocio, RolNegocio::Dueno);
+    $profesional = Profesional::factory()->create(['negocio_id' => $negocio->id, 'foto' => 'profesionales/japo.jpg']);
+
+    $respuesta = $this->actingAs($dueno)->getJson("/app/{$negocio->slug}/api/profesionales");
+
+    $respuesta->assertOk();
+    expect($respuesta->json('data.0.foto'))->toBe(Storage::disk('public')->url('profesionales/japo.jpg'));
+    expect($respuesta->json('data.0.foto'))->not->toBe($profesional->foto);
 });
 
 test('un dueno no puede editar ni eliminar un profesional de otro negocio aunque adivine el id', function (): void {

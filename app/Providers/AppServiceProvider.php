@@ -10,9 +10,14 @@ use App\Disponibilidad\ReglaCabeEnBloque;
 use App\Disponibilidad\ReglaVentanaMaxima;
 use App\Models\CategoriaServicio;
 use App\Models\Cita;
+use App\Models\Cliente;
+use App\Models\Gasto;
+use App\Models\HistoriaClinica;
 use App\Models\Negocio;
 use App\Models\Pago;
 use App\Models\PagoSuscripcion;
+use App\Models\Pedido;
+use App\Models\Producto;
 use App\Models\Profesional;
 use App\Models\Resena;
 use App\Models\Servicio;
@@ -21,9 +26,14 @@ use App\Negocios\ContextoNegocioActual;
 use App\Observabilidad\ContextoObservabilidad;
 use App\Policies\PoliticaCategoriaServicio;
 use App\Policies\PoliticaCita;
+use App\Policies\PoliticaCliente;
+use App\Policies\PoliticaGasto;
+use App\Policies\PoliticaHistoriaClinica;
 use App\Policies\PoliticaNegocio;
 use App\Policies\PoliticaPago;
 use App\Policies\PoliticaPagoSuscripcion;
+use App\Policies\PoliticaPedido;
+use App\Policies\PoliticaProducto;
 use App\Policies\PoliticaProfesional;
 use App\Policies\PoliticaResena;
 use App\Policies\PoliticaServicio;
@@ -32,8 +42,11 @@ use App\Resenas\CadenaReglasResena;
 use App\Resenas\ReglaCitaCompletada;
 use App\Resenas\ReglaDentroDeVentanaDeResena;
 use App\Resenas\ReglaSinResenaPrevia;
+use Illuminate\Queue\Events\JobProcessing;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Str;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -73,5 +86,22 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Cita::class, PoliticaCita::class);
         Gate::policy(Pago::class, PoliticaPago::class);
         Gate::policy(Resena::class, PoliticaResena::class);
+        Gate::policy(Gasto::class, PoliticaGasto::class);
+        Gate::policy(Producto::class, PoliticaProducto::class);
+        Gate::policy(Pedido::class, PoliticaPedido::class);
+        Gate::policy(HistoriaClinica::class, PoliticaHistoriaClinica::class);
+        Gate::policy(Cliente::class, PoliticaCliente::class);
+
+        /**
+         * Equivalente a AsignarIdPeticion pero para trabajos en cola: un
+         * worker (php artisan queue:work) es un solo proceso de larga
+         * duración que procesa muchos trabajos, así que sin esto todos
+         * compartirían el id_peticion que generó perezosamente el primero
+         * (ContextoObservabilidad es singleton). Se fija uno nuevo al
+         * empezar cada trabajo, igual que la petición web.
+         */
+        Queue::before(function (JobProcessing $evento): void {
+            app(ContextoObservabilidad::class)->definirIdPeticion((string) Str::uuid());
+        });
     }
 }

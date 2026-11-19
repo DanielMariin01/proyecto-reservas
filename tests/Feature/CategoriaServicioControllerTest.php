@@ -70,6 +70,10 @@ test('crear una categoria la asocia al negocio actual', function (): void {
 
     $respuesta->assertCreated();
     $this->assertDatabaseHas('categorias_servicio', ['negocio_id' => $negocio->id, 'nombre' => 'Barba']);
+    // 'orden' se omitio a proposito: es opcional, y antes del fix la
+    // respuesta lo devolvia en null aunque la base de datos ya tuviera el
+    // default de la columna (0).
+    expect($respuesta->json('data.orden'))->toBe(0);
 });
 
 test('eliminar una categoria la borra', function (): void {

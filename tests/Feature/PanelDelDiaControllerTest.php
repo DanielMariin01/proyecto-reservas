@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 use App\Actions\CrearProfesional;
 use App\DatosTransferencia\DatosNuevoProfesional;
+use App\Enums\DiaSemana;
 use App\Enums\RolNegocio;
 use App\Models\Cita;
 use App\Models\Cliente;
+use App\Models\HorarioTrabajo;
 use App\Models\Negocio;
 use App\Models\Pago;
 use App\Models\Servicio;
@@ -65,4 +67,28 @@ test('la api del panel del dia solo cuenta las citas e ingresos del negocio actu
     expect($respuesta->json('totalCitasHoy'))->toBe(1);
     expect($respuesta->json('ingresosRegistrados'))->toBe(20000);
     expect($respuesta->json('citas.0.clienteNombre'))->toBe('Juan');
+});
+
+test('la api reparte un hueco libre que cruza dos franjas entre ambas', function (): void {
+    CarbonImmutable::setTestNow(CarbonImmutable::parse('2026-11-03 08:00:00', 'America/Bogota'));
+
+    $negocio = Negocio::factory()->create(['zona_horaria' => 'America/Bogota']);
+    $dueno = crearUsuarioConRol($negocio, RolNegocio::Dueno);
+    $profesional = app(CrearProfesional::class)->ejecutar(new DatosNuevoProfesional(negocio: $negocio, nombre: 'Japo'));
+
+    HorarioTrabajo::factory()->create([
+        'negocio_id' => $negocio->id,
+        'profesional_id' => $profesional->id,
+        'dia_semana' => DiaSemana::from(CarbonImmutable::now('America/Bogota')->dayOfWeek),
+        'hora_inicio' => '09:00:00',
+        'hora_fin' => '14:00:00',
+    ]);
+
+    $respuesta = $this->actingAs($dueno)->getJson("/app/{$negocio->slug}/api/panel-del-dia");
+
+    $respuesta->assertOk();
+    expect($respuesta->json('huecosLibres.0.bloques'))->toBe([
+        ['franja' => 'manana', 'texto' => '9:00 a. m. – 12:00 p. m.'],
+        ['franja' => 'tarde', 'texto' => '12:00 p. m. – 2:00 p. m.'],
+    ]);
 });

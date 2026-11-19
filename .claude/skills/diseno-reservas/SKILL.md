@@ -28,6 +28,7 @@ Antes de escribir una pantalla:
   --tinta: #3E4043;
   --blanco: #FFFFFF;
   --fondo-panel: #F6F8FC;
+  --exito: #22C55E;
 
   /* Tipografía */
   --fuente-base: 'Asap', sans-serif;
@@ -45,6 +46,7 @@ Reglas:
 - Prohibido escribir colores hexadecimales, sombras o radios sueltos en los componentes. Todo sale de estos tokens (en Tailwind: `bg-primario`, `text-tinta`, `rounded-tarjeta`, `rounded-boton`, `shadow-tarjeta`).
 - Fuente Asap desde Google Fonts, pesos 400, 500, 600 y 700.
 - Espaciados en múltiplos de 4 px (4, 8, 12, 16, 24, 32, 48).
+- `--exito` es el único verde de la paleta: solo para el estado ON de un interruptor (`CampoInterruptor`). No se usa en texto ni en botones — por eso no entra en la tabla de contraste de abajo, que es solo para texto.
 
 **Excepción puntual — página pública (`/{slug}` y el flujo de reserva, sección 3 a 5):** usa la pila de fuentes del sistema (`-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif`) en vez de Asap, vía la clase `.fuente-publica` (`resources/css/app.css`) aplicada en el `<main>` de `resources/js/PaginaNegocio.tsx`. Es para que la página pública cargue sin depender de la descarga de Asap vía Google Fonts y se sienta nativa en cada dispositivo — los paneles de Filament no tienen ese objetivo y **siguen con Asap** (su propio `->font('Asap', ...)` en `AdminPanelProvider`/`AppPanelProvider`, sin relación con esta clase). **No uses esto como precedente** para cambiar la fuente en ningún panel ni en ningún otro componente: es una excepción acotada a este único contenedor.
 
@@ -61,7 +63,7 @@ Reglas:
 
 ### Color libre de bloque (única excepción a "nunca colores sueltos")
 
-Todos los bloques de contenido (sección 6.1: `barra_promocion`, `texto`, `texto_con_imagen`, `banner_oferta`, `testimonios`, `tarjetas`, `equipo`, `servicios`, `cursos`, `productos`, `galeria`, `ubicacion`, `whatsapp`) no usan los tokens de color en su fondo/texto — cada uno tiene 2 campos de color libre (`colorFondo`/`colorTexto`, un `ColorPicker` en el Builder, reutilizando el mismo helper `camposColorLibre()`) para que el super admin arme la paleta exacta de cada sección. Esta es la **única** excepción permitida a la regla de "prohibido escribir colores sueltos" de arriba; el resto del sistema (botones, tarjetas, paneles, componentes base) sigue solo con tokens — incluidas las tarjetas blancas dentro de estos bloques (`equipo`, `servicios`, `testimonios`, `tarjetas`), que mantienen su texto `--tinta` fijo sin importar el color del fondo de la sección.
+Todos los bloques de contenido (sección 6.1: `barra_promocion`, `texto`, `texto_con_imagen`, `banner_oferta`, `testimonios`, `tarjetas`, `equipo`, `servicios`, `servicios_destacados`, `cursos`, `productos`, `galeria`, `ubicacion`, `whatsapp`) no usan los tokens de color en su fondo/texto — cada uno tiene 2 campos de color libre (`colorFondo`/`colorTexto`, un `ColorPicker` en el Builder, reutilizando el mismo helper `camposColorLibre()`) para que el super admin arme la paleta exacta de cada sección. Esta es la **única** excepción permitida a la regla de "prohibido escribir colores sueltos" de arriba; el resto del sistema (botones, tarjetas, paneles, componentes base) sigue solo con tokens — incluidas las tarjetas blancas dentro de estos bloques (`equipo`, `servicios`, `testimonios`, `tarjetas`), que mantienen su texto `--tinta` fijo sin importar el color del fondo de la sección.
 
 `encabezado`, `pie_de_pagina` y `portada` quedan fuera de este sistema (fondo fijo o capa de legibilidad, ver abajo) — no son "contenido de marca" sino chrome del sitio o una foto de fondo.
 
@@ -96,6 +98,11 @@ Todas las pantallas se arman con estos componentes. Si falta uno, se crea aquí 
 | `SelectorDeHora` | Botón de ancho completo, alto 44 px, borde `--gris-claro`, radio 8 px, hora en negrita centrada. Seleccionado: fondo `--primario`, texto blanco. |
 | `CalendarioMes` | Ver sección 3. |
 | `LineaDetalle` | Ícono de Lucide de 18 px en `--texto-suave` + texto, para duración, fecha, empleado, dirección, servicio y precio. |
+| `CampoSelect` | Mismo alto/borde/radio que `CampoTexto`, pero `<select>` con lista de opciones `{valor, etiqueta}` y `placeholder` opcional. |
+| `CampoTextoLargo` | Mismo tratamiento visual que `CampoTexto`, pero `<textarea>` (3 filas por defecto) para texto libre largo. |
+| `CampoCasilla` | Casilla de selección múltiple (varias a la vez), distinta de `CampoInterruptor` que es un sí/no único. |
+| `Acordeon` | Sección colapsable: encabezado de 56 px con título y chevron (gira 180° abierta), contenido con borde superior `--gris-claro`. El padre controla qué sección está abierta (una a la vez) — ver "Historia clínica" en la sección 7. |
+| `PadFirma` | Firma dibujada a mano sobre `<canvas>` (160 px de alto, borde `--gris-claro`, radio 8 px): se dibuja con mouse o dedo (eventos de puntero) y se exporta como PNG en base64. Si ya hay una firma guardada, muestra la imagen con un botón "Firmar de nuevo" en vez del canvas en blanco. |
 
 Íconos: solo **Lucide** (`lucide-react`), trazo 1,75, mismo tamaño en cada contexto. `clock` para duración/hora, `calendar` para fecha, `user` para empleado, `building-2` para dirección, `scissors` para el servicio, `banknote` para el precio, `x` para cerrar.
 
@@ -150,6 +157,17 @@ Basado en el checkout de Hostinger Ecommerce, corregido.
 - Botones: "Agregar a mi calendario" (descarga .ics), "Escribir por WhatsApp" (enlace wa.me con mensaje prellenado), "Cómo llegar" (Google Maps).
 - Texto: "Te enviamos la confirmación a tu correo. Desde ahí puedes cancelar o cambiar la hora."
 
+## 5.1 Patrón: carrito y compra
+
+Módulo de tienda v1 (sin variantes ni inventario — eso queda para una fase posterior). Mismo espíritu que las secciones 3 a 5 (ventana de reserva, datos y confirmación, éxito), pero 3 pasos en vez de 5 porque no hay que elegir fecha ni hora: **Carrito → Datos y entrega → Éxito**.
+
+- **Agregar al producto**: el botón "Agregar al carrito" del bloque `productos` abre el carrito de una vez (no hace falta un ícono aparte para verlo). Mientras el carrito no esté vacío, un botón flotante circular `--primario` abajo a la derecha (visible en toda la página pública, como el de WhatsApp pero para el carrito) muestra el número de unidades y lo vuelve a abrir.
+- **Carrito**: tarjeta centrada (ancho máximo ~448 px), igual radio/sombra que el resto de tarjetas. Cada línea: foto o ícono de respaldo 56 px, nombre, precio, selector de cantidad (botones − / + alrededor del número) y botón de quitar (ícono de papelera). Total en 18 px peso 700 debajo de la lista. `Boton principal` "Continuar" de ancho completo (no se muestra si el carrito quedó vacío). Botón de cerrar circular oscuro arriba a la derecha, igual que el resto de los flujos; tecla Esc también cierra.
+- **Datos y entrega**: mismas dos columnas de la sección 4 (formulario 55 %, resumen 45 % en `--fondo-panel`), con una sección "Entrega" nueva entre "Tus datos" y "Nota": radio "Recoger en el local" / "Domicilio"; si elige domicilio, aparece un campo "Barrio" obligatorio — **nunca** dirección exacta ni código postal, igual que la regla general de la sección 4. El resto es igual: contacto (correo), datos (nombre y celular), nota opcional, bloque de pago manual, casilla de autorización de datos (Ley 1581), y el resumen de la derecha lista cada producto con su cantidad y subtotal, más el total. El botón final dice "Confirmar pedido", no "Confirmar reserva".
+- **Éxito**: igual que la sección 5 (ícono de verificación, tarjeta con el resumen), pero sin "Agregar a mi calendario" (no aplica a un pedido): queda "Cómo llegar" solo si la entrega es "recoger" (con dirección) y "Escribir por WhatsApp" siempre que el negocio tenga número. Título "¡Tu pedido quedó registrado!" y texto "Te avisaremos cuando tu pedido esté listo."
+- El pedido completo (todos los productos del carrito, cantidades y datos) se envía en **una sola petición** al confirmar — no hay un carrito con cuenta en el servidor antes de eso.
+- **Celular**: mismo resumen plegable ("Ver resumen · $Total") que la sección 4.
+
 ## 6. Bloques de la página pública
 
 Cada bloque es un componente registrado por tipo. El super admin arma la página agregando, quitando y reordenando bloques de este catálogo en el Builder — **ningún bloque es obligatorio para todos los negocios**: si un negocio no vende productos, no agrega ese bloque; si otro sí, lo agrega. Reglas comunes: ancho máximo 1200 px centrado, relleno vertical 64 px (40 px en celular), título de sección en 30-36 px peso 700 según pantalla (o el `colorTexto` libre del bloque, ver más abajo).
@@ -159,13 +177,15 @@ Cada bloque es un componente registrado por tipo. El super admin arma la página
 | `barra_promocion` | Franja angosta, color libre. Texto corto + botón de texto opcional + botón de cerrar (x). |
 | `encabezado` | Color libre. Logo a la izquierda, enlaces de navegación al centro, ícono `log-in` a la derecha (enlaza a `/ingresar`, sin verificar sesión). |
 | `portada` | Foto de fondo a pantalla completa con capa de legibilidad (ver sección 1). Insignia con el tipo de negocio + título muy grande arriba a la izquierda; fila de ubicación/horario; descripción; 2 botones; fila de hasta 4 íconos con etiqueta; texto decorativo opcional. |
-| `equipo` | Color libre. Cuadrícula de `Tarjeta` con foto cuadrada, nombre, especialidad y botón "Reservar con {nombre}". |
+| `equipo` | Color libre. Carrusel (componente base `Carrusel`) de `Tarjeta` con avatar circular, nombre, especialidad, nota con estrella (si tiene reseñas publicadas) y botón "Reservar con {nombre}". |
 | `servicios` | Color libre. Tarjetas con ícono de tijeras, foto cuadrada, nombre, descripción, "$20.000 · 45 min" y botón "Agendar". |
+| `servicios_destacados` | Color libre. Carrusel de "Lo más pedido": ranking real por citas completadas (no manual), con badge "N.º X en reservas" y botón "Ver todos los servicios" que lleva al bloque `servicios`. |
 | `cursos` | Color libre. Tarjeta por fecha: nombre, fecha y hora, "Quedan 3 cupos" en `--secundario`, precio, botón "Inscribirme"; agotado en gris. |
-| `productos` | Color libre. Cuadrícula de tarjetas con foto, nombre, precio y botón "Agregar". |
+| `productos` | Color libre. Cuadrícula de tarjetas con foto, nombre, precio y botón "Agregar al carrito" (ver sección 5.1). |
 | `texto` | Color libre. Título y párrafo de máximo 70 caracteres por línea. |
 | `texto_con_imagen` | Color libre. Modo simple (párrafo con una frase resaltada) o modo "motivos" (etiqueta + título + grid 2×2 de ícono/título/descripción) si se agrega al menos un motivo — mismo bloque, dos formas de verse. Foto con texto decorativo opcional del otro lado. |
 | `galeria` | Color libre. Cuadrícula de fotos cuadradas con vista ampliada al tocar. |
+| `mis_disenos` | Color libre. Igual que `galeria` (cuadrícula con vista ampliada al tocar) pero cada ítem tiene imagen + título + descripción — portafolio de trabajos del negocio (ej. diseños de uñas), contenido manual. |
 | `tarjetas` | Color libre. Tarjetas repetidas genéricas (imagen + título opcional + descripción), 1 a 3 columnas elegidas por el super admin — contenido manual, sin atarse a ningún modelo. |
 | `banner_oferta` | Color libre. Etiqueta + título + descripción + botón de un lado; foto con texto decorativo opcional del otro. |
 | `testimonios` | Color libre. Tarjetas con cita, estrellas (1-5), foto y nombre — contenido manual (ver sección 6.1). |
@@ -202,10 +222,27 @@ Igual de detallado que la ventana de reserva (sección 3), porque esta plantilla
 
 **`servicios`** (ajuste visual sobre el bloque ya existente, más color libre)
 - Ícono fijo de tijeras + foto + nombre + descripción + precio/duración + botón "Agendar", en `Tarjeta`.
+- Buscador de texto (siempre visible si hay al menos 1 servicio) y barra de categorías en píldoras (filtro client-side por `categoria_servicio_id`, oculta si el negocio tiene 1 categoría o ninguna).
+- El bloque suma 3 campos de color libre propios, además de `colorFondo`/`colorTexto` de la sección: `colorTitulo` (color del "Servicios", por defecto el mismo `colorTexto`) y `colorFondoCategorias`/`colorTextoCategorias` (la píldora de la categoría activa — por defecto `--celeste`/`--primario`, el mismo aspecto que ya tenía). Las píldoras inactivas quedan siempre neutras (`--gris-claro`/`--texto-suave`), sin personalizar.
 - **Celular**: cuadrícula de 1 columna (ya lo hacía).
 
-**`equipo`, `cursos`, `productos`, `ubicacion`, `whatsapp`** (sin cambios de diseño en esta plantilla, solo color libre)
+**`servicios_destacados`** (bloque nuevo)
+- Carrusel (mismo componente base `Carrusel` que `equipo`) de tarjetas horizontales (foto o ícono de respaldo + texto): badge "N.º X en reservas" en `--primario`, nombre, precio/duración, "N clientes lo reservaron" si hay datos, botón "Agendar".
+- El ranking **no es manual**: sale de `App\Services\ServicioPopularidadServicios` (citas `completada` reales, últimos 90 días, con caída al histórico completo si el negocio no tiene suficientes). El super admin solo elige la cantidad a mostrar (2 a 6) y el color libre.
+- Encabezado con "Lo más pedido" + botón "Ver todos los servicios" que hace scroll al bloque `servicios` (si el negocio no agregó ese bloque, el botón simplemente no hace nada visible).
+- **Sin calificación de estrellas/reseñas**: igual que `portada`, no se mezcla con el sistema de reseñas.
+- **Celular**: el carrusel se desliza con el dedo (scroll nativo), sin flechas visibles (mismo comportamiento que `equipo`).
+
+**`equipo`** (carrusel con nota real, en vez del grid fijo anterior)
+- Componente base `Carrusel` (flechas circulares 40 px, gap 16, scroll nativo con scroll-snap) con tarjetas de ancho fijo: avatar circular (o ícono de respaldo si no hay foto), nombre, especialidad y, si el profesional tiene reseñas publicadas, una fila con estrella `--secundario` + nota (`4.7`). Sin reseñas, esa fila simplemente no aparece — no se inventa una nota en cero.
+- La nota viene de `promedio_calificacion`/`total_resenas`, ya cacheados en `Profesional` (ver sección 14.6/observador de reseñas) — no es un dato manual.
+- **Celular**: el carrusel se desliza con el dedo (scroll nativo), sin flechas visibles.
+
+**`cursos`, `ubicacion`, `whatsapp`** (sin cambios de diseño en esta plantilla, solo color libre)
 - Mismo diseño que ya tenían (ver tabla de arriba); el color libre no cambia su comportamiento responsive.
+
+**`productos`**
+- Mismo diseño de tarjeta que ya tenía (ver tabla de arriba), ahora con datos reales: "Agregar al carrito" abre el flujo de la sección 5.1 en vez de no hacer nada.
 
 **`texto`**
 - Color libre. Título y párrafo **centrados**, mismo contenedor (`max-w-3xl` centrado), espaciado consistente (margen superior en el párrafo, no margen inferior solo en el título) para que ambos compartan la misma alineación en cualquier tamaño de pantalla.
@@ -218,6 +255,11 @@ Igual de detallado que la ventana de reserva (sección 3), porque esta plantilla
 
 **`galeria`** (sin cambios de diseño en esta plantilla, solo color libre)
 - Cuadrícula de fotos cuadradas, 2 columnas en celular, 4 en escritorio, con vista ampliada al tocar.
+
+**`mis_disenos`** (bloque nuevo)
+- Misma cuadrícula y vista ampliada que `galeria`, pero cada ítem agrega título y descripción centrados debajo de la imagen (se repiten también en la vista ampliada, como pie de foto) — portafolio de trabajos (ej. diseños de uñas), contenido 100 % manual (imagen, título y descripción elegidos a mano por el super admin, `Repetidor` + `CampoImagenBloque`, máximo 12 ítems). Cada ítem lleva además un `id` (ULID) estable, invisible en pantalla, para los diseños favoritos de abajo.
+- **Diseños favoritos (sección 19 de requerimientos.md, RF-HCL-08-b):** si hay una cuenta de cliente con sesión activa, cada ítem suma un corazón (`Heart` de Lucide) en la esquina superior derecha de la imagen — vacío si no es favorito, relleno en `--primario` si ya lo es — que lo marca o desmarca en `/mi-cuenta`. **Esta es la única excepción** a que la página pública nunca verifica sesión de cliente (ver `encabezado`, arriba): el corazón solo existe en este bloque; el resto de la página pública sigue sin saber si hay alguien autenticado. Sin sesión, el bloque se ve exactamente igual que antes de esta tarea, sin corazón.
+- **Celular**: 2 columnas, igual que `galeria`.
 
 **`tarjetas`**
 - Genérico y manual (servicios destacados, pasos de un proceso, lo que el negocio necesite) — no se ata a ningún modelo de datos. Cada tarjeta: imagen arriba (relación 1:1, solo `--radio-boton` en la imagen — menos pronunciado que `--radio-tarjeta` a propósito, para que la foto se sienta más grande y menos "enmarcada") + título opcional + descripción corta, **centrados** debajo de la imagen — **sin** el contenedor `Tarjeta` (sin fondo blanco, sombra ni radio en un recuadro propio): la imagen y el texto quedan directo sobre el fondo de la sección.
@@ -267,12 +309,24 @@ Los campos "ícono" de `portada` y `texto_con_imagen` (modo motivos) eligen de u
 
 El negocio no define un color libre para su identidad de marca: el super admin le asigna una paleta con nombre de una lista reutilizable (tabla `paletas_marca`), pensada para crecer sin tocar código. Cada paleta tiene `color_primario` y `color_secundario`; `color_primario` debe cumplir AA con texto blanco (mínimo 4,5:1) para poder guardarse — lo valida `App\Services\CalculadoraContraste`, y a diferencia del color libre de bloque (sección 1), aquí **sí bloquea**. Paletas iniciales: "Color Barbería" (`#1B263B` / `#415A77`, 15,1:1) y "Color Uñas" (`#C2185B` / `#F06292`, 5,9:1).
 
-## 7. Paneles (Filament)
+## 7. Paneles (`admin` y `app`, Laravel + React)
 
-- Tema personalizado: `--primario` como color primario, `--secundario` como éxito, fuente Asap, radios y sombras de la guía.
-- Agenda por columnas de empleado con el color de cada empleado en el borde izquierdo de la cita.
-- Vista "Hoy" del empleado pensada para celular: tarjetas grandes con hora, cliente, servicio, `Insignia` de estado y acciones visibles sin menús ocultos.
-- **Builder de bloques de página** (`NegocioForm`): usa el soporte nativo de Filament 5 para no obligar a hacer scroll por una lista larga — `->collapsible()->collapsed()` (cada bloque empieza contraído, con botón individual y "colapsar/expandir todo"), `->blockNumbers(false)` (sin número, solo label) y `Block::make(...)->icon(...)` con un ícono Heroicon por tipo de bloque, para reconocerlo sin expandirlo. Nunca construir esto a mano si Filament ya lo trae.
+Los dos paneles son Laravel + React, sin Filament — mismos tokens que el resto del sistema (`--primario`, `--secundario`, fuente Asap, radios y sombras de la guía).
+
+**Agenda del día** (dueño/recepción, RF-RES-07):
+
+- Arriba, un selector de profesionales en chips: foto circular de 44px (o un círculo con su color e inicial si no tiene foto) + nombre; selección única — el profesional activo se resalta con borde `--primario` y fondo `--celeste`, el resto queda neutro. No hay varios calendarios abiertos a la vez.
+- Debajo, el horario del profesional seleccionado como una grilla de franjas de 1 hora (7:00, 8:00, 9:00…), según su horario de trabajo real de ese día — si no trabaja ese día, el mensaje "No trabaja este día" en vez de una grilla vacía. Dentro de la franja que ocupa una cita se dibuja su tarjeta completa, con alto proporcional a la duración real (una cita de 45 min no llena una franja de 60); las franjas sin cita quedan visualmente libres. El borde izquierdo de cada tarjeta lleva el color del profesional, igual que antes.
+- **Acciones de una cita**: la tarjeta es un solo botón clickeable (`cursor-pointer`, `hover:bg-fondo-panel`) — no muestra los botones de acción sueltos. Al hacer clic se abre un modal "Acciones de la cita" con el resumen arriba y cada acción disponible como botón con ícono (`Banknote` completar y pagar, `CheckCircle` cambiar estado, `CalendarClock` reprogramar, `XCircle` cancelar, `RotateCcw` anular pago); elegir una abre el modal específico de siempre. La lista general de citas (tabla) no sigue este patrón: ahí las acciones siguen visibles directo en la fila, con los mismos íconos.
+- Vista "Mis citas de hoy" del profesional (celular): sigue con tarjetas grandes, hora, cliente, servicio e `Insignia` de estado — ese flujo no cambió.
+
+**Editar horario semanal** (del perfil del profesional): en vez de una lista de 7 tarjetas de día todas abiertas a la vez, una fila de 7 círculos de día (Do-Sá, mismo componente visual que los círculos de `CalendarioMes`: seleccionado con borde `--primario` y fondo `--celeste`, un punto debajo del día si ya tiene horario configurado) — al tocar un día aparecen debajo su interruptor de disponible/no disponible y sus rangos de hora, igual que en la reserva pública aparecen las horas debajo del día elegido en el calendario.
+
+**Builder de bloques de página** (panel admin, RF-BLQ-03): componente React propio (`BuilderBloques`) — formulario por tipo de bloque, botones para moverlo arriba/abajo (sin arrastrar), vista previa en una pestaña nueva y publicar.
+
+**Historia clínica** (solo negocios tipo spa, sección 19 de requerimientos.md): el formulario de 7 secciones se arma con `Acordeon` — una sección abierta a la vez, igual que el formulario físico original — en vez de todos los campos en una sola pantalla larga. Las firmas de la clienta y de la profesional usan `PadFirma`. La sección 1 ("Datos básicos") muestra el nombre/documento/celular del cliente como texto de solo lectura (vienen de su ficha, no se repiten ni se editan aquí) y solo deja escoger la fecha de la visita y el profesional.
+
+**Productos y Pedidos** (dueño, módulo de tienda v1): CRUD de productos mirror exacto del de Servicios (lista con foto/nombre/precio/visible y reordenar, crear, editar) — sin categoría ni campos de duración/márgenes, que no aplican. Pantalla "Pedidos": tabla (fecha, cliente, productos, entrega, total, estado) sin acciones sueltas en la fila; un botón "Acciones" por pedido abre el modal "Acciones del pedido" con el resumen arriba, el formulario de "Marcar como pagado" (método + valor) si aplica, y un botón por cada estado al que puede pasar — mismo espíritu que el modal de acciones de una cita, pero sin reprogramación ni distinción de "propio profesional" (no existen para un pedido).
 
 ## 8. Estados obligatorios en cada pantalla
 

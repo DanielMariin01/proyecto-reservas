@@ -6,11 +6,12 @@ namespace App\Enums;
 
 /**
  * RF-BLQ-03/14.3: los tipos de bloque que el super admin puede agregar al
- * armar la página (skill diseno-reservas, sección 6). Cursos y productos
- * ya están aquí porque RF-BLQ-04 pide que el registro de tipos no cambie
- * cuando se agregue uno nuevo, pero su contenido real (RF-CUR, tienda)
- * es de Fase 2/3: mientras tanto el bloque se guarda y se puede ordenar,
- * pero React lo muestra como "Próximamente".
+ * armar la página (skill diseno-reservas, sección 6). `Cursos` sigue aquí
+ * porque RF-BLQ-04 pide que el registro de tipos no cambie cuando se
+ * agregue uno nuevo, pero su contenido real (RF-CUR, Fase 2) todavía no
+ * existe: mientras tanto el bloque se guarda y se puede ordenar, pero
+ * React lo muestra como "Próximamente". `Productos` ya tiene su modelo
+ * real (módulo de tienda v1) y quedó disponible.
  */
 enum TipoBloque: string
 {
@@ -19,11 +20,13 @@ enum TipoBloque: string
     case Portada = 'portada';
     case Equipo = 'equipo';
     case Servicios = 'servicios';
+    case ServiciosDestacados = 'servicios_destacados';
     case Cursos = 'cursos';
     case Productos = 'productos';
     case Texto = 'texto';
     case TextoConImagen = 'texto_con_imagen';
     case Galeria = 'galeria';
+    case MisDisenos = 'mis_disenos';
     case Tarjetas = 'tarjetas';
     case BannerOferta = 'banner_oferta';
     case Testimonios = 'testimonios';
@@ -39,11 +42,13 @@ enum TipoBloque: string
             self::Portada => 'Portada',
             self::Equipo => 'Nuestro equipo',
             self::Servicios => 'Servicios',
+            self::ServiciosDestacados => 'Servicios destacados',
             self::Cursos => 'Cursos',
             self::Productos => 'Productos',
             self::Texto => 'Texto',
             self::TextoConImagen => 'Texto con imagen',
             self::Galeria => 'Galería',
+            self::MisDisenos => 'Mis diseños',
             self::Tarjetas => 'Tarjetas en columnas',
             self::BannerOferta => 'Banner de oferta',
             self::Testimonios => 'Testimonios',
@@ -54,11 +59,11 @@ enum TipoBloque: string
     }
 
     /**
-     * Fase 2/3: el bloque existe en el registro pero no tiene datos reales
-     * detrás todavía (no hay modelos Curso/Producto).
+     * Fase 2: el bloque existe en el registro pero no tiene datos reales
+     * detrás todavía (no hay modelo Curso).
      */
     public function disponible(): bool
     {
-        return $this !== self::Cursos && $this !== self::Productos;
+        return $this !== self::Cursos;
     }
 }

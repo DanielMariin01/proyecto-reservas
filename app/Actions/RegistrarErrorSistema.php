@@ -44,7 +44,7 @@ final class RegistrarErrorSistema
             'negocio_id' => $this->contexto->negocioId(),
             'usuario_id' => $this->contexto->usuarioId(),
             'id_peticion' => $idPeticion,
-            'codigo_referencia' => $this->generarCodigo->ejecutar($idPeticion ?? ''),
+            'codigo_referencia' => $this->generarCodigo->ejecutar($idPeticion),
             'clase_excepcion' => $excepcion::class,
             'mensaje' => $excepcion->getMessage() !== '' ? $excepcion->getMessage() : $excepcion::class,
             'ruta' => $peticion->path(),

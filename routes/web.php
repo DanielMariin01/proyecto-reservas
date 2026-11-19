@@ -25,15 +25,24 @@ use App\Http\Controllers\App\BloqueoController;
 use App\Http\Controllers\App\CategoriaServicioController;
 use App\Http\Controllers\App\CitaAccionesController;
 use App\Http\Controllers\App\CitaController;
+use App\Http\Controllers\App\ClienteController;
+use App\Http\Controllers\App\FinanzasController;
+use App\Http\Controllers\App\HistoriaClinicaController;
 use App\Http\Controllers\App\MiHorarioController;
 use App\Http\Controllers\App\MisCitasHoyController;
 use App\Http\Controllers\App\PaginaAgendaDelDiaController;
 use App\Http\Controllers\App\PaginaCategoriaServicioController;
 use App\Http\Controllers\App\PaginaCitaController;
+use App\Http\Controllers\App\PaginaClienteController;
+use App\Http\Controllers\App\PaginaFinanzasController;
+use App\Http\Controllers\App\PaginaHistoriaClinicaController;
+use App\Http\Controllers\App\PaginaMiAgendaController;
 use App\Http\Controllers\App\PaginaMiHorarioController;
 use App\Http\Controllers\App\PaginaMisCitasHoyController;
 use App\Http\Controllers\App\PaginaPaginaWebController;
 use App\Http\Controllers\App\PaginaPanelDelDiaController;
+use App\Http\Controllers\App\PaginaPedidoController;
+use App\Http\Controllers\App\PaginaProductoController;
 use App\Http\Controllers\App\PaginaProfesionalController;
 use App\Http\Controllers\App\PaginaResenaController as PaginaResenaAppController;
 use App\Http\Controllers\App\PaginaServicioController;
@@ -41,15 +50,22 @@ use App\Http\Controllers\App\PaginaUsuarioController as PaginaUsuarioAppControll
 use App\Http\Controllers\App\PaginaWebController as PaginaWebAppController;
 use App\Http\Controllers\App\PanelDelDiaController;
 use App\Http\Controllers\App\PanelNegocioController;
+use App\Http\Controllers\App\PedidoAccionesController;
+use App\Http\Controllers\App\PedidoController;
+use App\Http\Controllers\App\ProductoController;
 use App\Http\Controllers\App\ProfesionalController;
 use App\Http\Controllers\App\ProfesionalHorarioController;
 use App\Http\Controllers\App\ProfesionalServicioController;
 use App\Http\Controllers\App\ResenaController as ResenaAppController;
 use App\Http\Controllers\App\ServicioController;
+use App\Http\Controllers\App\UsuarioActualController;
 use App\Http\Controllers\App\UsuarioController as UsuarioAppController;
 use App\Http\Controllers\Cliente\AreaClienteController;
 use App\Http\Controllers\Cliente\CitasClienteController;
+use App\Http\Controllers\Cliente\DisenoFavoritoController;
+use App\Http\Controllers\Cliente\EstadisticasController;
 use App\Http\Controllers\Cliente\GoogleAuthController;
+use App\Http\Controllers\Cliente\HistorialClinicoController;
 use App\Http\Controllers\Cliente\SesionClienteController;
 use App\Http\Controllers\ElegirNegocioController;
 use App\Http\Controllers\EstadoController;
@@ -57,6 +73,7 @@ use App\Http\Controllers\GestionarCitaVistaController;
 use App\Http\Controllers\PaginaNegocioController;
 use App\Http\Controllers\RestablecimientoContrasenaController;
 use App\Http\Controllers\SesionController;
+use App\Http\Controllers\SolicitarRestablecimientoContrasenaController;
 use App\Http\Controllers\SuplantacionController;
 use App\Http\Middleware\ResolverNegocioDesdeRuta;
 use App\Http\Middleware\VerificarNegocioAceptaReservas;
@@ -75,6 +92,9 @@ Route::post('/ingresar', [SesionController::class, 'iniciar']);
 // paneles eran de Filament.
 Route::redirect('/admin/login', '/ingresar');
 Route::redirect('/app/login', '/ingresar');
+
+Route::get('/olvide-contrasena', [SolicitarRestablecimientoContrasenaController::class, 'mostrar'])->name('password.request');
+Route::post('/olvide-contrasena', [SolicitarRestablecimientoContrasenaController::class, 'enviar'])->name('password.email');
 
 Route::get('/restablecer-contrasena/{token}', [RestablecimientoContrasenaController::class, 'mostrar'])->name('password.reset');
 Route::post('/restablecer-contrasena', [RestablecimientoContrasenaController::class, 'actualizar'])->name('password.update');
@@ -187,6 +207,15 @@ Route::middleware(['auth', ResolverNegocioDesdeRuta::class])->prefix('app/{negoc
     Route::get('/servicios/create', [PaginaServicioController::class, 'create'])->name('app.servicios.create');
     Route::get('/servicios/{servicio}/edit', [PaginaServicioController::class, 'edit'])->name('app.servicios.edit');
 
+    // Modulo de tienda (v1 simple, sin variantes ni inventario): CRUD de
+    // productos del negocio; la gestion de pedidos llega en una tarea
+    // aparte.
+    Route::get('/productos', [PaginaProductoController::class, 'index'])->name('app.productos.index');
+    Route::get('/productos/create', [PaginaProductoController::class, 'create'])->name('app.productos.create');
+    Route::get('/productos/{producto}/edit', [PaginaProductoController::class, 'edit'])->name('app.productos.edit');
+
+    Route::get('/pedidos', [PaginaPedidoController::class, 'index'])->name('app.pedidos.index');
+
     Route::get('/categorias-servicio', [PaginaCategoriaServicioController::class, 'index'])->name('app.categorias-servicio.index');
     Route::get('/categorias-servicio/create', [PaginaCategoriaServicioController::class, 'create'])->name('app.categorias-servicio.create');
     Route::get('/categorias-servicio/{categoriaServicio}/edit', [PaginaCategoriaServicioController::class, 'edit'])
@@ -219,12 +248,19 @@ Route::middleware(['auth', ResolverNegocioDesdeRuta::class])->prefix('app/{negoc
     // libres por profesional.
     Route::get('/panel-del-dia', [PaginaPanelDelDiaController::class, 'mostrar'])->name('app.panel-del-dia');
 
+    // T32: Finanzas, el desglose de ingresos por metodo de pago y los
+    // gastos del negocio, con rango de fechas (adelanta RF-REP-02 de
+    // Fase 2). Pantalla aparte de panel-del-dia: esa es el resumen
+    // operativo de hoy, esta es el reporte financiero por periodo.
+    Route::get('/finanzas', [PaginaFinanzasController::class, 'mostrar'])->name('app.finanzas');
+
     // T27 (migracion de Filament): agenda visual del dueno (RF-RES-07) y
     // mis citas de hoy, el autoservicio del profesional (CU-04). Las
     // acciones sobre cada cita viven en CitaAccionesController (T28),
     // compartidas con la lista general de citas: nunca duplicar esa logica.
     Route::get('/agenda', [PaginaAgendaDelDiaController::class, 'mostrar'])->name('app.agenda');
     Route::get('/mis-citas-hoy', [PaginaMisCitasHoyController::class, 'mostrar'])->name('app.mis-citas-hoy');
+    Route::get('/mi-agenda', [PaginaMiAgendaController::class, 'mostrar'])->name('app.mi-agenda');
 
     // T28 (migracion de Filament): lista general de citas (RF-RES-06) y
     // creacion manual de una cita desde el panel.
@@ -237,13 +273,54 @@ Route::middleware(['auth', ResolverNegocioDesdeRuta::class])->prefix('app/{negoc
     // migracion Filament -> React en el panel app.
     Route::get('/pagina-web', [PaginaPaginaWebController::class, 'mostrar'])->name('app.pagina-web');
 
+    // T33: Historia clinica (solo negocios tipo spa, seccion 19 de
+    // requerimientos.md). "Clientes" es la version minima de RF-CLI-01
+    // (todavia no existia una pantalla propia): lista/busqueda y ficha,
+    // sin crear/editar/eliminar cliente. El formulario de historia clinica
+    // (acordeon de 7 secciones) vive en sus propias paginas de
+    // crear/editar, igual que Servicios o Productos.
+    Route::get('/clientes', [PaginaClienteController::class, 'index'])->name('app.clientes.index');
+    Route::get('/clientes/{cliente}', [PaginaClienteController::class, 'show'])->name('app.clientes.show');
+    Route::get('/clientes/{cliente}/historias-clinicas/create', [PaginaHistoriaClinicaController::class, 'create'])
+        ->name('app.historias-clinicas.create');
+    Route::get('/clientes/{cliente}/historias-clinicas/{historiaClinica}/edit', [PaginaHistoriaClinicaController::class, 'edit'])
+        ->name('app.historias-clinicas.edit');
+
     Route::prefix('api')->group(function (): void {
+        Route::get('/usuario-actual', [UsuarioActualController::class, 'mostrar']);
+
         Route::get('/servicios', [ServicioController::class, 'index']);
         Route::post('/servicios', [ServicioController::class, 'store']);
         Route::put('/servicios/{servicio}', [ServicioController::class, 'update']);
         Route::delete('/servicios/{servicio}', [ServicioController::class, 'destroy']);
         Route::post('/servicios/reordenar', [ServicioController::class, 'reordenar']);
         Route::post('/servicios/imagenes', [ServicioController::class, 'subirImagen']);
+
+        Route::get('/productos', [ProductoController::class, 'index']);
+        Route::post('/productos', [ProductoController::class, 'store']);
+        Route::put('/productos/{producto}', [ProductoController::class, 'update']);
+        Route::delete('/productos/{producto}', [ProductoController::class, 'destroy']);
+        Route::post('/productos/reordenar', [ProductoController::class, 'reordenar']);
+        Route::post('/productos/imagenes', [ProductoController::class, 'subirImagen']);
+
+        Route::get('/pedidos', [PedidoController::class, 'index']);
+        Route::put('/pedidos/{pedido}/estado', [PedidoAccionesController::class, 'cambiarEstado']);
+        Route::post('/pedidos/{pedido}/marcar-pagado', [PedidoAccionesController::class, 'marcarPagado']);
+
+        Route::get('/finanzas', [FinanzasController::class, 'mostrar']);
+        Route::post('/finanzas/gastos', [FinanzasController::class, 'registrarGasto']);
+        Route::delete('/finanzas/gastos/{gasto}', [FinanzasController::class, 'eliminarGasto']);
+
+        Route::get('/clientes', [ClienteController::class, 'index']);
+        Route::get('/clientes/{cliente}', [ClienteController::class, 'show']);
+        Route::get('/clientes/{cliente}/historias-clinicas', [HistoriaClinicaController::class, 'index']);
+        Route::post('/clientes/{cliente}/historias-clinicas', [HistoriaClinicaController::class, 'store']);
+        Route::put('/clientes/{cliente}/historias-clinicas/{historiaClinica}', [HistoriaClinicaController::class, 'update']);
+        Route::delete('/clientes/{cliente}/historias-clinicas/{historiaClinica}', [HistoriaClinicaController::class, 'destroy']);
+        Route::get('/historias-clinicas/{historiaClinica}/firma-clienta', [HistoriaClinicaController::class, 'mostrarFirmaClienta'])
+            ->name('app.historias-clinicas.firma-clienta');
+        Route::get('/historias-clinicas/{historiaClinica}/firma-profesional', [HistoriaClinicaController::class, 'mostrarFirmaProfesional'])
+            ->name('app.historias-clinicas.firma-profesional');
 
         Route::get('/categorias-servicio', [CategoriaServicioController::class, 'index']);
         Route::post('/categorias-servicio', [CategoriaServicioController::class, 'store']);
@@ -286,6 +363,9 @@ Route::middleware(['auth', ResolverNegocioDesdeRuta::class])->prefix('app/{negoc
         Route::post('/mi-horario/bloqueos', [MiHorarioController::class, 'crearBloqueo']);
         Route::delete('/mi-horario/bloqueos/{bloqueo}', [MiHorarioController::class, 'eliminarBloqueo']);
         Route::get('/mi-horario/vista-previa-disponibilidad', [MiHorarioController::class, 'vistaPreviaDisponibilidad']);
+        Route::get('/mi-horario/horario', [MiHorarioController::class, 'mostrarHorario']);
+        Route::put('/mi-horario/horario', [MiHorarioController::class, 'actualizarHorario']);
+        Route::get('/mi-horario/agenda', [MiHorarioController::class, 'agenda']);
 
         Route::get('/panel-del-dia', [PanelDelDiaController::class, 'mostrar']);
 
@@ -330,6 +410,20 @@ Route::prefix('mi-cuenta/api')->group(function (): void {
         Route::post('/citas/{cita}/cancelar', [CitasClienteController::class, 'cancelar']);
         Route::post('/citas/{cita}/reprogramar', [CitasClienteController::class, 'reprogramar']);
         Route::post('/citas/{cita}/resena', [CitasClienteController::class, 'resena']);
+
+        // T34: historial clinico de solo lectura, diseños favoritos y el
+        // panel de estadisticas (seccion 19 de requerimientos.md, RF-HCL-08).
+        Route::get('/historial-clinico', [HistorialClinicoController::class, 'index']);
+        Route::get('/historial-clinico/{historiaClinica}/firma-clienta', [HistorialClinicoController::class, 'mostrarFirmaClienta'])
+            ->name('mi-cuenta.historial-clinico.firma-clienta');
+        Route::get('/historial-clinico/{historiaClinica}/firma-profesional', [HistorialClinicoController::class, 'mostrarFirmaProfesional'])
+            ->name('mi-cuenta.historial-clinico.firma-profesional');
+
+        Route::get('/disenos-favoritos', [DisenoFavoritoController::class, 'index']);
+        Route::get('/disenos-favoritos/negocio/{negocio:slug}', [DisenoFavoritoController::class, 'idsDelNegocio']);
+        Route::post('/disenos-favoritos/alternar', [DisenoFavoritoController::class, 'alternar']);
+
+        Route::get('/estadisticas', [EstadisticasController::class, 'mostrar']);
     });
 });
 

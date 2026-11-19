@@ -9,6 +9,7 @@ use App\Actions\RegistrarPagoDeCita;
 use App\Enums\EstadoCitaValor;
 use App\Enums\MetodoPago;
 use App\Exceptions\CitaNoCompletadaException;
+use App\Exceptions\MontoDePagoIncorrectoException;
 use App\Exceptions\TransicionDeEstadoInvalidaException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\App\SolicitudCompletarConPago;
@@ -65,18 +66,20 @@ final class MisCitasHoyController extends Controller
     {
         $citaModelo = $this->citaPropiaOFallar($cita);
         $datos = $solicitud->validated();
+        $valor = (int) $datos['valor'];
 
         try {
             $usuario = $this->usuarioActual();
+            app(RegistrarPagoDeCita::class)->validar($citaModelo, $valor);
             app(CambiarEstadoCita::class)->ejecutar($citaModelo, EstadoCitaValor::Completada, $usuario);
             app(RegistrarPagoDeCita::class)->ejecutar(
                 cita: $citaModelo,
                 metodo: MetodoPago::from($datos['metodo']),
-                valor: (int) $datos['valor'],
+                valor: $valor,
                 propina: (int) ($datos['propina'] ?? 0),
                 registradoPor: $usuario,
             );
-        } catch (TransicionDeEstadoInvalidaException|CitaNoCompletadaException $excepcion) {
+        } catch (TransicionDeEstadoInvalidaException|CitaNoCompletadaException|MontoDePagoIncorrectoException $excepcion) {
             return response()->json(['mensaje' => $excepcion->getMessage()], 422);
         }
 

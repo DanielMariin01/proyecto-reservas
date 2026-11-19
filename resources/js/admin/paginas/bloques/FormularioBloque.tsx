@@ -4,8 +4,11 @@ import BloqueBarraPromocionForm from './BloqueBarraPromocionForm';
 import BloqueColorLibreForm from './BloqueColorLibreForm';
 import BloqueEncabezadoForm from './BloqueEncabezadoForm';
 import BloqueGaleriaForm from './BloqueGaleriaForm';
+import BloqueMisDisenosForm from './BloqueMisDisenosForm';
 import BloquePieDePaginaForm from './BloquePieDePaginaForm';
 import BloquePortadaForm from './BloquePortadaForm';
+import BloqueServiciosDestacadosForm from './BloqueServiciosDestacadosForm';
+import BloqueServiciosForm from './BloqueServiciosForm';
 import BloqueTarjetasForm from './BloqueTarjetasForm';
 import BloqueTestimoniosForm from './BloqueTestimoniosForm';
 import BloqueTextoConImagenForm from './BloqueTextoConImagenForm';
@@ -25,13 +28,17 @@ export default function FormularioBloque({ slug, tipo, datos, onChange }: Propie
         case 'productos':
             return <BloqueColorLibreForm slug={slug} datos={datos} onChange={onChange} />;
         case 'servicios':
-            return <BloqueColorLibreForm slug={slug} datos={datos} onChange={onChange} />;
+            return <BloqueServiciosForm slug={slug} datos={datos} onChange={onChange} />;
+        case 'servicios_destacados':
+            return <BloqueServiciosDestacadosForm slug={slug} datos={datos} onChange={onChange} />;
         case 'texto':
             return <BloqueTextoForm slug={slug} datos={datos} onChange={onChange} />;
         case 'texto_con_imagen':
             return <BloqueTextoConImagenForm slug={slug} datos={datos} onChange={onChange} />;
         case 'galeria':
             return <BloqueGaleriaForm slug={slug} datos={datos} onChange={onChange} />;
+        case 'mis_disenos':
+            return <BloqueMisDisenosForm slug={slug} datos={datos} onChange={onChange} />;
         case 'tarjetas':
             return <BloqueTarjetasForm slug={slug} datos={datos} onChange={onChange} />;
         case 'banner_oferta':

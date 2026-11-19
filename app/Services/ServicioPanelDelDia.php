@@ -80,18 +80,25 @@ final class ServicioPanelDelDia
     public function huecosLibres(Negocio $negocio): Collection
     {
         $fechaLocal = CarbonImmutable::now($negocio->zona_horaria)->startOfDay();
+        $ahoraUtc = CarbonImmutable::now('UTC');
 
         return Profesional::query()
             ->where('negocio_id', $negocio->id)
             ->where('activo', true)
             ->orderBy('nombre')
             ->get()
-            ->map(function (Profesional $profesional) use ($fechaLocal): array {
+            ->map(function (Profesional $profesional) use ($fechaLocal, $ahoraUtc): array {
                 $bloques = $profesional->obtenerBloquesLibres($fechaLocal);
 
                 foreach ($this->intervalosOcupadosPorCitas->paraProfesionalYFecha($profesional, $fechaLocal) as $intervalo) {
                     $bloques = BloqueLibre::restar($bloques, $intervalo->inicio, $intervalo->fin);
                 }
+
+                // Lo que ya pasó del día tampoco es un hueco libre de verdad:
+                // sin esto, "Huecos libres de hoy" seguía mostrando toda la
+                // jornada (ej. 8:00 a.m.-5:00 p.m.) como disponible aunque
+                // ya fueran las 5:50 p.m.
+                $bloques = BloqueLibre::restar($bloques, $fechaLocal->utc(), $ahoraUtc);
 
                 return ['profesional' => $profesional, 'bloques' => $bloques];
             });

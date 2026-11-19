@@ -11,8 +11,8 @@ interface PropiedadesBoton extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const CLASES_POR_VARIANTE: Record<VarianteBoton, string> = {
     principal: 'bg-primario text-blanco hover:bg-acento',
-    contorno: 'border border-gris-claro text-primario bg-blanco',
-    texto: 'text-primario bg-transparent',
+    contorno: 'border border-gris-claro text-primario bg-blanco hover:border-primario',
+    texto: 'text-primario bg-transparent hover:bg-celeste',
 };
 
 const CLASES_POR_TAMANO: Record<TamanoBoton, string> = {
@@ -28,7 +28,7 @@ export default function Boton({ variante = 'principal', tamano = 'normal', class
         <button
             {...resto}
             disabled={disabled}
-            className={`rounded-boton font-semibold transition-opacity disabled:opacity-45 ${clasesTamano} ${clasesVariante} ${className ?? ''}`}
+            className={`rounded-boton font-semibold transition disabled:opacity-45 ${clasesTamano} ${clasesVariante} ${className ?? ''}`}
         >
             {children}
         </button>

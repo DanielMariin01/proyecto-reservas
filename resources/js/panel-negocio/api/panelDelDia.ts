@@ -1,4 +1,5 @@
 import axios from 'axios';
+import type { FranjaHoraria } from '@/tipos';
 
 export interface CitaDelDia {
     id: number;
@@ -10,10 +11,15 @@ export interface CitaDelDia {
     estadoEtiqueta: string;
 }
 
+export interface BloqueLibreFranja {
+    franja: FranjaHoraria;
+    texto: string;
+}
+
 export interface HuecosLibresDeProfesional {
     profesionalId: number;
     profesionalNombre: string;
-    bloques: string[];
+    bloques: BloqueLibreFranja[];
 }
 
 export interface PanelDelDia {

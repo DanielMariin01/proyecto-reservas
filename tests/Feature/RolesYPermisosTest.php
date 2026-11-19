@@ -6,6 +6,7 @@ use App\Enums\Permiso;
 use App\Enums\RolNegocio;
 use App\Models\Negocio;
 use App\Models\Usuario;
+use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
 
 test('un dueno tiene permiso para gestionar usuarios de su negocio', function (): void {
@@ -34,6 +35,31 @@ test('un profesional solo tiene permiso sobre sus propias citas', function (): v
 
     expect($profesional->can(Permiso::GestionarCitasPropias->value))->toBeTrue();
     expect($profesional->can(Permiso::GestionarCitasTodas->value))->toBeFalse();
+});
+
+test('un dueno tiene permiso para gestionar resenas', function (): void {
+    $negocio = Negocio::factory()->create();
+    $dueno = crearUsuarioConRol($negocio, RolNegocio::Dueno);
+
+    app(PermissionRegistrar::class)->setPermissionsTeamId($negocio->id);
+
+    expect($dueno->can(Permiso::GestionarResenas->value))->toBeTrue();
+});
+
+test('la migracion que sincroniza gestionar_resenas en el rol dueno repara un rol desactualizado', function (): void {
+    $rolDueno = Role::where('name', RolNegocio::Dueno->value)->where('guard_name', 'web')->firstOrFail();
+    $rolDueno->revokePermissionTo(Permiso::GestionarResenas->value);
+
+    expect($rolDueno->hasPermissionTo(Permiso::GestionarResenas->value))->toBeFalse();
+
+    $migracion = require base_path('database/migrations/2026_11_13_001542_sincronizar_permiso_resenas_en_rol_dueno.php');
+    $migracion->up();
+
+    expect($rolDueno->refresh()->hasPermissionTo(Permiso::GestionarResenas->value))->toBeTrue();
+
+    $migracion->down();
+
+    expect($rolDueno->refresh()->hasPermissionTo(Permiso::GestionarResenas->value))->toBeFalse();
 });
 
 test('un rol de un negocio no da permisos en otro negocio del mismo usuario', function (): void {
