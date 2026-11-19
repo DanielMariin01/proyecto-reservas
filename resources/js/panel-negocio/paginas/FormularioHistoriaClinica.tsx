@@ -1,6 +1,7 @@
 import type { ReactElement } from 'react';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import Acordeon from '@/componentes/Acordeon';
+import Alerta from '@/componentes/Alerta';
 import Boton from '@/componentes/Boton';
 import CampoCasilla from '@/componentes/CampoCasilla';
 import CampoSelect from '@/componentes/CampoSelect';
@@ -167,6 +168,7 @@ export default function FormularioHistoriaClinica({
     const [datos, setDatos] = useState<DatosHistoriaClinica>(valoresIniciales ?? valoresVacios());
     const [seccionAbierta, setSeccionAbierta] = useState(1);
     const [errores, setErrores] = useState<ErroresValidacion>({});
+    const refAlerta = useRef<HTMLDivElement>(null);
 
     function set<K extends keyof DatosHistoriaClinica>(campo: K, valor: DatosHistoriaClinica[K]): void {
         setDatos((anterior) => ({ ...anterior, [campo]: valor }));
@@ -193,6 +195,7 @@ export default function FormularioHistoriaClinica({
         } catch (error) {
             if (error instanceof ErrorDeValidacion) {
                 setErrores(error.errores);
+                refAlerta.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
                 return;
             }
@@ -201,8 +204,25 @@ export default function FormularioHistoriaClinica({
         }
     }
 
+    const mensajesDeError = Object.values(errores)
+        .map((lista) => lista[0])
+        .filter((mensaje): mensaje is string => Boolean(mensaje));
+
     return (
         <div className="max-w-3xl space-y-4">
+            {mensajesDeError.length > 0 && (
+                <div ref={refAlerta}>
+                    <Alerta tipo="error">
+                        <p className="font-medium">No se pudo guardar. Revisa lo siguiente:</p>
+                        <ul className="mt-1 list-inside list-disc">
+                            {mensajesDeError.map((mensaje) => (
+                                <li key={mensaje}>{mensaje}</li>
+                            ))}
+                        </ul>
+                    </Alerta>
+                </div>
+            )}
+
             <Acordeon titulo="1. Datos básicos" abierta={seccionAbierta === 1} onCambiar={() => alCambiarSeccion(1)}>
                 <div className="grid gap-1 text-sm text-texto-suave">
                     <p>
@@ -296,7 +316,13 @@ export default function FormularioHistoriaClinica({
                     onChange={(e) => set('observaciones_valoracion', e.target.value)}
                 />
 
-                <CampoSelect etiqueta="Decisión" opciones={OPCIONES_DECISION} value={datos.decision} onChange={(e) => set('decision', e.target.value)} />
+                <CampoSelect
+                    etiqueta="Decisión"
+                    opciones={OPCIONES_DECISION}
+                    value={datos.decision}
+                    onChange={(e) => set('decision', e.target.value)}
+                    error={errores.decision?.[0]}
+                />
                 <CampoTextoLargo etiqueta="Motivo" value={datos.motivo_decision} onChange={(e) => set('motivo_decision', e.target.value)} />
             </Acordeon>
 
@@ -306,6 +332,7 @@ export default function FormularioHistoriaClinica({
                     opciones={OPCIONES_SERVICIO_DISENO}
                     value={datos.servicio_diseno}
                     onChange={(e) => set('servicio_diseno', e.target.value)}
+                    error={errores.servicio_diseno?.[0]}
                 />
                 {datos.servicio_diseno === 'otro' && (
                     <CampoTexto
@@ -314,8 +341,20 @@ export default function FormularioHistoriaClinica({
                         onChange={(e) => set('servicio_diseno_otro_texto', e.target.value)}
                     />
                 )}
-                <CampoSelect etiqueta="Forma" opciones={OPCIONES_FORMA_UNA} value={datos.forma_una} onChange={(e) => set('forma_una', e.target.value)} />
-                <CampoSelect etiqueta="Largo" opciones={OPCIONES_LARGO_UNA} value={datos.largo_una} onChange={(e) => set('largo_una', e.target.value)} />
+                <CampoSelect
+                    etiqueta="Forma"
+                    opciones={OPCIONES_FORMA_UNA}
+                    value={datos.forma_una}
+                    onChange={(e) => set('forma_una', e.target.value)}
+                    error={errores.forma_una?.[0]}
+                />
+                <CampoSelect
+                    etiqueta="Largo"
+                    opciones={OPCIONES_LARGO_UNA}
+                    value={datos.largo_una}
+                    onChange={(e) => set('largo_una', e.target.value)}
+                    error={errores.largo_una?.[0]}
+                />
                 <CampoTexto etiqueta="Color(es)/código(s)" value={datos.colores} onChange={(e) => set('colores', e.target.value)} />
                 <CampoTexto etiqueta="Decoración/efecto/referencia" value={datos.decoracion_referencia} onChange={(e) => set('decoracion_referencia', e.target.value)} />
             </Acordeon>
@@ -384,6 +423,7 @@ export default function FormularioHistoriaClinica({
                     opciones={OPCIONES_AUTORIZACION_FOTOS}
                     value={datos.autorizacion_fotos}
                     onChange={(e) => set('autorizacion_fotos', e.target.value)}
+                    error={errores.autorizacion_fotos?.[0]}
                 />
 
                 <PadFirma
