@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Enums\RolNegocio;
+use App\Models\CategoriaProducto;
 use App\Models\Negocio;
 use App\Models\Producto;
 use Illuminate\Support\Facades\Storage;
@@ -100,6 +101,37 @@ test('la respuesta de creacion refleja los valores por defecto de visible y orde
     $respuesta->assertCreated();
     expect($respuesta->json('data.visible'))->toBeTrue();
     expect($respuesta->json('data.orden'))->toBe(0);
+});
+
+test('crear un producto con una categoria de otro negocio falla la validacion', function (): void {
+    $negocioA = Negocio::factory()->create();
+    $negocioB = Negocio::factory()->create();
+    $duenoA = crearUsuarioConRol($negocioA, RolNegocio::Dueno);
+    $categoriaB = CategoriaProducto::factory()->create(['negocio_id' => $negocioB->id]);
+
+    $respuesta = $this->actingAs($duenoA)->postJson("/app/{$negocioA->slug}/api/productos", [
+        'nombre' => 'Cera para barba',
+        'categoria_producto_id' => $categoriaB->id,
+        'precio' => 15000,
+    ]);
+
+    $respuesta->assertUnprocessable();
+    $respuesta->assertJsonValidationErrors('categoria_producto_id');
+});
+
+test('crear un producto con una categoria del propio negocio la asocia correctamente', function (): void {
+    $negocio = Negocio::factory()->create();
+    $dueno = crearUsuarioConRol($negocio, RolNegocio::Dueno);
+    $categoria = CategoriaProducto::factory()->create(['negocio_id' => $negocio->id]);
+
+    $respuesta = $this->actingAs($dueno)->postJson("/app/{$negocio->slug}/api/productos", [
+        'nombre' => 'Cera para barba',
+        'categoria_producto_id' => $categoria->id,
+        'precio' => 15000,
+    ]);
+
+    $respuesta->assertCreated();
+    expect($respuesta->json('data.categoriaProductoId'))->toBe($categoria->id);
 });
 
 test('actualizar un producto cambia sus datos', function (): void {

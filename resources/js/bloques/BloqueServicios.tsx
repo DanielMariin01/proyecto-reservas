@@ -1,4 +1,4 @@
-import { Scissors, Search } from 'lucide-react';
+import { Scissors } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import type { ReactElement } from 'react';
 import { useQuery } from '@tanstack/react-query';
@@ -6,6 +6,7 @@ import { obtenerServicios } from '@/flujo-reserva/api/clientePublico';
 import type { Servicio } from '@/tipos';
 import Boton from '@/componentes/Boton';
 import Tarjeta from '@/componentes/Tarjeta';
+import BarraBusquedaYCategorias, { type CategoriaFiltro } from './BarraBusquedaYCategorias';
 import { obtenerColoresLibres, obtenerEstiloColor } from './colorLibre';
 import type { PropiedadesBloque } from './tipos';
 
@@ -15,11 +16,6 @@ const COLOR_TEXTO_CATEGORIAS_POR_DEFECTO = '#673DE6';
 
 function leerColorTexto(datos: Record<string, unknown>, campo: string, porDefecto: string): string {
     return typeof datos[campo] === 'string' && datos[campo] !== '' ? (datos[campo] as string) : porDefecto;
-}
-
-interface CategoriaFiltro {
-    id: number;
-    nombre: string;
 }
 
 /**
@@ -105,59 +101,16 @@ export default function BloqueServicios({ datos, slug, onReservar }: Propiedades
                 </h2>
 
                 {serviciosQuery.data && serviciosQuery.data.length > 0 && (
-                    <div className="mb-6 space-y-3">
-                        <div className="relative max-w-sm">
-                            <Search size={18} strokeWidth={1.75} className="absolute left-3 top-1/2 -translate-y-1/2 text-texto-suave" />
-                            <input
-                                type="search"
-                                value={busqueda}
-                                onChange={(evento) => setBusqueda(evento.target.value)}
-                                placeholder="Buscar servicio..."
-                                aria-label="Buscar servicio"
-                                className="h-11 w-full rounded-boton border border-gris-claro bg-blanco pl-10 pr-3 text-tinta focus:border-primario focus:outline-none"
-                            />
-                        </div>
-
-                        {categorias.length > 1 && (
-                            <div className="flex flex-wrap gap-2">
-                                <button
-                                    type="button"
-                                    onClick={() => setCategoriaElegida(null)}
-                                    style={
-                                        categoriaElegida === null
-                                            ? { borderColor: colorTextoCategorias, backgroundColor: colorFondoCategorias, color: colorTextoCategorias }
-                                            : undefined
-                                    }
-                                    className={`inline-flex min-h-11 items-center rounded-full border px-4 text-base font-semibold ${
-                                        categoriaElegida === null ? '' : 'border-gris-claro text-texto-suave'
-                                    }`}
-                                >
-                                    Todas
-                                </button>
-                                {categorias.map((categoria) => (
-                                    <button
-                                        key={categoria.id}
-                                        type="button"
-                                        onClick={() => setCategoriaElegida(categoria.id)}
-                                        style={
-                                            categoriaElegida === categoria.id
-                                                ? {
-                                                      borderColor: colorTextoCategorias,
-                                                      backgroundColor: colorFondoCategorias,
-                                                      color: colorTextoCategorias,
-                                                  }
-                                                : undefined
-                                        }
-                                        className={`inline-flex min-h-11 items-center rounded-full border px-4 text-base font-semibold ${
-                                            categoriaElegida === categoria.id ? '' : 'border-gris-claro text-texto-suave'
-                                        }`}
-                                    >
-                                        {categoria.nombre}
-                                    </button>
-                                ))}
-                            </div>
-                        )}
-                    </div>
+                    <BarraBusquedaYCategorias
+                        busqueda={busqueda}
+                        onCambiarBusqueda={setBusqueda}
+                        placeholderBusqueda="Buscar servicio..."
+                        categorias={categorias}
+                        categoriaElegida={categoriaElegida}
+                        onElegirCategoria={setCategoriaElegida}
+                        colorFondoCategorias={colorFondoCategorias}
+                        colorTextoCategorias={colorTextoCategorias}
+                    />
                 )}
 
                 {serviciosQuery.isLoading && (

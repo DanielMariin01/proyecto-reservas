@@ -18,6 +18,7 @@
             data-token-csrf="{{ csrf_token() }}"
             data-producto-id="{{ $producto->id }}"
             data-nombre="{{ $producto->nombre }}"
+            data-categoria-producto-id="{{ $producto->categoria_producto_id }}"
             data-descripcion="{{ $producto->descripcion }}"
             data-foto="{{ $producto->foto }}"
             data-precio="{{ $producto->precio }}"

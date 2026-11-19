@@ -17,6 +17,7 @@ final class ProductosController extends Controller
         $productos = Producto::query()
             ->where('negocio_id', $negocio->id)
             ->where('visible', true)
+            ->with('categoriaProducto')
             ->orderBy('orden')
             ->get();
 

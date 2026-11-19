@@ -23,6 +23,8 @@ final class RecursoProductoPublico extends JsonResource
             'id' => $this->id,
             'nombre' => $this->nombre,
             'descripcion' => $this->descripcion,
+            'categoria' => $this->categoriaProducto?->nombre,
+            'categoriaProductoId' => $this->categoria_producto_id,
             'foto' => $this->foto !== null ? Storage::disk('public')->url($this->foto) : null,
             'precio' => $this->precio,
         ];

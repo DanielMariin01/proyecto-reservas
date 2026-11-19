@@ -1,9 +1,11 @@
 import type { ReactElement } from 'react';
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import Boton from '@/componentes/Boton';
 import CampoInterruptor from '@/componentes/CampoInterruptor';
 import CampoTexto from '@/componentes/CampoTexto';
 import Tarjeta from '@/componentes/Tarjeta';
+import { obtenerCategoriasProducto } from '../api/categoriasProducto';
 import { type DatosProducto, ErrorDeValidacion, type ErroresValidacion } from '../api/productos';
 import CampoFotoProducto from './CampoFotoProducto';
 
@@ -17,11 +19,17 @@ interface Propiedades {
 
 export default function FormularioProducto({ slug, valoresIniciales, enviando, onGuardar, textoBoton }: Propiedades): ReactElement {
     const [nombre, setNombre] = useState(valoresIniciales?.nombre ?? '');
+    const [categoriaProductoId, setCategoriaProductoId] = useState<number | null>(valoresIniciales?.categoria_producto_id ?? null);
     const [descripcion, setDescripcion] = useState(valoresIniciales?.descripcion ?? '');
     const [foto, setFoto] = useState<string | null>(valoresIniciales?.foto ?? null);
     const [precio, setPrecio] = useState(String(valoresIniciales?.precio ?? ''));
     const [visible, setVisible] = useState(valoresIniciales?.visible ?? true);
     const [errores, setErrores] = useState<ErroresValidacion>({});
+
+    const categorias = useQuery({
+        queryKey: ['panel-categorias-producto', slug],
+        queryFn: () => obtenerCategoriasProducto(slug),
+    });
 
     async function enviar(): Promise<void> {
         setErrores({});
@@ -29,6 +37,7 @@ export default function FormularioProducto({ slug, valoresIniciales, enviando, o
         try {
             await onGuardar({
                 nombre,
+                categoria_producto_id: categoriaProductoId,
                 descripcion,
                 foto,
                 precio: Number(precio),
@@ -47,7 +56,28 @@ export default function FormularioProducto({ slug, valoresIniciales, enviando, o
 
     return (
         <Tarjeta className="max-w-2xl space-y-6">
-            <CampoTexto etiqueta="Nombre" value={nombre} onChange={(evento) => setNombre(evento.target.value)} error={errores.nombre?.[0]} />
+            <div className="grid gap-4 sm:grid-cols-2">
+                <CampoTexto etiqueta="Nombre" value={nombre} onChange={(evento) => setNombre(evento.target.value)} error={errores.nombre?.[0]} />
+
+                <div className="flex flex-col gap-1">
+                    <label htmlFor="producto-categoria" className="text-sm font-medium text-tinta">
+                        Categoría
+                    </label>
+                    <select
+                        id="producto-categoria"
+                        value={categoriaProductoId ?? ''}
+                        onChange={(evento) => setCategoriaProductoId(evento.target.value ? Number(evento.target.value) : null)}
+                        className="h-12 rounded-boton border border-gris-claro px-3 text-tinta focus:border-primario focus:outline-none"
+                    >
+                        <option value="">Sin categoría</option>
+                        {(categorias.data ?? []).map((categoria) => (
+                            <option key={categoria.id} value={categoria.id}>
+                                {categoria.nombre}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+            </div>
 
             <div className="flex flex-col gap-1">
                 <label htmlFor="producto-descripcion" className="text-sm font-medium text-tinta">

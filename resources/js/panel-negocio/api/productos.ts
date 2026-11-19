@@ -3,6 +3,8 @@ import axios from 'axios';
 export interface Producto {
     id: number;
     nombre: string;
+    categoriaProductoId: number | null;
+    categoriaProductoNombre: string | null;
     descripcion: string | null;
     foto: string | null;
     precio: number;
@@ -12,6 +14,7 @@ export interface Producto {
 
 export interface DatosProducto {
     nombre: string;
+    categoria_producto_id: number | null;
     descripcion: string;
     foto: string | null;
     precio: number;

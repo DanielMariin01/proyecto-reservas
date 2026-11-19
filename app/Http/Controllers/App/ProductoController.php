@@ -29,7 +29,7 @@ final class ProductoController extends Controller
     {
         $this->authorize('viewAny', Producto::class);
 
-        $productos = Producto::query()->orderBy('orden')->orderBy('nombre')->get();
+        $productos = Producto::query()->with('categoriaProducto')->orderBy('orden')->orderBy('nombre')->get();
 
         return RecursoProducto::collection($productos);
     }

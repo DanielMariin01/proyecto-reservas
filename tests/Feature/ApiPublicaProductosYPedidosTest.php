@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Enums\EstadoSuscripcion;
+use App\Models\CategoriaProducto;
 use App\Models\Negocio;
 use App\Models\Pedido;
 use App\Models\Producto;
@@ -18,6 +19,18 @@ test('GET productos solo devuelve los visibles', function (): void {
     $ids = collect($respuesta->json('data'))->pluck('id');
     expect($ids)->toContain($productoVisible->id);
     expect($ids)->not->toContain($productoOculto->id);
+});
+
+test('GET productos incluye el nombre y el id de la categoria', function (): void {
+    $negocio = Negocio::factory()->create();
+    $categoria = CategoriaProducto::factory()->create(['negocio_id' => $negocio->id, 'nombre' => 'Cuidado capilar']);
+    Producto::factory()->create(['negocio_id' => $negocio->id, 'categoria_producto_id' => $categoria->id]);
+
+    $respuesta = $this->getJson("/api/publico/{$negocio->slug}/productos");
+
+    $respuesta->assertOk();
+    expect($respuesta->json('data.0.categoria'))->toBe('Cuidado capilar');
+    expect($respuesta->json('data.0.categoriaProductoId'))->toBe($categoria->id);
 });
 
 test('POST pedidos crea el pedido con sus items y el cliente', function (): void {

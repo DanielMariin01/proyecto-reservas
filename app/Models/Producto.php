@@ -8,6 +8,7 @@ use App\Models\Concerns\PerteneceANegocio;
 use Database\Factories\ProductoFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 final class Producto extends Model
@@ -24,6 +25,7 @@ final class Producto extends Model
      */
     protected $fillable = [
         'negocio_id',
+        'categoria_producto_id',
         'nombre',
         'descripcion',
         'foto',
@@ -40,6 +42,14 @@ final class Producto extends Model
         return [
             'visible' => 'boolean',
         ];
+    }
+
+    /**
+     * @return BelongsTo<CategoriaProducto, $this>
+     */
+    public function categoriaProducto(): BelongsTo
+    {
+        return $this->belongsTo(CategoriaProducto::class);
     }
 
     /**
