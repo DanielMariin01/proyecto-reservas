@@ -31,6 +31,10 @@ export default function PaginaVerProfesional({ negocioNombre, negocioSlug, urlSa
     return (
         <LayoutPanelNegocio negocioNombre={negocioNombre} negocioSlug={negocioSlug} urlSalir={urlSalir} tokenCsrf={tokenCsrf}>
             <div className="space-y-6">
+                <Boton variante="texto" onClick={() => (window.location.href = `/app/${negocioSlug}/profesionales`)}>
+                    ← Volver a profesionales
+                </Boton>
+
                 <div className="flex flex-wrap items-center justify-between gap-4">
                     <h2 className="text-lg font-semibold text-tinta">{profesional.nombre}</h2>
                     <div className="flex flex-wrap gap-2">

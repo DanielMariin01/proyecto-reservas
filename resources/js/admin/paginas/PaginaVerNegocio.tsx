@@ -55,6 +55,10 @@ export default function PaginaVerNegocio({ urlSalir, tokenCsrf, slug }: Propieda
     return (
         <LayoutAdmin urlSalir={urlSalir} tokenCsrf={tokenCsrf}>
             <div className="space-y-6">
+                <Boton variante="texto" onClick={() => (window.location.href = '/admin/negocios')}>
+                    ← Volver a negocios
+                </Boton>
+
                 <div className="flex items-center justify-between gap-4">
                     <h2 className="text-lg font-semibold text-tinta">{negocio.nombre}</h2>
                     <Boton onClick={() => (window.location.href = `/admin/negocios/${slug}/edit`)}>Editar</Boton>
