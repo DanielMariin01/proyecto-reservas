@@ -2,10 +2,12 @@
 
 declare(strict_types=1);
 
+use App\Enums\EstadoPedidoValor;
 use App\Enums\RolNegocio;
 use App\Models\Gasto;
 use App\Models\Negocio;
 use App\Models\Pago;
+use App\Models\Pedido;
 use Carbon\CarbonImmutable;
 
 afterEach(function (): void {
@@ -49,6 +51,41 @@ test('el rango por defecto es este mes y agrupa los ingresos por metodo de pago'
     expect($respuesta->json('totalPropinas'))->toBe(2000);
     expect($respuesta->json('ingresosPorMetodo.efectivo.total'))->toBe(22000);
     expect($respuesta->json('ingresosPorMetodo.nequi.total'))->toBe(30000);
+});
+
+test('un pago de pedido suma a los ingresos de finanzas igual que un pago de cita', function (): void {
+    CarbonImmutable::setTestNow(CarbonImmutable::parse('2026-11-15 10:00:00', 'America/Bogota'));
+
+    $negocio = Negocio::factory()->create(['zona_horaria' => 'America/Bogota']);
+    $dueno = crearUsuarioConRol($negocio, RolNegocio::Dueno);
+
+    Pago::factory()->create(['negocio_id' => $negocio->id, 'metodo' => 'efectivo', 'valor' => 20000]);
+    Pago::factory()->paraPedido()->create(['negocio_id' => $negocio->id, 'metodo' => 'nequi', 'valor' => 35000]);
+
+    $respuesta = $this->actingAs($dueno)->getJson("/app/{$negocio->slug}/api/finanzas");
+
+    $respuesta->assertOk();
+    expect($respuesta->json('ingresosBrutos'))->toBe(55000);
+    expect($respuesta->json('ingresosPorMetodo.nequi.total'))->toBe(35000);
+});
+
+test('marcar un pedido como pagado lo refleja de inmediato en finanzas', function (): void {
+    CarbonImmutable::setTestNow(CarbonImmutable::parse('2026-11-15 10:00:00', 'America/Bogota'));
+
+    $negocio = Negocio::factory()->create(['zona_horaria' => 'America/Bogota']);
+    $dueno = crearUsuarioConRol($negocio, RolNegocio::Dueno);
+    $pedido = Pedido::factory()->create(['negocio_id' => $negocio->id, 'estado' => EstadoPedidoValor::Pendiente, 'total' => 42000]);
+
+    $this->actingAs($dueno)->postJson("/app/{$negocio->slug}/api/pedidos/{$pedido->id}/marcar-pagado", [
+        'metodo' => 'transferencia',
+        'valor' => 42000,
+    ])->assertOk();
+
+    $respuesta = $this->actingAs($dueno)->getJson("/app/{$negocio->slug}/api/finanzas");
+
+    $respuesta->assertOk();
+    expect($respuesta->json('ingresosBrutos'))->toBe(42000);
+    expect($respuesta->json('ingresosPorMetodo.transferencia.total'))->toBe(42000);
 });
 
 test('un gasto resta del neto y queda en el rango por fecha', function (): void {
