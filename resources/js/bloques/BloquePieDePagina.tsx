@@ -13,7 +13,7 @@ export default function BloquePieDePagina({ datos, pagina }: PropiedadesBloque):
     return (
         <footer className="bg-tinta text-blanco">
             <div className="mx-auto max-w-[1200px] px-4 py-12">
-                <div className="grid grid-cols-1 gap-8 text-center sm:grid-cols-3">
+                <div className="grid grid-cols-1 gap-8 text-center md:grid-cols-3">
                     <div>
                         <p className="text-lg font-bold">{pagina.nombreNegocio}</p>
                         {pagina.direccion && <p className="mt-2 text-sm text-gris-claro">{pagina.direccion}</p>}
@@ -62,7 +62,7 @@ export default function BloquePieDePagina({ datos, pagina }: PropiedadesBloque):
                     (que entra por /mi-cuenta desde el ícono del encabezado): mismo tamaño
                     y color apagado que la línea de copyright, sin competir con ella. */}
                 <p className="mt-2 text-center text-xs text-gris-claro">
-                    <a href="/ingresar" className="underline-offset-2 hover:underline">
+                    <a href="/ingresar" className="inline-block min-h-11 py-3 underline-offset-2 hover:underline">
                         ¿Tienes un negocio? Inicia sesión aquí
                     </a>
                 </p>

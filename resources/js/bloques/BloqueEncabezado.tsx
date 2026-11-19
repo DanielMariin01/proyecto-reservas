@@ -44,7 +44,7 @@ export default function BloqueEncabezado({ datos, pagina }: PropiedadesBloque): 
                     </nav>
                 )}
 
-                <a href="/mi-cuenta" aria-label="Mi cuenta" className="flex items-center">
+                <a href="/mi-cuenta" aria-label="Mi cuenta" className="flex h-11 w-11 items-center justify-center">
                     <UserCircle size={24} strokeWidth={1.75} />
                 </a>
             </div>

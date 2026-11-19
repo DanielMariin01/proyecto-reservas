@@ -18,7 +18,11 @@ export default function GraficaIngresosPorMetodo({ ingresosPorMetodo }: Propieda
             <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={datos} layout="vertical" margin={{ left: 16 }}>
                     <CartesianGrid horizontal={false} stroke="var(--border)" />
-                    <XAxis type="number" tick={{ fill: 'var(--muted-foreground)', fontSize: 12 }} />
+                    <XAxis
+                        type="number"
+                        tick={{ fill: 'var(--muted-foreground)', fontSize: 12 }}
+                        tickFormatter={(valor: number) => `$${valor.toLocaleString('es-CO')}`}
+                    />
                     <YAxis type="category" dataKey="etiqueta" tick={{ fill: 'var(--muted-foreground)', fontSize: 12 }} width={90} />
                     <Tooltip
                         formatter={(valor) => `$${Number(valor).toLocaleString('es-CO')}`}

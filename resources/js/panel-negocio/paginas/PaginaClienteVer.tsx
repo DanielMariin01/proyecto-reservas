@@ -3,9 +3,25 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Boton from '@/componentes/Boton';
 import Tarjeta from '@/componentes/Tarjeta';
 import { obtenerCliente } from '../api/clientes';
-import { eliminarHistoriaClinica, obtenerHistoriasClinicas } from '../api/historiasClinicas';
+import { eliminarHistoriaClinica, obtenerHistoriasClinicas, type HistoriaClinica } from '../api/historiasClinicas';
 import { obtenerUsuarioActual } from '../api/usuarioActual';
 import LayoutPanelNegocio from '../LayoutPanelNegocio';
+import { OPCIONES_SERVICIO_DISENO } from './FormularioHistoriaClinica';
+
+/** Mismo formato `d/m/Y` que el resto del panel (ver RecursoCita) — la fecha llega en ISO (yyyy-mm-dd) porque ese mismo valor se reutiliza como `value` del campo de fecha nativo al editar. */
+function formatearFechaCorta(fechaIso: string): string {
+    const [anio, mes, dia] = fechaIso.split('-');
+
+    return `${dia}/${mes}/${anio}`;
+}
+
+function resumenServicioDiseno(historia: HistoriaClinica): string {
+    if (historia.servicioDiseno === 'otro' && historia.servicioDisenoOtroTexto) {
+        return historia.servicioDisenoOtroTexto;
+    }
+
+    return OPCIONES_SERVICIO_DISENO.find((opcion) => opcion.valor === historia.servicioDiseno)?.etiqueta ?? historia.servicioDiseno;
+}
 
 interface Propiedades {
     negocioNombre: string;
@@ -90,7 +106,7 @@ export default function PaginaClienteVer({ negocioNombre, negocioSlug, urlSalir,
                         {(consultaHistorias.data ?? []).map((historia) => (
                             <Tarjeta key={historia.id} className="flex flex-wrap items-center justify-between gap-3">
                                 <div>
-                                    <p className="font-medium text-tinta">{historia.fecha}</p>
+                                    <p className="font-medium text-tinta">{formatearFechaCorta(historia.fecha)} · {resumenServicioDiseno(historia)}</p>
                                     <p className="text-sm text-texto-suave">Atendió: {historia.profesionalNombre ?? 'Sin asignar'}</p>
                                 </div>
                                 <div className="flex gap-2">

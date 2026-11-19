@@ -16,7 +16,7 @@ const ETIQUETAS: Record<string, string> = {
 export default function BloqueProximamente({ datos, tipo }: PropiedadesBloque): ReactElement {
     return (
         <section style={obtenerEstiloColor(datos)}>
-            <div className="mx-auto max-w-5xl px-4 py-10 text-center sm:py-16">
+            <div className="mx-auto max-w-[1200px] px-4 py-10 text-center sm:py-16">
                 <h2 className="mb-2 text-3xl font-bold sm:text-4xl">{ETIQUETAS[tipo] ?? tipo}</h2>
                 <p className="text-sm opacity-80">Próximamente.</p>
             </div>

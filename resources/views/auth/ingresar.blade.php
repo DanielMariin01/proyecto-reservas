@@ -10,6 +10,20 @@
     <body class="min-h-screen bg-fondo-panel">
         <main class="flex min-h-screen items-center justify-center p-4">
             <div class="w-full max-w-sm rounded-tarjeta bg-blanco p-8 shadow-tarjeta">
+                <p id="enlace-volver" class="mb-4 hidden text-sm">
+                    <a href="#" class="text-primario hover:underline">← Volver</a>
+                </p>
+
+                <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-celeste text-primario">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M10 12h4" />
+                        <path d="M10 8h4" />
+                        <path d="M14 21v-3a2 2 0 0 0-4 0v3" />
+                        <path d="M6 10H4a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-2" />
+                        <path d="M6 21V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v16" />
+                    </svg>
+                </div>
+
                 <h1 class="mb-6 text-center text-xl font-semibold text-tinta">Ingresar</h1>
 
                 @if (session('status'))
@@ -68,5 +82,20 @@
                 </form>
             </div>
         </main>
+
+        <script>
+            (function () {
+                var referencia = document.referrer;
+
+                if (!referencia || referencia.indexOf(window.location.origin + '/') !== 0 || referencia === window.location.href) {
+                    return;
+                }
+
+                var contenedor = document.getElementById('enlace-volver');
+                var enlace = contenedor.querySelector('a');
+                enlace.href = referencia;
+                contenedor.classList.remove('hidden');
+            })();
+        </script>
     </body>
 </html>

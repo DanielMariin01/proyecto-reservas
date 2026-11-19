@@ -17,7 +17,11 @@ export default function GraficaTendencia({ tendencia }: Propiedades): ReactEleme
                 <LineChart data={tendencia} margin={{ left: 8, right: 8 }}>
                     <CartesianGrid vertical={false} stroke="var(--border)" />
                     <XAxis dataKey="etiqueta" tick={{ fill: 'var(--muted-foreground)', fontSize: 12 }} />
-                    <YAxis tick={{ fill: 'var(--muted-foreground)', fontSize: 12 }} width={60} />
+                    <YAxis
+                        tick={{ fill: 'var(--muted-foreground)', fontSize: 12 }}
+                        width={70}
+                        tickFormatter={(valor: number) => `$${valor.toLocaleString('es-CO')}`}
+                    />
                     <Tooltip
                         formatter={(valor) => `$${Number(valor).toLocaleString('es-CO')}`}
                         contentStyle={{ backgroundColor: 'var(--popover)', border: '1px solid var(--border)', borderRadius: 'var(--radius)' }}

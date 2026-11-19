@@ -92,9 +92,14 @@ export default function BloqueServicios({ datos, slug, onReservar }: Propiedades
         );
     }, [serviciosQuery.data, categoriaElegida, busqueda]);
 
+    function limpiarFiltros(): void {
+        setBusqueda('');
+        setCategoriaElegida(null);
+    }
+
     return (
         <section id="servicios" style={obtenerEstiloColor(datos)}>
-            <div className="mx-auto max-w-5xl px-4 py-10 sm:py-16">
+            <div className="mx-auto max-w-[1200px] px-4 py-10 sm:py-16">
                 <h2 className="mb-6 text-3xl font-bold sm:text-4xl" style={{ color: colorTitulo }}>
                     Servicios
                 </h2>
@@ -123,7 +128,7 @@ export default function BloqueServicios({ datos, slug, onReservar }: Propiedades
                                             ? { borderColor: colorTextoCategorias, backgroundColor: colorFondoCategorias, color: colorTextoCategorias }
                                             : undefined
                                     }
-                                    className={`rounded-full border px-4 py-1.5 text-base font-semibold ${
+                                    className={`inline-flex min-h-11 items-center rounded-full border px-4 text-base font-semibold ${
                                         categoriaElegida === null ? '' : 'border-gris-claro text-texto-suave'
                                     }`}
                                 >
@@ -143,7 +148,7 @@ export default function BloqueServicios({ datos, slug, onReservar }: Propiedades
                                                   }
                                                 : undefined
                                         }
-                                        className={`rounded-full border px-4 py-1.5 text-base font-semibold ${
+                                        className={`inline-flex min-h-11 items-center rounded-full border px-4 text-base font-semibold ${
                                             categoriaElegida === categoria.id ? '' : 'border-gris-claro text-texto-suave'
                                         }`}
                                     >
@@ -156,7 +161,7 @@ export default function BloqueServicios({ datos, slug, onReservar }: Propiedades
                 )}
 
                 {serviciosQuery.isLoading && (
-                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" aria-label="Cargando servicios">
+                    <div className="grid gap-4 md:grid-cols-3" aria-label="Cargando servicios">
                         {[1, 2, 3].map((n) => (
                             <div key={n} className="h-32 animate-pulse rounded-tarjeta bg-gris-claro" />
                         ))}
@@ -170,11 +175,16 @@ export default function BloqueServicios({ datos, slug, onReservar }: Propiedades
                 )}
 
                 {serviciosQuery.data && serviciosQuery.data.length > 0 && serviciosFiltrados.length === 0 && (
-                    <p className="text-sm opacity-80">No encontramos servicios con esos filtros.</p>
+                    <div className="flex flex-col items-start gap-3 py-4">
+                        <p className="text-base">No encontramos servicios con esos filtros.</p>
+                        <Boton variante="contorno" onClick={limpiarFiltros}>
+                            Limpiar filtros
+                        </Boton>
+                    </div>
                 )}
 
                 {serviciosFiltrados.length > 0 && (
-                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    <div className="grid gap-4 md:grid-cols-3">
                         {serviciosFiltrados.map((servicio) => (
                             <Tarjeta key={servicio.id} className="flex flex-row gap-4">
                                 <FotoServicio foto={servicio.foto} />

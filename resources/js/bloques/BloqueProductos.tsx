@@ -15,7 +15,7 @@ export default function BloqueProductos({ datos, slug, onAgregarAlCarrito }: Pro
 
     return (
         <section style={obtenerEstiloColor(datos)}>
-            <div className="mx-auto max-w-5xl px-4 py-10 sm:py-16">
+            <div className="mx-auto max-w-[1200px] px-4 py-10 sm:py-16">
                 <h2 className="mb-6 text-3xl font-bold sm:text-4xl">Productos</h2>
 
                 {productosQuery.isLoading && (

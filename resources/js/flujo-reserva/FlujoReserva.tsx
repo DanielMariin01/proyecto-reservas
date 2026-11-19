@@ -201,6 +201,7 @@ export default function FlujoReserva({ slug, direccion, servicioInicial, profesi
                     horaVisible={horaSeleccionada.horaVisible}
                     nombreServicio={servicio.nombre}
                     precio={servicio.precio}
+                    datosDelCliente={datosDelCliente}
                     enviando={mutacionReserva.isPending}
                     error={errorDeReserva}
                     onConfirmar={() => mutacionReserva.mutate()}
