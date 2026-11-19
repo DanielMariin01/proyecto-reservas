@@ -7,6 +7,7 @@ namespace App\Services;
 use App\Enums\EstadoCitaValor;
 use App\Enums\OrigenCita;
 use App\Estados\Cita\FabricaEstadoCita;
+use App\Exceptions\ClienteYaTieneCitaException;
 use App\Exceptions\HoraYaTomadaException;
 use App\Models\Cita;
 use App\Models\Cliente;
@@ -53,6 +54,10 @@ final class ServicioReservas
                 throw new HoraYaTomadaException;
             }
 
+            if (! $forzar && $this->clienteYaTieneCita($cliente->id, $inicio, $fin)) {
+                throw new ClienteYaTieneCitaException;
+            }
+
             $negocio = Negocio::findOrFail($profesional->negocio_id);
 
             return Cita::create([
@@ -90,6 +95,10 @@ final class ServicioReservas
                 throw new HoraYaTomadaException;
             }
 
+            if (! $forzar && $this->clienteYaTieneCita($cita->cliente_id, $nuevoInicio, $nuevoFin, excluirCitaId: $cita->id)) {
+                throw new ClienteYaTieneCitaException;
+            }
+
             $cita->update([
                 'inicio' => $nuevoInicio,
                 'fin' => $nuevoFin,
@@ -101,13 +110,29 @@ final class ServicioReservas
 
     private function estaOcupado(Profesional $profesional, CarbonImmutable $inicio, CarbonImmutable $fin, ?int $excluirCitaId = null): bool
     {
+        return $this->existeCitaTraslapada('profesional_id', $profesional->id, $inicio, $fin, $excluirCitaId);
+    }
+
+    /**
+     * Sección 5: el mismo cliente no puede quedar con dos citas que se
+     * traslapen, sin importar si el profesional es el mismo o no — mismo
+     * mecanismo de verificación que estaOcupado(), solo que por cliente_id
+     * en vez de profesional_id.
+     */
+    private function clienteYaTieneCita(int $clienteId, CarbonImmutable $inicio, CarbonImmutable $fin, ?int $excluirCitaId = null): bool
+    {
+        return $this->existeCitaTraslapada('cliente_id', $clienteId, $inicio, $fin, $excluirCitaId);
+    }
+
+    private function existeCitaTraslapada(string $columna, int $valor, CarbonImmutable $inicio, CarbonImmutable $fin, ?int $excluirCitaId): bool
+    {
         $estadosActivos = array_map(
             fn (EstadoCitaValor $estado): string => $estado->value,
             $this->fabricaEstadoCita->valoresActivos(),
         );
 
         return Cita::query()
-            ->where('profesional_id', $profesional->id)
+            ->where($columna, $valor)
             ->whereIn('estado', $estadosActivos)
             ->where('inicio', '<', $fin)
             ->where('fin', '>', $inicio)

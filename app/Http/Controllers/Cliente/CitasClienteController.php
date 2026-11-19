@@ -9,6 +9,7 @@ use App\Actions\CrearResena;
 use App\Actions\ReprogramarCita;
 use App\DatosTransferencia\DatosNuevaResena;
 use App\DatosTransferencia\DatosReprogramacion;
+use App\Exceptions\ClienteYaTieneCitaException;
 use App\Exceptions\FueraDePoliticaDeCancelacionException;
 use App\Exceptions\HoraInvalidaException;
 use App\Exceptions\HoraYaTomadaException;
@@ -82,7 +83,7 @@ final class CitasClienteController extends Controller
             $this->reprogramarCita->ejecutar(new DatosReprogramacion(cita: $cita, nuevoInicio: $nuevoInicio));
         } catch (MaximoDeReprogramacionesException $excepcion) {
             return response()->json(['mensaje' => $excepcion->getMessage(), 'mostrarWhatsapp' => true], 422);
-        } catch (HoraInvalidaException|HoraYaTomadaException|TransicionDeEstadoInvalidaException $excepcion) {
+        } catch (HoraInvalidaException|HoraYaTomadaException|TransicionDeEstadoInvalidaException|ClienteYaTieneCitaException $excepcion) {
             return response()->json(['mensaje' => $excepcion->getMessage()], 422);
         }
 

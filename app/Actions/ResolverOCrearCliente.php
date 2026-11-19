@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions;
 
+use App\Events\ClienteConNombreDistintoEnReserva;
 use App\Models\Cliente;
 use App\Models\CuentaCliente;
 use App\Models\Negocio;
@@ -24,6 +25,10 @@ final class ResolverOCrearCliente
             ->first();
 
         if ($clienteExistente !== null) {
+            if (! $this->mismoNombre($clienteExistente->nombre, $nombre)) {
+                ClienteConNombreDistintoEnReserva::dispatch($clienteExistente, $nombre);
+            }
+
             return $clienteExistente;
         }
 
@@ -48,5 +53,10 @@ final class ResolverOCrearCliente
         }
 
         return CuentaCliente::query()->where('correo', $correo)->value('id');
+    }
+
+    private function mismoNombre(string $nombreRegistrado, string $nombreEnLaReserva): bool
+    {
+        return mb_strtolower(trim($nombreRegistrado)) === mb_strtolower(trim($nombreEnLaReserva));
     }
 }
