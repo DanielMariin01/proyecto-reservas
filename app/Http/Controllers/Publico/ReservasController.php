@@ -8,6 +8,7 @@ use App\Actions\CrearReserva;
 use App\DatosTransferencia\DatosReserva;
 use App\Disponibilidad\HoraDisponible;
 use App\Enums\OrigenCita;
+use App\Exceptions\ClienteYaTieneCitaException;
 use App\Exceptions\HoraInvalidaException;
 use App\Exceptions\HoraYaTomadaException;
 use App\Http\Controllers\Controller;
@@ -50,7 +51,7 @@ final class ReservasController extends Controller
                 profesional: $profesional,
                 notas: $request->filled('nota') ? (string) $request->string('nota') : null,
             ));
-        } catch (HoraYaTomadaException|HoraInvalidaException $excepcion) {
+        } catch (HoraYaTomadaException|HoraInvalidaException|ClienteYaTieneCitaException $excepcion) {
             return response()->json([
                 'mensaje' => $excepcion->getMessage(),
                 'horasCercanas' => $this->horasCercanas($negocio, $servicio, $profesional, $inicio)

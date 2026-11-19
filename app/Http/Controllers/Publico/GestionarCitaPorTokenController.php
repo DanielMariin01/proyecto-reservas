@@ -9,6 +9,7 @@ use App\Actions\CrearResena;
 use App\Actions\ReprogramarCita;
 use App\DatosTransferencia\DatosNuevaResena;
 use App\DatosTransferencia\DatosReprogramacion;
+use App\Exceptions\ClienteYaTieneCitaException;
 use App\Exceptions\FueraDePoliticaDeCancelacionException;
 use App\Exceptions\HoraInvalidaException;
 use App\Exceptions\HoraYaTomadaException;
@@ -57,7 +58,7 @@ final class GestionarCitaPorTokenController extends Controller
                 'mensaje' => $excepcion->getMessage(),
                 'mostrarWhatsapp' => true,
             ], 422);
-        } catch (HoraInvalidaException|HoraYaTomadaException|TransicionDeEstadoInvalidaException|ResenaNoElegibleException $excepcion) {
+        } catch (HoraInvalidaException|HoraYaTomadaException|TransicionDeEstadoInvalidaException|ResenaNoElegibleException|ClienteYaTieneCitaException $excepcion) {
             return response()->json(['mensaje' => $excepcion->getMessage()], 422);
         }
 

@@ -8,6 +8,8 @@ use App\Enums\DiaSemana;
 use App\Enums\EstadoCitaValor;
 use App\Enums\OrigenCita;
 use App\Events\CitaCreada;
+use App\Events\ClienteConNombreDistintoEnReserva;
+use App\Exceptions\ClienteYaTieneCitaException;
 use App\Exceptions\HoraInvalidaException;
 use App\Models\Cita;
 use App\Models\Cliente;
@@ -233,6 +235,128 @@ test('rechaza una hora ya tomada por otra cita activa y no deja un cliente huerf
     expect($ejecutar)->toThrow(HoraInvalidaException::class);
     expect(Cita::query()->count())->toBe(1);
     expect(Cliente::query()->where('celular', '3005551234')->count())->toBe(0);
+});
+
+test('rechaza una segunda cita del mismo cliente a la misma hora con otro profesional', function (): void {
+    ['negocio' => $negocio, 'profesional' => $profesionalA, 'servicio' => $servicio, 'fecha' => $fecha] = negocioConHorarioMartes();
+
+    $profesionalB = Profesional::factory()->create(['negocio_id' => $negocio->id]);
+    $servicio->profesionales()->attach($profesionalB->id);
+    HorarioTrabajo::factory()->create([
+        'negocio_id' => $negocio->id,
+        'profesional_id' => $profesionalB->id,
+        'dia_semana' => DiaSemana::from($fecha->dayOfWeek),
+        'hora_inicio' => '10:00:00',
+        'hora_fin' => '12:00:00',
+    ]);
+
+    app(CrearReserva::class)->ejecutar(new DatosReserva(
+        negocio: $negocio,
+        servicio: $servicio,
+        nombreCliente: 'Ana',
+        celularCliente: '3001234567',
+        correoCliente: null,
+        inicio: $fecha->copy()->setTime(10, 0)->utc(),
+        origen: OrigenCita::Web,
+        profesional: $profesionalA,
+    ));
+
+    $ejecutar = fn () => app(CrearReserva::class)->ejecutar(new DatosReserva(
+        negocio: $negocio,
+        servicio: $servicio,
+        nombreCliente: 'Ana',
+        celularCliente: '3001234567',
+        correoCliente: null,
+        inicio: $fecha->copy()->setTime(10, 0)->utc(),
+        origen: OrigenCita::Web,
+        profesional: $profesionalB,
+    ));
+
+    expect($ejecutar)->toThrow(ClienteYaTieneCitaException::class);
+    expect(Cita::query()->count())->toBe(1);
+});
+
+test('forzar permite que el mismo cliente quede con dos citas traslapadas', function (): void {
+    ['negocio' => $negocio, 'profesional' => $profesionalA, 'servicio' => $servicio, 'fecha' => $fecha] = negocioConHorarioMartes();
+
+    $profesionalB = Profesional::factory()->create(['negocio_id' => $negocio->id]);
+    $servicio->profesionales()->attach($profesionalB->id);
+    HorarioTrabajo::factory()->create([
+        'negocio_id' => $negocio->id,
+        'profesional_id' => $profesionalB->id,
+        'dia_semana' => DiaSemana::from($fecha->dayOfWeek),
+        'hora_inicio' => '10:00:00',
+        'hora_fin' => '12:00:00',
+    ]);
+
+    app(CrearReserva::class)->ejecutar(new DatosReserva(
+        negocio: $negocio,
+        servicio: $servicio,
+        nombreCliente: 'Ana',
+        celularCliente: '3001234567',
+        correoCliente: null,
+        inicio: $fecha->copy()->setTime(10, 0)->utc(),
+        origen: OrigenCita::Web,
+        profesional: $profesionalA,
+    ));
+
+    $cita = app(CrearReserva::class)->ejecutar(new DatosReserva(
+        negocio: $negocio,
+        servicio: $servicio,
+        nombreCliente: 'Ana',
+        celularCliente: '3001234567',
+        correoCliente: null,
+        inicio: $fecha->copy()->setTime(10, 0)->utc(),
+        origen: OrigenCita::Panel,
+        profesional: $profesionalB,
+        forzar: true,
+    ));
+
+    expect(Cita::query()->whereKey($cita->id)->exists())->toBeTrue();
+    expect(Cita::query()->count())->toBe(2);
+});
+
+test('no dispara ClienteConNombreDistintoEnReserva cuando el nombre coincide (sin importar mayusculas o espacios)', function (): void {
+    Event::fake();
+
+    ['negocio' => $negocio, 'profesional' => $profesional, 'servicio' => $servicio, 'fecha' => $fecha] = negocioConHorarioMartes();
+    Cliente::factory()->create(['negocio_id' => $negocio->id, 'celular' => '3001234567', 'nombre' => 'Ana María']);
+
+    app(CrearReserva::class)->ejecutar(new DatosReserva(
+        negocio: $negocio,
+        servicio: $servicio,
+        nombreCliente: '  ana maría  ',
+        celularCliente: '3001234567',
+        correoCliente: null,
+        inicio: $fecha->copy()->setTime(10, 0)->utc(),
+        origen: OrigenCita::Web,
+        profesional: $profesional,
+    ));
+
+    Event::assertNotDispatched(ClienteConNombreDistintoEnReserva::class);
+});
+
+test('dispara ClienteConNombreDistintoEnReserva para auditoria cuando el nombre no coincide con el cliente existente', function (): void {
+    Event::fake();
+
+    ['negocio' => $negocio, 'profesional' => $profesional, 'servicio' => $servicio, 'fecha' => $fecha] = negocioConHorarioMartes();
+    $clienteExistente = Cliente::factory()->create(['negocio_id' => $negocio->id, 'celular' => '3001234567', 'nombre' => 'QA Visitante']);
+
+    app(CrearReserva::class)->ejecutar(new DatosReserva(
+        negocio: $negocio,
+        servicio: $servicio,
+        nombreCliente: 'QA Prueba',
+        celularCliente: '3001234567',
+        correoCliente: null,
+        inicio: $fecha->copy()->setTime(10, 0)->utc(),
+        origen: OrigenCita::Web,
+        profesional: $profesional,
+    ));
+
+    Event::assertDispatched(
+        ClienteConNombreDistintoEnReserva::class,
+        fn (ClienteConNombreDistintoEnReserva $evento): bool => $evento->cliente->is($clienteExistente) && $evento->nombreEnLaReserva === 'QA Prueba',
+    );
 });
 
 test('forzar permite reservar una hora fuera de las franjas validas', function (): void {

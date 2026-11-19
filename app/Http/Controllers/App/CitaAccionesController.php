@@ -13,6 +13,7 @@ use App\DatosTransferencia\DatosReprogramacion;
 use App\Enums\EstadoCitaValor;
 use App\Enums\MetodoPago;
 use App\Exceptions\CitaNoCompletadaException;
+use App\Exceptions\ClienteYaTieneCitaException;
 use App\Exceptions\FueraDePoliticaDeCancelacionException;
 use App\Exceptions\HoraInvalidaException;
 use App\Exceptions\HoraYaTomadaException;
@@ -122,7 +123,10 @@ final class CitaAccionesController extends Controller
                 reprogramadaPor: $usuario,
                 forzar: (bool) ($datos['forzar'] ?? false),
             ));
-        } catch (TransicionDeEstadoInvalidaException|FueraDePoliticaDeCancelacionException|MaximoDeReprogramacionesException|HoraInvalidaException|HoraYaTomadaException $excepcion) {
+        } catch (
+            TransicionDeEstadoInvalidaException|FueraDePoliticaDeCancelacionException|MaximoDeReprogramacionesException
+            |HoraInvalidaException|HoraYaTomadaException|ClienteYaTieneCitaException $excepcion
+        ) {
             return response()->json(['mensaje' => $excepcion->getMessage()], 422);
         }
 

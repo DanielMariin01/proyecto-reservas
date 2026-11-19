@@ -8,6 +8,7 @@ use App\Actions\CrearReserva;
 use App\DatosTransferencia\DatosReserva;
 use App\Enums\OrigenCita;
 use App\Enums\Permiso;
+use App\Exceptions\ClienteYaTieneCitaException;
 use App\Exceptions\HoraInvalidaException;
 use App\Exceptions\HoraYaTomadaException;
 use App\Http\Controllers\Controller;
@@ -86,7 +87,7 @@ final class CitaController extends Controller
                 notas: $datos['notas'] ?? null,
                 forzar: (bool) ($datos['forzar'] ?? false),
             ));
-        } catch (HoraYaTomadaException|HoraInvalidaException $excepcion) {
+        } catch (HoraYaTomadaException|HoraInvalidaException|ClienteYaTieneCitaException $excepcion) {
             return response()->json(['mensaje' => $excepcion->getMessage()], 422);
         }
 

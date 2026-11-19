@@ -210,6 +210,37 @@ test('POST reservas con una hora ya tomada devuelve 409 con horas cercanas', fun
     expect($respuesta->json('horasCercanas'))->not->toBeEmpty();
 });
 
+test('POST reservas rechaza una segunda cita del mismo cliente a la misma hora con otro profesional', function (): void {
+    ['negocio' => $negocio, 'profesional' => $profesionalA, 'servicio' => $servicio, 'fecha' => $fecha] = negocioPublicoListo();
+
+    $profesionalB = app(CrearProfesional::class)->ejecutar(new DatosNuevoProfesional(negocio: $negocio, nombre: 'Juanes'));
+    $servicio->profesionales()->attach($profesionalB->id);
+    HorarioTrabajo::factory()->create([
+        'negocio_id' => $negocio->id,
+        'profesional_id' => $profesionalB->id,
+        'dia_semana' => DiaSemana::from($fecha->dayOfWeek),
+        'hora_inicio' => '10:00:00',
+        'hora_fin' => '12:00:00',
+    ]);
+
+    $datosReserva = fn (int $profesionalId): array => [
+        'servicio_id' => $servicio->id,
+        'profesional_id' => $profesionalId,
+        'inicio' => $fecha->copy()->setTime(10, 0)->utc()->toIso8601String(),
+        'nombre' => 'Ana',
+        'celular' => '3001234567',
+        'autorizacion_datos' => true,
+    ];
+
+    $this->postJson("/api/publico/{$negocio->slug}/reservas", $datosReserva($profesionalA->id))->assertCreated();
+
+    $respuesta = $this->postJson("/api/publico/{$negocio->slug}/reservas", $datosReserva($profesionalB->id));
+
+    $respuesta->assertStatus(409);
+    expect($respuesta->json('mensaje'))->toContain('ya tiene una cita');
+    expect(Cita::query()->count())->toBe(1);
+});
+
 test('un negocio suspendido no expone horas ni acepta reservas', function (): void {
     ['negocio' => $negocio, 'servicio' => $servicio, 'fecha' => $fecha] = negocioPublicoListo();
     $negocio->update(['estado_suscripcion' => EstadoSuscripcion::Suspendido]);
