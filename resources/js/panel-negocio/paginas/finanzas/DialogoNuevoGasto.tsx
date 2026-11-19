@@ -4,6 +4,7 @@ import { useMutation } from '@tanstack/react-query';
 import { Button } from '@/componentes/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/componentes/ui/dialog';
 import { Input } from '@/componentes/ui/input';
+import { hoyISO } from '@/utils/fecha';
 import { registrarGasto } from '../../api/finanzas';
 
 interface Propiedades {
@@ -15,7 +16,7 @@ interface Propiedades {
 export default function DialogoNuevoGasto({ negocioSlug, onRegistrado, onCerrar }: Propiedades): ReactElement {
     const [monto, setMonto] = useState('');
     const [descripcion, setDescripcion] = useState('');
-    const [fecha, setFecha] = useState(new Date().toISOString().slice(0, 10));
+    const [fecha, setFecha] = useState(hoyISO());
     const [error, setError] = useState<string | null>(null);
 
     const mutacion = useMutation({

@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import Boton from '@/componentes/Boton';
+import { formatearFechaISO, hoyISO } from '@/utils/fecha';
 import type { CitaConAcciones } from '../api/citaAcciones';
 import { obtenerAgenda } from '../api/agenda';
 import LayoutPanelNegocio from '../LayoutPanelNegocio';
@@ -19,15 +20,11 @@ interface Propiedades {
     tokenCsrf: string;
 }
 
-function hoyISO(): string {
-    return new Date().toISOString().slice(0, 10);
-}
-
 function sumarDias(fechaISO: string, dias: number): string {
     const fecha = new Date(`${fechaISO}T00:00:00`);
     fecha.setDate(fecha.getDate() + dias);
 
-    return fecha.toISOString().slice(0, 10);
+    return formatearFechaISO(fecha);
 }
 
 export default function PaginaAgendaDelDia({ negocioNombre, negocioSlug, urlSalir, tokenCsrf }: Propiedades): ReactElement {

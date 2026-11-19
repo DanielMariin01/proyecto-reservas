@@ -8,6 +8,7 @@ import CampoSelect from '@/componentes/CampoSelect';
 import CampoTexto from '@/componentes/CampoTexto';
 import CampoTextoLargo from '@/componentes/CampoTextoLargo';
 import PadFirma from '@/componentes/PadFirma';
+import { hoyISO } from '@/utils/fecha';
 import type { Profesional } from '../api/profesionales';
 import { type DatosHistoriaClinica, ErrorDeValidacion, type ErroresValidacion } from '../api/historiasClinicas';
 
@@ -107,7 +108,7 @@ const TEXTO_CONSENTIMIENTO =
 function valoresVacios(): DatosHistoriaClinica {
     return {
         profesional_id: 0,
-        fecha: new Date().toISOString().slice(0, 10),
+        fecha: hoyISO(),
         alergias: false,
         reaccion_anterior: false,
         diabetes: false,

@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Boton from '@/componentes/Boton';
 import CampoTexto from '@/componentes/CampoTexto';
 import Tarjeta from '@/componentes/Tarjeta';
+import { hoyISO } from '@/utils/fecha';
 import { actualizarMiHorarioSemanal, type DiasHorario, obtenerMiHorarioSemanal } from '../api/horarioSemanal';
 import {
     crearBloqueoRapido,
@@ -25,7 +26,7 @@ interface Propiedades {
 }
 
 export default function PaginaMiHorario({ negocioNombre, negocioSlug, urlSalir, tokenCsrf }: Propiedades): ReactElement {
-    const hoy = new Date().toISOString().slice(0, 10);
+    const hoy = hoyISO();
     const [fecha, setFecha] = useState(hoy);
     const [horaInicio, setHoraInicio] = useState('');
     const [horaFin, setHoraFin] = useState('');
