@@ -2,6 +2,16 @@ import axios from 'axios';
 
 export type RangoFinanzas = 'mes' | 'quince_dias' | 'anio';
 
+export interface ErroresValidacion {
+    [campo: string]: string[];
+}
+
+export class ErrorDeValidacion extends Error {
+    constructor(public errores: ErroresValidacion) {
+        super('Error de validación');
+    }
+}
+
 export interface IngresoPorMetodo {
     etiqueta: string;
     total: number;
@@ -41,11 +51,25 @@ export async function registrarGasto(
     slug: string,
     datos: { monto: number; descripcion: string; fecha: string },
 ): Promise<GastoFinanzas> {
-    const respuesta = await axios.post<{ data: GastoFinanzas }>(`/app/${slug}/api/finanzas/gastos`, datos);
+    try {
+        const respuesta = await axios.post<{ data: GastoFinanzas }>(`/app/${slug}/api/finanzas/gastos`, datos);
 
-    return respuesta.data.data;
+        return respuesta.data.data;
+    } catch (error) {
+        throw convertirError(error);
+    }
 }
 
 export async function eliminarGasto(slug: string, gastoId: number): Promise<void> {
     await axios.delete(`/app/${slug}/api/finanzas/gastos/${gastoId}`);
+}
+
+function convertirError(error: unknown): unknown {
+    if (axios.isAxiosError(error) && error.response?.status === 422) {
+        const datos = error.response.data as { errors: ErroresValidacion };
+
+        return new ErrorDeValidacion(datos.errors);
+    }
+
+    return error;
 }

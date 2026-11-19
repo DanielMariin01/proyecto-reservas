@@ -1,9 +1,9 @@
 import type { ReactElement } from 'react';
 import { useState } from 'react';
-import { useMutation } from '@tanstack/react-query';
 import { Button } from '@/componentes/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/componentes/ui/dialog';
 import { Input } from '@/componentes/ui/input';
+import { useMutacionConAlerta } from '@/componentes/useMutacionConAlerta';
 import { hoyISO } from '@/utils/fecha';
 import { registrarGasto } from '../../api/finanzas';
 
@@ -17,16 +17,14 @@ export default function DialogoNuevoGasto({ negocioSlug, onRegistrado, onCerrar 
     const [monto, setMonto] = useState('');
     const [descripcion, setDescripcion] = useState('');
     const [fecha, setFecha] = useState(hoyISO());
-    const [error, setError] = useState<string | null>(null);
 
-    const mutacion = useMutation({
+    const mutacion = useMutacionConAlerta({
         mutationFn: () => registrarGasto(negocioSlug, { monto: Number(monto), descripcion, fecha }),
+        mensajeExito: 'Gasto registrado correctamente.',
         onSuccess: onRegistrado,
-        onError: () => setError('No se pudo registrar el gasto. Código REF-FIN1.'),
     });
 
     function enviar(): void {
-        setError(null);
         mutacion.mutate();
     }
 
@@ -38,8 +36,6 @@ export default function DialogoNuevoGasto({ negocioSlug, onRegistrado, onCerrar 
                 </DialogHeader>
 
                 <div className="space-y-4">
-                    {error && <p className="text-sm text-destructive">{error}</p>}
-
                     <div className="space-y-1">
                         <label htmlFor="gasto-monto" className="text-sm font-medium text-foreground">
                             Monto

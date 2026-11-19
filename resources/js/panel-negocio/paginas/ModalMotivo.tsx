@@ -14,6 +14,18 @@ interface Propiedades {
 
 export default function ModalMotivo({ titulo, etiqueta, enviando, errorGeneral, onConfirmar, onCerrar }: Propiedades): ReactElement {
     const [motivo, setMotivo] = useState('');
+    const [intentoConfirmar, setIntentoConfirmar] = useState(false);
+    const motivoVacio = motivo.trim() === '';
+
+    function confirmar(): void {
+        setIntentoConfirmar(true);
+
+        if (motivoVacio) {
+            return;
+        }
+
+        onConfirmar(motivo);
+    }
 
     return (
         <Modal titulo={titulo} onCerrar={onCerrar}>
@@ -31,9 +43,10 @@ export default function ModalMotivo({ titulo, etiqueta, enviando, errorGeneral, 
                         rows={3}
                         className="rounded-boton border border-gris-claro px-3 py-2 text-tinta focus:border-primario focus:outline-none"
                     />
+                    {intentoConfirmar && motivoVacio && <p className="text-sm text-red-600">El motivo es obligatorio.</p>}
                 </div>
 
-                <Boton onClick={() => onConfirmar(motivo)} disabled={enviando || motivo.trim() === ''} className="w-full">
+                <Boton onClick={confirmar} disabled={enviando} className="w-full">
                     {enviando ? 'Guardando...' : 'Confirmar'}
                 </Boton>
             </div>
