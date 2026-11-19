@@ -30,6 +30,23 @@ export async function mostrarErrorDeValidacion(mensajes: string[]): Promise<void
     });
 }
 
+/**
+ * Para un error que no es de validación por campo (una regla de negocio
+ * rechazada, p. ej. "Este cliente ya tiene una cita a esa hora", o
+ * cualquier otro mensaje del servidor que no venga con `errores` por
+ * campo) - mostrarErrorDeValidacion asume una lista de mensajes de campo,
+ * esta asume un solo mensaje ya listo para mostrar.
+ */
+export async function mostrarError(mensaje: string): Promise<void> {
+    await Swal.fire({
+        ...BASE,
+        icon: 'error',
+        iconColor: '#dc2626',
+        title: mensaje,
+        confirmButtonText: 'Entendido',
+    });
+}
+
 export async function mostrarExito(mensaje: string): Promise<void> {
     await Swal.fire({
         ...BASE,
