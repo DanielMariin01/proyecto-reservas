@@ -44,15 +44,23 @@ export async function publicarPagina(slug: string): Promise<PaginaWeb> {
     return respuesta.data.data;
 }
 
-export async function subirImagenPagina(slug: string, archivo: File): Promise<{ ruta: string; url: string }> {
+export async function subirImagenPagina(slug: string, archivo: File, tipoBloque?: string): Promise<{ ruta: string; url: string }> {
     const datos = new FormData();
     datos.append('imagen', archivo);
 
-    const respuesta = await axios.post<{ ruta: string; url: string }>(`/admin/api/negocios/${slug}/pagina/imagenes`, datos, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-    });
+    if (tipoBloque) {
+        datos.append('tipo_bloque', tipoBloque);
+    }
 
-    return respuesta.data;
+    try {
+        const respuesta = await axios.post<{ ruta: string; url: string }>(`/admin/api/negocios/${slug}/pagina/imagenes`, datos, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+        });
+
+        return respuesta.data;
+    } catch (error) {
+        throw convertirError(error);
+    }
 }
 
 function convertirError(error: unknown): unknown {

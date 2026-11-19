@@ -2,25 +2,30 @@ import type { ChangeEvent, ReactElement } from 'react';
 import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { X } from 'lucide-react';
-import { subirImagenPagina } from '../../api/paginaWeb';
+import { ErrorDeValidacion, subirImagenPagina } from '../../api/paginaWeb';
 
 interface Propiedades {
     slug: string;
     etiqueta: string;
     value: string | null;
     onChange: (ruta: string | null) => void;
+    tipoBloque?: string;
 }
 
-export default function CampoImagenBloque({ slug, etiqueta, value, onChange }: Propiedades): ReactElement {
+export default function CampoImagenBloque({ slug, etiqueta, value, onChange, tipoBloque }: Propiedades): ReactElement {
     const [error, setError] = useState<string | null>(null);
 
     const mutacion = useMutation({
-        mutationFn: (archivo: File) => subirImagenPagina(slug, archivo),
+        mutationFn: (archivo: File) => subirImagenPagina(slug, archivo, tipoBloque),
         onSuccess: (respuesta) => {
             setError(null);
             onChange(respuesta.url);
         },
-        onError: () => setError('No se pudo subir la imagen. Código REF-IMG1.'),
+        onError: (error: unknown) => {
+            const mensaje = error instanceof ErrorDeValidacion ? error.errores.imagen?.[0] : null;
+
+            setError(mensaje ?? 'No se pudo subir la imagen. Código REF-IMG1.');
+        },
     });
 
     function manejarArchivo(evento: ChangeEvent<HTMLInputElement>): void {
