@@ -65,7 +65,12 @@ export default function LayoutPanelNegocio({ negocioNombre, negocioSlug, urlSali
                   { etiqueta: 'Categorías de servicio', href: `/app/${negocioSlug}/categorias-servicio`, Icono: Tags },
               ]
             : []),
-        ...(puedeGestionarProductos ? [{ etiqueta: 'Productos', href: `/app/${negocioSlug}/productos`, Icono: ShoppingBag }] : []),
+        ...(puedeGestionarProductos
+            ? [
+                  { etiqueta: 'Productos', href: `/app/${negocioSlug}/productos`, Icono: ShoppingBag },
+                  { etiqueta: 'Categorías de producto', href: `/app/${negocioSlug}/categorias-producto`, Icono: Tags },
+              ]
+            : []),
         ...(puedeGestionarPedidos ? [{ etiqueta: 'Pedidos', href: `/app/${negocioSlug}/pedidos`, Icono: PackageCheck }] : []),
         ...(esProfesional ? [{ etiqueta: 'Mi horario', href: `/app/${negocioSlug}/mi-horario`, Icono: Clock }] : []),
         ...(puedeGestionarNegocio ? [{ etiqueta: 'Página web', href: `/app/${negocioSlug}/pagina-web`, Icono: Globe }] : []),

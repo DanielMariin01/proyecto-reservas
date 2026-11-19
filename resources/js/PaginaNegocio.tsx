@@ -6,8 +6,8 @@ import { obtenerPagina } from '@/bloques/api/clientePagina';
 import registroBloques from '@/bloques/registroBloques';
 import type { OpcionesReserva } from '@/bloques/tipos';
 import FlujoCompra from '@/flujo-compra/FlujoCompra';
+import useCarrito from '@/flujo-compra/useCarrito';
 import FlujoReserva from '@/flujo-reserva/FlujoReserva';
-import type { ItemCarrito, Producto } from '@/tipos';
 
 interface PropiedadesPaginaNegocio {
     slug: string;
@@ -16,37 +16,7 @@ interface PropiedadesPaginaNegocio {
 export default function PaginaNegocio({ slug }: PropiedadesPaginaNegocio): ReactElement {
     const vistaPrevia = useMemo(() => new URLSearchParams(window.location.search).get('vista_previa') === '1', []);
     const [reserva, setReserva] = useState<OpcionesReserva | null>(null);
-    const [carrito, setCarrito] = useState<ItemCarrito[]>([]);
-    const [mostrarCarrito, setMostrarCarrito] = useState(false);
-
-    function agregarAlCarrito(producto: Producto): void {
-        setCarrito((actual) => {
-            const existente = actual.find((item) => item.producto.id === producto.id);
-
-            if (existente) {
-                return actual.map((item) => (item.producto.id === producto.id ? { ...item, cantidad: item.cantidad + 1 } : item));
-            }
-
-            return [...actual, { producto, cantidad: 1 }];
-        });
-        setMostrarCarrito(true);
-    }
-
-    function cambiarCantidadEnCarrito(productoId: number, cantidad: number): void {
-        if (cantidad <= 0) {
-            setCarrito((actual) => actual.filter((item) => item.producto.id !== productoId));
-
-            return;
-        }
-
-        setCarrito((actual) => actual.map((item) => (item.producto.id === productoId ? { ...item, cantidad } : item)));
-    }
-
-    function quitarDelCarrito(productoId: number): void {
-        setCarrito((actual) => actual.filter((item) => item.producto.id !== productoId));
-    }
-
-    const totalDeItems = carrito.reduce((suma, item) => suma + item.cantidad, 0);
+    const carrito = useCarrito();
 
     const paginaQuery = useQuery({
         queryKey: ['pagina', slug, vistaPrevia],
@@ -109,20 +79,20 @@ export default function PaginaNegocio({ slug }: PropiedadesPaginaNegocio): React
                         pagina={pagina}
                         slug={slug}
                         onReservar={setReserva}
-                        onAgregarAlCarrito={agregarAlCarrito}
+                        onAgregarAlCarrito={carrito.agregar}
                     />
                 );
             })}
 
-            {!mostrarCarrito && carrito.length > 0 && (
+            {!carrito.mostrar && carrito.items.length > 0 && (
                 <button
                     type="button"
-                    onClick={() => setMostrarCarrito(true)}
+                    onClick={carrito.abrir}
                     aria-label="Ver carrito"
                     className="fixed bottom-6 right-6 z-40 flex items-center gap-2 rounded-full bg-primario px-5 py-3 text-blanco shadow-tarjeta"
                 >
                     <ShoppingCart size={20} strokeWidth={1.75} />
-                    <span className="font-semibold">{totalDeItems}</span>
+                    <span className="font-semibold">{carrito.totalDeItems}</span>
                 </button>
             )}
 
@@ -136,15 +106,15 @@ export default function PaginaNegocio({ slug }: PropiedadesPaginaNegocio): React
                 />
             )}
 
-            {mostrarCarrito && (
+            {carrito.mostrar && (
                 <FlujoCompra
                     slug={slug}
                     direccion={pagina.direccion}
-                    carrito={carrito}
-                    onCambiarCantidad={cambiarCantidadEnCarrito}
-                    onQuitarItem={quitarDelCarrito}
-                    onCerrar={() => setMostrarCarrito(false)}
-                    onPedidoCreado={() => setCarrito([])}
+                    carrito={carrito.items}
+                    onCambiarCantidad={carrito.cambiarCantidad}
+                    onQuitarItem={carrito.quitar}
+                    onCerrar={carrito.cerrar}
+                    onPedidoCreado={carrito.vaciar}
                 />
             )}
         </main>

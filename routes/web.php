@@ -22,6 +22,7 @@ use App\Http\Controllers\Admin\TrabajoFallidoController;
 use App\Http\Controllers\Admin\UsuarioController;
 use App\Http\Controllers\App\AgendaDelDiaController;
 use App\Http\Controllers\App\BloqueoController;
+use App\Http\Controllers\App\CategoriaProductoController;
 use App\Http\Controllers\App\CategoriaServicioController;
 use App\Http\Controllers\App\CitaAccionesController;
 use App\Http\Controllers\App\CitaController;
@@ -31,6 +32,7 @@ use App\Http\Controllers\App\HistoriaClinicaController;
 use App\Http\Controllers\App\MiHorarioController;
 use App\Http\Controllers\App\MisCitasHoyController;
 use App\Http\Controllers\App\PaginaAgendaDelDiaController;
+use App\Http\Controllers\App\PaginaCategoriaProductoController;
 use App\Http\Controllers\App\PaginaCategoriaServicioController;
 use App\Http\Controllers\App\PaginaCitaController;
 use App\Http\Controllers\App\PaginaClienteController;
@@ -71,6 +73,7 @@ use App\Http\Controllers\ElegirNegocioController;
 use App\Http\Controllers\EstadoController;
 use App\Http\Controllers\GestionarCitaVistaController;
 use App\Http\Controllers\PaginaNegocioController;
+use App\Http\Controllers\PaginaTiendaController;
 use App\Http\Controllers\RestablecimientoContrasenaController;
 use App\Http\Controllers\SesionController;
 use App\Http\Controllers\SolicitarRestablecimientoContrasenaController;
@@ -189,6 +192,14 @@ Route::middleware(['auth', VerificarSuperAdmin::class])->group(function (): void
 Route::get('/{negocio:slug}/reservas/{token}', [GestionarCitaVistaController::class, 'mostrar'])
     ->name('gestionar-cita');
 
+// Modulo de tienda: pagina dedicada con todos los productos y categorias
+// (el bloque "productos" de la pagina principal solo muestra los primeros
+// 8). Mismo patron de ruta de dos segmentos que gestionar-cita, va antes
+// del comodin de un solo segmento de abajo.
+Route::get('/{negocio:slug}/tienda', [PaginaTiendaController::class, 'mostrar'])
+    ->middleware(VerificarNegocioAceptaReservas::class)
+    ->name('tienda');
+
 // T14 (migracion de Filament): raiz del panel app, reemplaza el Dashboard
 // por defecto de Filament. El resto de recursos siguen en /app/{slug}/*
 // bajo Filament mientras se migran uno por uno.
@@ -220,6 +231,11 @@ Route::middleware(['auth', ResolverNegocioDesdeRuta::class])->prefix('app/{negoc
     Route::get('/categorias-servicio/create', [PaginaCategoriaServicioController::class, 'create'])->name('app.categorias-servicio.create');
     Route::get('/categorias-servicio/{categoriaServicio}/edit', [PaginaCategoriaServicioController::class, 'edit'])
         ->name('app.categorias-servicio.edit');
+
+    Route::get('/categorias-producto', [PaginaCategoriaProductoController::class, 'index'])->name('app.categorias-producto.index');
+    Route::get('/categorias-producto/create', [PaginaCategoriaProductoController::class, 'create'])->name('app.categorias-producto.create');
+    Route::get('/categorias-producto/{categoriaProducto}/edit', [PaginaCategoriaProductoController::class, 'edit'])
+        ->name('app.categorias-producto.edit');
 
     // T22 (migracion de Filament): usuarios del negocio (staff).
     Route::get('/usuarios', [PaginaUsuarioAppController::class, 'index'])->name('app.usuarios.index');
@@ -327,6 +343,12 @@ Route::middleware(['auth', ResolverNegocioDesdeRuta::class])->prefix('app/{negoc
         Route::put('/categorias-servicio/{categoriaServicio}', [CategoriaServicioController::class, 'update']);
         Route::delete('/categorias-servicio/{categoriaServicio}', [CategoriaServicioController::class, 'destroy']);
         Route::post('/categorias-servicio/reordenar', [CategoriaServicioController::class, 'reordenar']);
+
+        Route::get('/categorias-producto', [CategoriaProductoController::class, 'index']);
+        Route::post('/categorias-producto', [CategoriaProductoController::class, 'store']);
+        Route::put('/categorias-producto/{categoriaProducto}', [CategoriaProductoController::class, 'update']);
+        Route::delete('/categorias-producto/{categoriaProducto}', [CategoriaProductoController::class, 'destroy']);
+        Route::post('/categorias-producto/reordenar', [CategoriaProductoController::class, 'reordenar']);
 
         Route::get('/usuarios', [UsuarioAppController::class, 'index']);
         Route::post('/usuarios', [UsuarioAppController::class, 'store']);

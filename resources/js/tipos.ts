@@ -129,6 +129,8 @@ export interface Producto {
     id: number;
     nombre: string;
     descripcion: string | null;
+    categoria: string | null;
+    categoriaProductoId: number | null;
     foto: string | null;
     precio: number;
 }

@@ -23,6 +23,7 @@ if (contenedor) {
                 productoId={productoId}
                 valoresIniciales={{
                     nombre: contenedor.dataset.nombre ?? '',
+                    categoria_producto_id: contenedor.dataset.categoriaProductoId ? Number(contenedor.dataset.categoriaProductoId) : null,
                     descripcion: contenedor.dataset.descripcion ?? '',
                     foto: contenedor.dataset.foto || null,
                     precio: Number(contenedor.dataset.precio ?? '0'),
