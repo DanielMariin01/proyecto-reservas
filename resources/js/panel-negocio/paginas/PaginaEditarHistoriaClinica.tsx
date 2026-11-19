@@ -1,7 +1,7 @@
 import type { ReactElement } from 'react';
 import { useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import Alerta from '@/componentes/Alerta';
+import { mostrarExito } from '@/componentes/alertas';
 import { obtenerCliente } from '../api/clientes';
 import {
     actualizarHistoriaClinica,
@@ -12,8 +12,6 @@ import {
 import { obtenerProfesionales } from '../api/profesionales';
 import LayoutPanelNegocio from '../LayoutPanelNegocio';
 import FormularioHistoriaClinica from './FormularioHistoriaClinica';
-
-const ESPERA_ANTES_DE_VOLVER_MS = 1200;
 
 interface Propiedades {
     negocioNombre: string;
@@ -103,11 +101,10 @@ export default function PaginaEditarHistoriaClinica({
 
     const mutacion = useMutation({
         mutationFn: (datos: DatosHistoriaClinica) => actualizarHistoriaClinica(negocioSlug, clienteId, historiaClinicaId, datos),
-        onSuccess: () => {
+        onSuccess: async () => {
             setGuardadoConExito(true);
-            setTimeout(() => {
-                window.location.href = `/app/${negocioSlug}/clientes/${clienteId}`;
-            }, ESPERA_ANTES_DE_VOLVER_MS);
+            await mostrarExito('Cambios guardados correctamente.');
+            window.location.href = `/app/${negocioSlug}/clientes/${clienteId}`;
         },
     });
 
@@ -119,8 +116,6 @@ export default function PaginaEditarHistoriaClinica({
         <LayoutPanelNegocio negocioNombre={negocioNombre} negocioSlug={negocioSlug} urlSalir={urlSalir} tokenCsrf={tokenCsrf}>
             <div className="space-y-4">
                 <h2 className="text-lg font-semibold text-tinta">Editar registro de historia clínica</h2>
-
-                {guardadoConExito && <Alerta tipo="exito">Cambios guardados correctamente.</Alerta>}
 
                 {(consultaCliente.isLoading || consultaProfesionales.isLoading || consultaHistorias.isLoading) && (
                     <div className="h-28 max-w-3xl animate-pulse rounded-tarjeta bg-gris-claro" />

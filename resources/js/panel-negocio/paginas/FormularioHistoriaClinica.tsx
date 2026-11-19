@@ -1,7 +1,7 @@
 import type { ReactElement } from 'react';
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import Acordeon from '@/componentes/Acordeon';
-import Alerta from '@/componentes/Alerta';
+import { mostrarErrorDeValidacion } from '@/componentes/alertas';
 import Boton from '@/componentes/Boton';
 import CampoCasilla from '@/componentes/CampoCasilla';
 import CampoSelect from '@/componentes/CampoSelect';
@@ -168,7 +168,6 @@ export default function FormularioHistoriaClinica({
     const [datos, setDatos] = useState<DatosHistoriaClinica>(valoresIniciales ?? valoresVacios());
     const [seccionAbierta, setSeccionAbierta] = useState(1);
     const [errores, setErrores] = useState<ErroresValidacion>({});
-    const refAlerta = useRef<HTMLDivElement>(null);
 
     function set<K extends keyof DatosHistoriaClinica>(campo: K, valor: DatosHistoriaClinica[K]): void {
         setDatos((anterior) => ({ ...anterior, [campo]: valor }));
@@ -195,7 +194,11 @@ export default function FormularioHistoriaClinica({
         } catch (error) {
             if (error instanceof ErrorDeValidacion) {
                 setErrores(error.errores);
-                refAlerta.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+                const mensajes = Object.values(error.errores)
+                    .map((lista) => lista[0])
+                    .filter((mensaje): mensaje is string => Boolean(mensaje));
+                await mostrarErrorDeValidacion(mensajes);
 
                 return;
             }
@@ -204,25 +207,8 @@ export default function FormularioHistoriaClinica({
         }
     }
 
-    const mensajesDeError = Object.values(errores)
-        .map((lista) => lista[0])
-        .filter((mensaje): mensaje is string => Boolean(mensaje));
-
     return (
         <div className="max-w-3xl space-y-4">
-            {mensajesDeError.length > 0 && (
-                <div ref={refAlerta}>
-                    <Alerta tipo="error">
-                        <p className="font-medium">No se pudo guardar. Revisa lo siguiente:</p>
-                        <ul className="mt-1 list-inside list-disc">
-                            {mensajesDeError.map((mensaje) => (
-                                <li key={mensaje}>{mensaje}</li>
-                            ))}
-                        </ul>
-                    </Alerta>
-                </div>
-            )}
-
             <Acordeon titulo="1. Datos básicos" abierta={seccionAbierta === 1} onCambiar={() => alCambiarSeccion(1)}>
                 <div className="grid gap-1 text-sm text-texto-suave">
                     <p>
