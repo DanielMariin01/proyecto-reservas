@@ -114,7 +114,13 @@ export default function BloquePortadaForm({ slug, datos, onChange }: Propiedades
                 )}
             />
 
-            <CampoImagenBloque slug={slug} etiqueta="Foto de fondo" value={imagen} onChange={(ruta) => onChange({ ...datos, imagen: ruta })} />
+            <CampoImagenBloque
+                slug={slug}
+                etiqueta="Foto de fondo"
+                value={imagen}
+                onChange={(ruta) => onChange({ ...datos, imagen: ruta })}
+                tipoBloque="portada"
+            />
 
             <CampoTexto
                 etiqueta="Texto manuscrito (opcional)"

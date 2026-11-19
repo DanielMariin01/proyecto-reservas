@@ -133,3 +133,43 @@ test('subir una imagen para un bloque la guarda en el disco publico', function (
     $respuesta->assertOk();
     Storage::disk('public')->assertExists($respuesta->json('ruta'));
 });
+
+test('subir una imagen chica para portada se rechaza por resolucion minima', function (): void {
+    Storage::fake('public');
+    $superAdmin = Usuario::factory()->superAdmin()->create();
+    $negocio = Negocio::factory()->create();
+
+    $respuesta = $this->actingAs($superAdmin)->postJson("/admin/api/negocios/{$negocio->slug}/pagina/imagenes", [
+        'imagen' => UploadedFile::fake()->createWithContent('portada.png', crearPngDePrueba(1200, 700)),
+        'tipo_bloque' => 'portada',
+    ]);
+
+    $respuesta->assertUnprocessable()->assertJsonValidationErrors(['imagen']);
+});
+
+test('subir una imagen con suficiente resolucion para portada se acepta', function (): void {
+    Storage::fake('public');
+    $superAdmin = Usuario::factory()->superAdmin()->create();
+    $negocio = Negocio::factory()->create();
+
+    $respuesta = $this->actingAs($superAdmin)->postJson("/admin/api/negocios/{$negocio->slug}/pagina/imagenes", [
+        'imagen' => UploadedFile::fake()->createWithContent('portada.png', crearPngDePrueba(1920, 1080)),
+        'tipo_bloque' => 'portada',
+    ]);
+
+    $respuesta->assertOk();
+    Storage::disk('public')->assertExists($respuesta->json('ruta'));
+});
+
+test('una imagen chica se acepta para un bloque que no es portada', function (): void {
+    Storage::fake('public');
+    $superAdmin = Usuario::factory()->superAdmin()->create();
+    $negocio = Negocio::factory()->create();
+
+    $respuesta = $this->actingAs($superAdmin)->postJson("/admin/api/negocios/{$negocio->slug}/pagina/imagenes", [
+        'imagen' => UploadedFile::fake()->createWithContent('equipo.png', crearPngDePrueba(400, 400)),
+        'tipo_bloque' => 'equipo',
+    ]);
+
+    $respuesta->assertOk();
+});
