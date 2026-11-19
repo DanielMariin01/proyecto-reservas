@@ -83,7 +83,7 @@ export default function DatosYConfirmacion({
 
                 <section>
                     <h3 className="mb-2 text-sm font-semibold text-tinta">Contacto</h3>
-                    <CampoTexto etiqueta="Correo" type="email" value={correo} onChange={(e) => setCorreo(e.target.value)} />
+                    <CampoTexto etiqueta="Correo (opcional)" type="email" value={correo} onChange={(e) => setCorreo(e.target.value)} />
                 </section>
 
                 <section className="space-y-3">

@@ -73,7 +73,18 @@ export default function PaginaFinanzas({ negocioNombre, negocioSlug, urlSalir, t
                 </div>
 
                 {consulta.isLoading ? (
-                    <p className="text-sm text-muted-foreground">Cargando...</p>
+                    <div className="space-y-6">
+                        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                            {[1, 2, 3, 4].map((n) => (
+                                <div key={n} className="h-24 animate-pulse rounded-tarjeta bg-gris-claro" />
+                            ))}
+                        </div>
+                        <div className="grid gap-4 lg:grid-cols-2">
+                            <div className="h-64 animate-pulse rounded-tarjeta bg-gris-claro" />
+                            <div className="h-64 animate-pulse rounded-tarjeta bg-gris-claro" />
+                        </div>
+                        <div className="h-48 animate-pulse rounded-tarjeta bg-gris-claro" />
+                    </div>
                 ) : consulta.isError ? (
                     <p className="text-sm text-muted-foreground">Algo falló cargando finanzas. Código REF-FIN0.</p>
                 ) : datos ? (

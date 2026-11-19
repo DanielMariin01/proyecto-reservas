@@ -16,7 +16,7 @@ export default function BloqueEquipo({ datos, slug, onReservar }: PropiedadesBlo
 
     return (
         <section style={obtenerEstiloColor(datos)}>
-            <div className="mx-auto max-w-5xl px-4 py-10 sm:py-16">
+            <div className="mx-auto max-w-[1200px] px-4 py-10 sm:py-16">
                 <h2 className="mb-6 text-3xl font-bold sm:text-4xl">Nuestro equipo</h2>
 
                 {profesionalesQuery.isLoading && (
@@ -36,7 +36,7 @@ export default function BloqueEquipo({ datos, slug, onReservar }: PropiedadesBlo
                 {profesionalesQuery.data && profesionalesQuery.data.length > 0 && (
                     <Carrusel etiqueta="Nuestro equipo">
                         {profesionalesQuery.data.map((profesional) => (
-                            <Tarjeta key={profesional.id} className="flex w-[200px] shrink-0 snap-start flex-col items-center gap-2 text-center">
+                            <Tarjeta key={profesional.id} className="flex w-[240px] shrink-0 snap-start flex-col items-center gap-2 text-center">
                                 {profesional.foto ? (
                                     <img src={profesional.foto} alt="" className="h-20 w-20 rounded-full object-cover" />
                                 ) : (

@@ -32,7 +32,7 @@ export default function BloqueTestimonios({ datos }: PropiedadesBloque): ReactEl
 
     return (
         <section style={obtenerEstiloColor(datos)}>
-            <div className="mx-auto max-w-5xl px-4 py-16 sm:py-24">
+            <div className="mx-auto max-w-[1200px] px-4 py-16 sm:py-24">
                 <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                     {testimonios.map((testimonio, indice) => {
                         const cita = typeof testimonio.cita === 'string' ? testimonio.cita : '';

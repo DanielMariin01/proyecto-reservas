@@ -26,7 +26,7 @@ export default function BloqueServiciosDestacados({ datos, onReservar }: Propied
 
     return (
         <section style={obtenerEstiloColor(datos)}>
-            <div className="mx-auto max-w-5xl px-4 py-10 sm:py-16">
+            <div className="mx-auto max-w-[1200px] px-4 py-10 sm:py-16">
                 <div className="mb-6 flex items-center justify-between gap-4">
                     <h2 className="text-3xl font-bold sm:text-4xl">Lo más pedido</h2>
                     <button type="button" onClick={irAlCatalogoDeServicios} className="shrink-0 text-sm font-semibold text-primario hover:underline">

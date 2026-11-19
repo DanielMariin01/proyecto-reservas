@@ -1,8 +1,9 @@
-import { Banknote, Calendar, Clock, Scissors, User } from 'lucide-react';
+import { Banknote, Calendar, Clock, Mail, Phone, Scissors, User } from 'lucide-react';
 import type { ReactElement } from 'react';
 import Boton from '@/componentes/Boton';
 import LineaDetalle from '@/componentes/LineaDetalle';
 import Tarjeta from '@/componentes/Tarjeta';
+import type { DatosDelCliente } from '@/tipos';
 
 interface PropiedadesConfirmarResumen {
     nombreProfesional: string;
@@ -10,6 +11,7 @@ interface PropiedadesConfirmarResumen {
     horaVisible: string;
     nombreServicio: string;
     precio: number;
+    datosDelCliente: DatosDelCliente;
     enviando: boolean;
     error: string | null;
     onConfirmar: () => void;
@@ -22,6 +24,7 @@ export default function ConfirmarResumen({
     horaVisible,
     nombreServicio,
     precio,
+    datosDelCliente,
     enviando,
     error,
     onConfirmar,
@@ -37,6 +40,15 @@ export default function ConfirmarResumen({
                 <LineaDetalle icono={Clock} texto={horaVisible} />
                 <LineaDetalle icono={Scissors} texto={nombreServicio} />
                 <LineaDetalle icono={Banknote} texto={`$${precio.toLocaleString('es-CO')}`} />
+            </div>
+
+            <hr className="my-4 border-gris-claro" />
+
+            <p className="mb-2 text-sm font-semibold text-tinta">Tus datos</p>
+            <div className="space-y-3">
+                <LineaDetalle icono={User} texto={datosDelCliente.nombre} />
+                <LineaDetalle icono={Phone} texto={datosDelCliente.celular} />
+                {datosDelCliente.correo && <LineaDetalle icono={Mail} texto={datosDelCliente.correo} />}
             </div>
 
             {error && <p className="mt-4 text-sm text-red-600">{error}</p>}

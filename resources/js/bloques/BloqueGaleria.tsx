@@ -13,7 +13,7 @@ export default function BloqueGaleria({ datos }: PropiedadesBloque): ReactElemen
 
     return (
         <section style={obtenerEstiloColor(datos)}>
-            <div className="mx-auto max-w-5xl px-4 py-10 sm:py-16">
+            <div className="mx-auto max-w-[1200px] px-4 py-10 sm:py-16">
                 <h2 className="mb-6 text-3xl font-bold sm:text-4xl">Galería</h2>
 
                 <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">

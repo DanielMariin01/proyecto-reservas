@@ -61,7 +61,7 @@ const OPCIONES_DECISION = [
     { valor: 'se_aplaza', etiqueta: 'Se aplaza/no se realiza' },
 ];
 
-const OPCIONES_SERVICIO_DISENO = [
+export const OPCIONES_SERVICIO_DISENO = [
     { valor: 'tradicional', etiqueta: 'Tradicional' },
     { valor: 'semipermanente', etiqueta: 'Semipermanente' },
     { valor: 'rubber', etiqueta: 'Rubber' },
