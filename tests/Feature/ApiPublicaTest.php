@@ -289,3 +289,62 @@ test('el endpoint de reservas tiene un limite de intentos estricto', function ()
 
     $respuesta->assertStatus(429);
 });
+
+test('el limite de intentos es por celular, no solo por ip: otro cliente desde la misma ip no se bloquea', function (): void {
+    ['negocio' => $negocio, 'servicio' => $servicio, 'fecha' => $fecha] = negocioPublicoListo();
+
+    for ($intento = 1; $intento <= 5; $intento++) {
+        $this->postJson("/api/publico/{$negocio->slug}/reservas", [
+            'servicio_id' => $servicio->id,
+            'inicio' => $fecha->copy()->setTime(10, 0)->utc()->toIso8601String(),
+            'nombre' => 'Ana',
+            'celular' => '3001234567',
+            'autorizacion_datos' => true,
+        ]);
+    }
+
+    $respuestaAna = $this->postJson("/api/publico/{$negocio->slug}/reservas", [
+        'servicio_id' => $servicio->id,
+        'inicio' => $fecha->copy()->setTime(10, 0)->utc()->toIso8601String(),
+        'nombre' => 'Ana',
+        'celular' => '3001234567',
+        'autorizacion_datos' => true,
+    ]);
+    $respuestaAna->assertStatus(429);
+
+    // Misma IP de prueba (todas las peticiones de este test vienen del
+    // mismo cliente HTTP), pero otro celular: no debe toparse con el
+    // limite de Ana.
+    $respuestaBeto = $this->postJson("/api/publico/{$negocio->slug}/reservas", [
+        'servicio_id' => $servicio->id,
+        'inicio' => $fecha->copy()->setTime(11, 0)->utc()->toIso8601String(),
+        'nombre' => 'Beto',
+        'celular' => '3009876543',
+        'autorizacion_datos' => true,
+    ]);
+    $respuestaBeto->assertCreated();
+});
+
+test('el techo por ip sigue frenando el abuso aunque cada intento use un celular distinto', function (): void {
+    ['negocio' => $negocio, 'servicio' => $servicio, 'fecha' => $fecha] = negocioPublicoListo();
+
+    for ($intento = 1; $intento <= 20; $intento++) {
+        $this->postJson("/api/publico/{$negocio->slug}/reservas", [
+            'servicio_id' => $servicio->id,
+            'inicio' => $fecha->copy()->setTime(10, 0)->utc()->toIso8601String(),
+            'nombre' => "Cliente {$intento}",
+            'celular' => "300000{$intento}",
+            'autorizacion_datos' => true,
+        ]);
+    }
+
+    $respuesta = $this->postJson("/api/publico/{$negocio->slug}/reservas", [
+        'servicio_id' => $servicio->id,
+        'inicio' => $fecha->copy()->setTime(10, 0)->utc()->toIso8601String(),
+        'nombre' => 'Cliente 21',
+        'celular' => '3000000021',
+        'autorizacion_datos' => true,
+    ]);
+
+    $respuesta->assertStatus(429);
+});

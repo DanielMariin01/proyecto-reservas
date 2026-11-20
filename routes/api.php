@@ -34,12 +34,14 @@ Route::prefix('publico/{negocio:slug}')
         Route::get('/productos', [ProductosController::class, 'index'])
             ->middleware('throttle:60,1');
 
-        // RNF-04: límite de intentos más estricto en el endpoint de reserva.
+        // RNF-04: límite de intentos más estricto en el endpoint de reserva,
+        // por cliente (celular/correo) y no solo por IP - ver
+        // AppServiceProvider::definirLimitesDeCreacionPublica().
         Route::post('/reservas', [ReservasController::class, 'store'])
-            ->middleware('throttle:5,1');
+            ->middleware('throttle:creacion-publica');
 
         Route::post('/pedidos', [PedidosController::class, 'store'])
-            ->middleware('throttle:5,1');
+            ->middleware('throttle:creacion-publica');
     });
 
 // CU-02: gestionar una cita ya existente desde el enlace del correo. Va

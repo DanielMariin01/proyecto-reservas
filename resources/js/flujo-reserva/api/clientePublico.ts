@@ -25,6 +25,24 @@ export function esErrorDeReservaPublica(error: unknown): error is ErrorDeReserva
     return error instanceof ErrorDeReservaPublica;
 }
 
+const SEGUNDOS_DE_ESPERA_POR_DEFECTO = 60;
+
+export class ErrorDeLimiteDeIntentos extends Error {
+    constructor(public segundosRestantes: number) {
+        super('Demasiados intentos, espera un momento.');
+    }
+}
+
+export function esErrorDeLimiteDeIntentos(error: unknown): error is ErrorDeLimiteDeIntentos {
+    return error instanceof ErrorDeLimiteDeIntentos;
+}
+
+function segundosRestantesDe429(error: AxiosError): number {
+    const segundos = Number(error.response?.headers['retry-after']);
+
+    return Number.isFinite(segundos) && segundos > 0 ? segundos : SEGUNDOS_DE_ESPERA_POR_DEFECTO;
+}
+
 export async function obtenerServicios(slug: string): Promise<Servicio[]> {
     const respuesta = await axios.get<{ data: Servicio[] }>(`/api/publico/${slug}/servicios`);
 
@@ -63,6 +81,10 @@ export async function crearPedido(slug: string, carrito: ItemCarrito[], datosDel
             const primerError = datos.errors ? Object.values(datos.errors)[0]?.[0] : undefined;
 
             throw new ErrorDePedidoPublico(datos.mensaje ?? primerError ?? 'No se pudo crear el pedido.');
+        }
+
+        if (error instanceof AxiosError && error.response?.status === 429) {
+            throw new ErrorDeLimiteDeIntentos(segundosRestantesDe429(error));
         }
 
         throw error;
@@ -132,6 +154,10 @@ export async function crearReserva(
             const datos = error.response.data as ErrorReserva;
 
             throw new ErrorDeReservaPublica(datos.mensaje, datos.horasCercanas);
+        }
+
+        if (error instanceof AxiosError && error.response?.status === 429) {
+            throw new ErrorDeLimiteDeIntentos(segundosRestantesDe429(error));
         }
 
         throw error;
