@@ -9,6 +9,7 @@ use App\Models\Negocio;
 use App\Models\Profesional;
 use App\Models\Usuario;
 use Illuminate\Auth\Notifications\ResetPassword;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 use Spatie\Permission\PermissionRegistrar;
@@ -159,4 +160,17 @@ test('vincular un usuario a un profesional ya existente le asigna el rol profesi
 
     app(PermissionRegistrar::class)->setPermissionsTeamId($negocio->id);
     expect($profesional->usuario->hasRole(RolNegocio::Profesional->value))->toBeTrue();
+});
+
+test('subir la foto de un profesional la guarda en el disco publico', function (): void {
+    Storage::fake('public');
+    $negocio = Negocio::factory()->create();
+    $dueno = crearUsuarioConRol($negocio, RolNegocio::Dueno);
+
+    $respuesta = $this->actingAs($dueno)->postJson("/app/{$negocio->slug}/api/profesionales/imagenes", [
+        'imagen' => UploadedFile::fake()->create('foto.jpg', 100, 'image/jpeg'),
+    ]);
+
+    $respuesta->assertOk();
+    Storage::disk('public')->assertExists($respuesta->json('ruta'));
 });
