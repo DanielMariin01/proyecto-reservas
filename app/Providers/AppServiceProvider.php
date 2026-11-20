@@ -44,14 +44,34 @@ use App\Resenas\CadenaReglasResena;
 use App\Resenas\ReglaCitaCompletada;
 use App\Resenas\ReglaDentroDeVentanaDeResena;
 use App\Resenas\ReglaSinResenaPrevia;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
 use Illuminate\Queue\Events\JobProcessing;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 
 class AppServiceProvider extends ServiceProvider
 {
+    /**
+     * RNF-04: anti-abuso real por cliente, no por IP. Una oficina o wifi
+     * compartido reserva desde una sola IP para varias personas; limitar
+     * solo por IP las bloquea entre sí. Este número frena a una misma
+     * persona (identificada por celular/correo) que insiste demasiado
+     * rápido.
+     */
+    private const INTENTOS_MAXIMOS_POR_CLIENTE_POR_MINUTO = 5;
+
+    /**
+     * Techo de respaldo por IP: sigue limitando el caso de abuso real
+     * (un script que manda muchas reservas con celulares/correos
+     * distintos desde la misma IP), con margen suficiente para varias
+     * personas genuinas reservando seguido desde la misma red.
+     */
+    private const INTENTOS_MAXIMOS_POR_IP_POR_MINUTO = 20;
+
     /**
      * Register any application services.
      */
@@ -105,6 +125,27 @@ class AppServiceProvider extends ServiceProvider
          */
         Queue::before(function (JobProcessing $evento): void {
             app(ContextoObservabilidad::class)->definirIdPeticion((string) Str::uuid());
+        });
+
+        $this->definirLimitesDeCreacionPublica();
+    }
+
+    /**
+     * RNF-04: usado por /api/publico/{slug}/reservas y /pedidos. Dos
+     * límites independientes - el que se cumpla primero da el 429 (y sus
+     * cabeceras Retry-After/X-RateLimit-* reflejan ese límite).
+     */
+    private function definirLimitesDeCreacionPublica(): void
+    {
+        RateLimiter::for('creacion-publica', function (Request $peticion): array {
+            $identificadorCliente = $peticion->string('celular')->toString()
+                ?: $peticion->string('correo')->toString()
+                ?: $peticion->ip();
+
+            return [
+                Limit::perMinute(self::INTENTOS_MAXIMOS_POR_CLIENTE_POR_MINUTO)->by($identificadorCliente),
+                Limit::perMinute(self::INTENTOS_MAXIMOS_POR_IP_POR_MINUTO)->by($peticion->ip()),
+            ];
         });
     }
 }

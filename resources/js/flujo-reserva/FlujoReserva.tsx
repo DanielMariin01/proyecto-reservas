@@ -3,6 +3,7 @@ import type { ReactElement } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import {
     crearReserva,
+    esErrorDeLimiteDeIntentos,
     esErrorDeReservaPublica,
     obtenerDiasConDisponibilidad,
     obtenerHorasDisponibles,
@@ -14,6 +15,7 @@ import DatosYConfirmacion from './DatosYConfirmacion';
 import PantallaExito from './PantallaExito';
 import SeleccionarProfesional from './SeleccionarProfesional';
 import SeleccionarServicio from './SeleccionarServicio';
+import { useCuentaAtras } from './useCuentaAtras';
 import VentanaReserva from './VentanaReserva';
 import type { CitaCreada, DatosDelCliente, HoraDisponible, Servicio } from '@/tipos';
 
@@ -29,6 +31,24 @@ interface PropiedadesFlujoReserva {
 type Paso = 'servicio' | 'profesional' | 'ventana' | 'datos' | 'confirmar' | 'exito';
 
 const CUALQUIERA_DISPONIBLE = 'Cualquiera disponible';
+
+function mensajeDeErrorDeReserva(error: unknown, segundosDeEsperaRestantes: number | null): string | null {
+    if (!error) {
+        return null;
+    }
+
+    if (esErrorDeLimiteDeIntentos(error)) {
+        return segundosDeEsperaRestantes && segundosDeEsperaRestantes > 0
+            ? `Espera un momento antes de volver a reservar (${segundosDeEsperaRestantes} s).`
+            : 'Ya puedes intentar reservar de nuevo.';
+    }
+
+    if (esErrorDeReservaPublica(error)) {
+        return error.message;
+    }
+
+    return 'Algo falló. Inténtalo de nuevo.';
+}
 
 function pasoInicial(servicioInicial: Servicio | null | undefined, profesionalInicial: number | null | undefined): Paso {
     if (!servicioInicial) {
@@ -120,12 +140,10 @@ export default function FlujoReserva({ slug, direccion, servicioInicial, profesi
     const proximoDiaDisponible =
         (diasQuery.data ?? []).find((dia) => diaSeleccionado !== null && dia > diaSeleccionado) ?? null;
 
-    const errorDeReserva =
-        mutacionReserva.error && esErrorDeReservaPublica(mutacionReserva.error)
-            ? mutacionReserva.error.message
-            : mutacionReserva.error
-              ? 'Algo falló. Inténtalo de nuevo.'
-              : null;
+    const segundosDeEsperaDelError =
+        mutacionReserva.error && esErrorDeLimiteDeIntentos(mutacionReserva.error) ? mutacionReserva.error.segundosRestantes : null;
+    const segundosDeEsperaRestantes = useCuentaAtras(segundosDeEsperaDelError);
+    const errorDeReserva = mensajeDeErrorDeReserva(mutacionReserva.error, segundosDeEsperaRestantes);
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-tinta/60 p-4">
