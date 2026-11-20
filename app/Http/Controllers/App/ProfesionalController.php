@@ -102,7 +102,7 @@ final class ProfesionalController extends Controller
         return response()->json(['data' => new RecursoProfesional($profesionalModelo->refresh()->load('usuario'))]);
     }
 
-    public function subirImagen(Request $request): JsonResponse
+    public function subirImagen(Request $request, Negocio $negocio): JsonResponse
     {
         $this->authorize('create', Profesional::class);
 
