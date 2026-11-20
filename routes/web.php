@@ -107,6 +107,9 @@ Route::post('/restablecer-contrasena', [RestablecimientoContrasenaController::cl
 // rutas literales de este archivo.
 Route::get('/estado', [EstadoController::class, 'mostrar'])->name('estado');
 
+Route::view('/politica-de-privacidad', 'politica-de-privacidad')->name('politica.privacidad');
+Route::view('/terminos-de-servicio', 'terminos-de-servicio')->name('terminos.servicio');
+
 Route::middleware('auth')->group(function (): void {
     Route::get('/elegir-negocio', [ElegirNegocioController::class, 'mostrar'])->name('elegir-negocio');
     Route::get('/elegir-negocio/{negocio}', [ElegirNegocioController::class, 'elegir'])->name('elegir-negocio.entrar');
