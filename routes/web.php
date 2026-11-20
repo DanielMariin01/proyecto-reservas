@@ -62,6 +62,7 @@ use App\Http\Controllers\App\ResenaController as ResenaAppController;
 use App\Http\Controllers\App\ServicioController;
 use App\Http\Controllers\App\UsuarioActualController;
 use App\Http\Controllers\App\UsuarioController as UsuarioAppController;
+use App\Http\Controllers\ArchivoAlmacenamientoPublicoController;
 use App\Http\Controllers\Cliente\AreaClienteController;
 use App\Http\Controllers\Cliente\CitasClienteController;
 use App\Http\Controllers\Cliente\DisenoFavoritoController;
@@ -106,6 +107,14 @@ Route::post('/restablecer-contrasena', [RestablecimientoContrasenaController::cl
 // antes del comodín de un solo segmento de abajo, igual que las demás
 // rutas literales de este archivo.
 Route::get('/estado', [EstadoController::class, 'mostrar'])->name('estado');
+
+// Respaldo de storage/app/public: en hosting compartido (Hostinger/
+// LiteSpeed) el symlink public/storage no siempre se sirve como archivo
+// estático, así que la petición llega hasta aquí. Va antes del comodín
+// de un solo segmento de abajo, igual que las demás rutas literales.
+Route::get('/storage/{ruta}', [ArchivoAlmacenamientoPublicoController::class, 'mostrar'])
+    ->where('ruta', '.*')
+    ->name('storage.respaldo');
 
 Route::view('/politica-de-privacidad', 'politica-de-privacidad')->name('politica.privacidad');
 Route::view('/terminos-de-servicio', 'terminos-de-servicio')->name('terminos.servicio');

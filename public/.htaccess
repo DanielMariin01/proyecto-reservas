@@ -3,6 +3,13 @@
         Options -MultiViews -Indexes
     </IfModule>
 
+    # En hosting compartido (ej. Hostinger/LiteSpeed) el chequeo de
+    # archivo de abajo (!-f) puede no reconocer archivos alcanzados por el
+    # symlink public/storage si no se sigue; esto evita que se sirvan por
+    # PHP. Si el panel no lo permite, ArchivoAlmacenamientoPublicoController
+    # (routes/web.php) sirve de respaldo.
+    Options +FollowSymLinks
+
     RewriteEngine On
 
     # Handle Authorization Header
