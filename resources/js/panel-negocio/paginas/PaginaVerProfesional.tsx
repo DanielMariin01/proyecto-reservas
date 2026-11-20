@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import Boton from '@/componentes/Boton';
 import Tarjeta from '@/componentes/Tarjeta';
+import { construirUrlAlmacenamiento } from '@/utils/almacenamiento';
 import { actualizarHorarioSemanal, type DiasHorario, obtenerHorarioSemanal, obtenerVistaPreviaDisponibilidad } from '../api/horarioSemanal';
 import type { Profesional } from '../api/profesionales';
 import LayoutPanelNegocio from '../LayoutPanelNegocio';
@@ -51,7 +52,7 @@ export default function PaginaVerProfesional({ negocioNombre, negocioSlug, urlSa
                 <Tarjeta className="grid gap-4 sm:grid-cols-2">
                     <div className="flex items-center gap-4">
                         {profesional.foto ? (
-                            <img src={profesional.foto} alt="" className="h-16 w-16 rounded-full object-cover" />
+                            <img src={construirUrlAlmacenamiento(profesional.foto)} alt="" className="h-16 w-16 rounded-full object-cover" />
                         ) : (
                             <div className="h-16 w-16 rounded-full bg-gris-claro" />
                         )}

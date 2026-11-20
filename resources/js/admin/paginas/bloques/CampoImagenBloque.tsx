@@ -2,6 +2,7 @@ import type { ChangeEvent, ReactElement } from 'react';
 import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { X } from 'lucide-react';
+import { construirUrlAlmacenamiento } from '@/utils/almacenamiento';
 import { ErrorDeValidacion, subirImagenPagina } from '../../api/paginaWeb';
 
 interface Propiedades {
@@ -9,17 +10,16 @@ interface Propiedades {
     etiqueta: string;
     value: string | null;
     onChange: (ruta: string | null) => void;
-    tipoBloque?: string;
 }
 
-export default function CampoImagenBloque({ slug, etiqueta, value, onChange, tipoBloque }: Propiedades): ReactElement {
+export default function CampoImagenBloque({ slug, etiqueta, value, onChange }: Propiedades): ReactElement {
     const [error, setError] = useState<string | null>(null);
 
     const mutacion = useMutation({
-        mutationFn: (archivo: File) => subirImagenPagina(slug, archivo, tipoBloque),
+        mutationFn: (archivo: File) => subirImagenPagina(slug, archivo),
         onSuccess: (respuesta) => {
             setError(null);
-            onChange(respuesta.url);
+            onChange(respuesta.ruta);
         },
         onError: (error: unknown) => {
             const mensaje = error instanceof ErrorDeValidacion ? error.errores.imagen?.[0] : null;
@@ -42,7 +42,11 @@ export default function CampoImagenBloque({ slug, etiqueta, value, onChange, tip
 
             {value && (
                 <div className="relative w-40">
-                    <img src={value} alt="" className="aspect-square w-40 rounded-boton border border-gris-claro object-cover" />
+                    <img
+                        src={construirUrlAlmacenamiento(value)}
+                        alt=""
+                        className="aspect-square w-40 rounded-boton border border-gris-claro object-cover"
+                    />
                     <button
                         type="button"
                         aria-label="Quitar imagen"

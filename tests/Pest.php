@@ -37,20 +37,3 @@ function crearUsuarioConRol(Negocio $negocio, RolNegocio $rol, array $atributos 
 
     return $usuario;
 }
-
-/**
- * Un PNG mínimo (solo cabecera IHDR + IEND, sin datos de píxel reales)
- * con el ancho y alto exactos que se le pidan: getimagesize() los lee
- * directo del IHDR sin necesitar una imagen completa ni la extensión GD
- * (no disponible en este entorno), así que basta para probar la regla
- * `dimensions` de Laravel sin generar una imagen real.
- */
-function crearPngDePrueba(int $ancho, int $alto): string
-{
-    $firma = "\x89PNG\x0d\x0a\x1a\x0a";
-    $datosIhdr = pack('NNCCCCC', $ancho, $alto, 8, 2, 0, 0, 0);
-    $chunkIhdr = pack('N', strlen($datosIhdr)).'IHDR'.$datosIhdr.pack('N', crc32('IHDR'.$datosIhdr));
-    $chunkIend = pack('N', 0).'IEND'.pack('N', crc32('IEND'));
-
-    return $firma.$chunkIhdr.$chunkIend;
-}

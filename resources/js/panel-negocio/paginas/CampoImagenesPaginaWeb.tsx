@@ -2,13 +2,14 @@ import type { ChangeEvent, ReactElement } from 'react';
 import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { X } from 'lucide-react';
+import { construirUrlAlmacenamiento } from '@/utils/almacenamiento';
 import { subirImagenPaginaWeb } from '../api/paginaWeb';
 
 interface Propiedades {
     slug: string;
     etiqueta: string;
     value: string[];
-    onChange: (urls: string[]) => void;
+    onChange: (rutas: string[]) => void;
 }
 
 export default function CampoImagenesPaginaWeb({ slug, etiqueta, value, onChange }: Propiedades): ReactElement {
@@ -18,7 +19,7 @@ export default function CampoImagenesPaginaWeb({ slug, etiqueta, value, onChange
         mutationFn: (archivo: File) => subirImagenPaginaWeb(slug, archivo),
         onSuccess: (respuesta) => {
             setError(null);
-            onChange([...value, respuesta.url]);
+            onChange([...value, respuesta.ruta]);
         },
         onError: () => setError('No se pudo subir la foto. Código REF-PAG2.'),
     });
@@ -45,7 +46,11 @@ export default function CampoImagenesPaginaWeb({ slug, etiqueta, value, onChange
                 <div className="flex flex-wrap gap-3">
                     {value.map((foto, indice) => (
                         <div key={foto} className="relative">
-                            <img src={foto} alt="" className="aspect-square w-24 rounded-boton border border-gris-claro object-cover" />
+                            <img
+                                src={construirUrlAlmacenamiento(foto)}
+                                alt=""
+                                className="aspect-square w-24 rounded-boton border border-gris-claro object-cover"
+                            />
                             <button
                                 type="button"
                                 aria-label="Quitar foto"

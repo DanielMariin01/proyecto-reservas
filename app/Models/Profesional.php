@@ -8,8 +8,10 @@ use App\Disponibilidad\BloqueLibre;
 use App\Enums\DiaSemana;
 use App\Enums\TipoBloqueo;
 use App\Models\Concerns\PerteneceANegocio;
+use App\Support\AlmacenamientoPublico;
 use Carbon\CarbonImmutable;
 use Database\Factories\ProfesionalFactory;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -57,6 +59,16 @@ final class Profesional extends Model
             'activo' => 'boolean',
             'promedio_calificacion' => 'float',
         ];
+    }
+
+    /**
+     * @return Attribute<string|null, string|null>
+     */
+    protected function foto(): Attribute
+    {
+        return Attribute::make(
+            set: fn (?string $valor): ?string => AlmacenamientoPublico::aRuta($valor),
+        );
     }
 
     /**

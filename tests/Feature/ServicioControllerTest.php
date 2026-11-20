@@ -139,6 +139,25 @@ test('actualizar un servicio cambia sus datos', function (): void {
     expect($servicio->visible)->toBeFalse();
 });
 
+test('si la foto enviada ya trae la url completa, se guarda solo la ruta relativa', function (): void {
+    Storage::fake('public');
+    $negocio = Negocio::factory()->create();
+    $dueno = crearUsuarioConRol($negocio, RolNegocio::Dueno);
+    $servicio = Servicio::factory()->create(['negocio_id' => $negocio->id]);
+    $urlCompleta = Storage::disk('public')->url('servicios/corte.jpg');
+
+    $respuesta = $this->actingAs($dueno)->putJson("/app/{$negocio->slug}/api/servicios/{$servicio->id}", [
+        'nombre' => $servicio->nombre,
+        'duracion_minutos' => $servicio->duracion_minutos,
+        'precio' => $servicio->precio,
+        'foto' => $urlCompleta,
+    ]);
+
+    $respuesta->assertOk();
+    expect($servicio->refresh()->foto)->toBe('servicios/corte.jpg');
+    expect($respuesta->json('data.foto'))->toBe($urlCompleta);
+});
+
 test('eliminar un servicio lo borra', function (): void {
     $negocio = Negocio::factory()->create();
     $dueno = crearUsuarioConRol($negocio, RolNegocio::Dueno);

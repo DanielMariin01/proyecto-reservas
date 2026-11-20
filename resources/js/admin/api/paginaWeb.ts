@@ -44,13 +44,9 @@ export async function publicarPagina(slug: string): Promise<PaginaWeb> {
     return respuesta.data.data;
 }
 
-export async function subirImagenPagina(slug: string, archivo: File, tipoBloque?: string): Promise<{ ruta: string; url: string }> {
+export async function subirImagenPagina(slug: string, archivo: File): Promise<{ ruta: string; url: string }> {
     const datos = new FormData();
     datos.append('imagen', archivo);
-
-    if (tipoBloque) {
-        datos.append('tipo_bloque', tipoBloque);
-    }
 
     try {
         const respuesta = await axios.post<{ ruta: string; url: string }>(`/admin/api/negocios/${slug}/pagina/imagenes`, datos, {
