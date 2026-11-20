@@ -51,8 +51,8 @@ final class RecursoHistoriaClinica extends JsonResource
             'colores' => $this->colores,
             'decoracionReferencia' => $this->decoracion_referencia,
 
-            'horaInicio' => $this->hora_inicio,
-            'horaFinal' => $this->hora_final,
+            'horaInicio' => self::sinSegundos($this->hora_inicio),
+            'horaFinal' => self::sinSegundos($this->hora_final),
             'tecnicaRealizada' => $this->tecnica_realizada,
             'productosMarcas' => $this->productos_marcas,
             'loteVencimiento' => $this->lote_vencimiento,
@@ -82,5 +82,22 @@ final class RecursoHistoriaClinica extends JsonResource
                 ? route('app.historias-clinicas.firma-profesional', ['negocio' => Negocio::actual()->slug, 'historiaClinica' => $this->id])
                 : null,
         ];
+    }
+
+    /**
+     * `hora_inicio`/`hora_final` son columnas `time` de MariaDB
+     * (2026_11_17_090100_crear_tabla_historias_clinicas.php): sin un
+     * cast, Eloquent devuelve el valor crudo del driver, que para una
+     * columna `time` llega con segundos ("10:00:00"). El formulario de
+     * edición reenvía ese mismo valor al guardar, pero
+     * SolicitudHistoriaClinica exige `date_format:H:i` (sin segundos),
+     * así que un registro nunca se podía volver a guardar sin cambiar
+     * manualmente la hora primero. Se normaliza aquí, en el límite de
+     * la API, para que el formato de salida siempre coincida con el
+     * que la validación de entrada exige.
+     */
+    private static function sinSegundos(string $hora): string
+    {
+        return substr($hora, 0, 5);
     }
 }

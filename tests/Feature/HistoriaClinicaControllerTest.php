@@ -103,6 +103,72 @@ test('el dueno de un spa crea un registro de historia clinica con sus firmas', f
     Storage::disk('local')->assertExists($historia->firma_profesional_path);
 });
 
+test('GET historias clinicas devuelve hora_inicio y hora_final sin segundos', function (): void {
+    $negocio = Negocio::factory()->create(['tipo' => TipoNegocio::Spa]);
+    $dueno = crearUsuarioConRol($negocio, RolNegocio::Dueno);
+    $cliente = Cliente::factory()->create(['negocio_id' => $negocio->id]);
+    // MariaDB normaliza cualquier `time` a HH:MM:SS al guardarlo, sin
+    // importar el formato con el que se escribio - por eso la columna
+    // siempre vuelve con segundos si no se normaliza en la API.
+    HistoriaClinica::factory()->create([
+        'negocio_id' => $negocio->id,
+        'cliente_id' => $cliente->id,
+        'hora_inicio' => '10:00',
+        'hora_final' => '11:15',
+    ]);
+
+    $respuesta = $this->actingAs($dueno)->getJson("/app/{$negocio->slug}/api/clientes/{$cliente->id}/historias-clinicas");
+
+    $respuesta->assertOk();
+    expect($respuesta->json('data.0.horaInicio'))->toBe('10:00');
+    expect($respuesta->json('data.0.horaFinal'))->toBe('11:15');
+});
+
+test('reenviar sin cambios las horas que trae la API al editar no falla la validacion', function (): void {
+    $negocio = Negocio::factory()->create(['tipo' => TipoNegocio::Spa]);
+    $dueno = crearUsuarioConRol($negocio, RolNegocio::Dueno);
+    $cliente = Cliente::factory()->create(['negocio_id' => $negocio->id]);
+    $profesional = Profesional::factory()->create(['negocio_id' => $negocio->id]);
+
+    $creacion = $this->actingAs($dueno)->postJson(
+        "/app/{$negocio->slug}/api/clientes/{$cliente->id}/historias-clinicas",
+        datosFormularioHistoriaClinica(['profesional_id' => $profesional->id, 'hora_inicio' => '10:00', 'hora_final' => '11:15']),
+    );
+    $historiaId = $creacion->json('data.id');
+
+    // Esto es exactamente lo que hace el formulario de edicion: cargar
+    // los valores que devuelve la API y reenviarlos sin tocarlos.
+    $cargaParaEditar = $this->actingAs($dueno)
+        ->getJson("/app/{$negocio->slug}/api/clientes/{$cliente->id}/historias-clinicas")
+        ->json('data.0');
+
+    $respuesta = $this->actingAs($dueno)->putJson(
+        "/app/{$negocio->slug}/api/clientes/{$cliente->id}/historias-clinicas/{$historiaId}",
+        datosFormularioHistoriaClinica([
+            'profesional_id' => $profesional->id,
+            'hora_inicio' => $cargaParaEditar['horaInicio'],
+            'hora_final' => $cargaParaEditar['horaFinal'],
+        ]),
+    );
+
+    $respuesta->assertOk();
+});
+
+test('hora final antes que hora inicio responde con el mensaje de hora, no de fecha', function (): void {
+    $negocio = Negocio::factory()->create(['tipo' => TipoNegocio::Spa]);
+    $dueno = crearUsuarioConRol($negocio, RolNegocio::Dueno);
+    $cliente = Cliente::factory()->create(['negocio_id' => $negocio->id]);
+    $profesional = Profesional::factory()->create(['negocio_id' => $negocio->id]);
+
+    $respuesta = $this->actingAs($dueno)->postJson(
+        "/app/{$negocio->slug}/api/clientes/{$cliente->id}/historias-clinicas",
+        datosFormularioHistoriaClinica(['profesional_id' => $profesional->id, 'hora_inicio' => '11:00', 'hora_final' => '10:00']),
+    );
+
+    $respuesta->assertUnprocessable();
+    expect($respuesta->json('errors.hora_final.0'))->toBe('El campo hora final debe ser una hora posterior a hora de inicio.');
+});
+
 test('recepcion no puede crear, ver ni editar historias clinicas aunque administre clientes', function (): void {
     $negocio = Negocio::factory()->create(['tipo' => TipoNegocio::Spa]);
     $recepcion = crearUsuarioConRol($negocio, RolNegocio::Recepcion);
