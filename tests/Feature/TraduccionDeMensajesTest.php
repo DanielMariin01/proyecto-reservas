@@ -41,3 +41,12 @@ test('el saludo y la firma por defecto del correo de notificaciones salen en esp
     expect(__('Regards,'))->toBe('Saludos,');
     expect(__('All rights reserved.'))->toBe('Todos los derechos reservados.');
 });
+
+test('el cuerpo del correo nativo de restablecer contrasena sale en espanol, no en ingles', function (): void {
+    expect(__('Reset Password Notification'))->toBe('Restablece tu contraseña');
+    expect(__('Reset Password'))->toBe('Restablecer contraseña');
+    expect(__('You are receiving this email because we received a password reset request for your account.'))
+        ->toBe('Recibes este correo porque pedimos restablecer la contraseña de tu cuenta.');
+    expect(__('If you did not request a password reset, no further action is required.'))
+        ->toBe('Si no pediste restablecer tu contraseña, puedes ignorar este correo.');
+});

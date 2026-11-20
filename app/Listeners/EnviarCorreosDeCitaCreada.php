@@ -32,6 +32,9 @@ final class EnviarCorreosDeCitaCreada implements ShouldQueue
             $destinatarios->push($datos->profesional->usuario);
         }
 
-        $this->servicioDeCorreo->enviarA($destinatarios, new AvisoDeCitaNuevaParaNegocio($cita));
+        // Si el dueño es tambien el profesional de esta cita, el push de
+        // arriba lo deja dos veces en la lista - sin este unique() le
+        // llegaria el mismo correo duplicado.
+        $this->servicioDeCorreo->enviarA($destinatarios->unique('id'), new AvisoDeCitaNuevaParaNegocio($cita));
     }
 }
