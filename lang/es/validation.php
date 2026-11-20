@@ -182,7 +182,11 @@ return [
     */
 
     'custom' => [
-        //
+        'hora_final' => [
+            // El mensaje generico de 'after' habla de "una fecha posterior",
+            // pero hora_final es una hora (date_format:H:i), no una fecha.
+            'after' => 'El campo :attribute debe ser una hora posterior a :date.',
+        ],
     ],
 
     /*

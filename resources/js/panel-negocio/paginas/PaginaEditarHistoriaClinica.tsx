@@ -22,6 +22,16 @@ interface Propiedades {
     historiaClinicaId: number;
 }
 
+/**
+ * Defensa adicional a la corrección del lado de la API (que ya debería
+ * devolver "10:00" en vez de "10:00:00"): si de todas formas llegara con
+ * segundos, el campo <input type="time"> del formulario solo acepta
+ * "H:i" y el servidor lo rechazaría al reenviarlo sin cambios.
+ */
+function sinSegundos(hora: string): string {
+    return hora.slice(0, 5);
+}
+
 function haciaDatosEscritura(historia: HistoriaClinica): DatosHistoriaClinica {
     return {
         profesional_id: historia.profesionalId,
@@ -47,8 +57,8 @@ function haciaDatosEscritura(historia: HistoriaClinica): DatosHistoriaClinica {
         largo_una: historia.largoUna,
         colores: historia.colores ?? '',
         decoracion_referencia: historia.decoracionReferencia ?? '',
-        hora_inicio: historia.horaInicio,
-        hora_final: historia.horaFinal,
+        hora_inicio: sinSegundos(historia.horaInicio),
+        hora_final: sinSegundos(historia.horaFinal),
         tecnica_realizada: historia.tecnicaRealizada ?? '',
         productos_marcas: historia.productosMarcas ?? '',
         lote_vencimiento: historia.loteVencimiento ?? '',
