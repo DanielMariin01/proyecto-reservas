@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Models\Concerns\PerteneceANegocio;
+use App\Support\AlmacenamientoPublico;
 use Database\Factories\ProductoFactory;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -42,6 +44,16 @@ final class Producto extends Model
         return [
             'visible' => 'boolean',
         ];
+    }
+
+    /**
+     * @return Attribute<string|null, string|null>
+     */
+    protected function foto(): Attribute
+    {
+        return Attribute::make(
+            set: fn (?string $valor): ?string => AlmacenamientoPublico::aRuta($valor),
+        );
     }
 
     /**

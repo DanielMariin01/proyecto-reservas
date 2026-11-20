@@ -2,6 +2,7 @@ import type { ChangeEvent, ReactElement } from 'react';
 import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { X } from 'lucide-react';
+import { construirUrlAlmacenamiento } from '@/utils/almacenamiento';
 import { subirImagenProducto } from '../api/productos';
 
 interface Propiedades {
@@ -17,7 +18,7 @@ export default function CampoFotoProducto({ slug, value, onChange }: Propiedades
         mutationFn: (archivo: File) => subirImagenProducto(slug, archivo),
         onSuccess: (respuesta) => {
             setError(null);
-            onChange(respuesta.url);
+            onChange(respuesta.ruta);
         },
         onError: () => setError('No se pudo subir la foto. Código REF-PRD1.'),
     });
@@ -36,7 +37,11 @@ export default function CampoFotoProducto({ slug, value, onChange }: Propiedades
 
             {value && (
                 <div className="relative w-32">
-                    <img src={value} alt="" className="aspect-square w-32 rounded-boton border border-gris-claro object-cover" />
+                    <img
+                        src={construirUrlAlmacenamiento(value)}
+                        alt=""
+                        className="aspect-square w-32 rounded-boton border border-gris-claro object-cover"
+                    />
                     <button
                         type="button"
                         aria-label="Quitar foto"

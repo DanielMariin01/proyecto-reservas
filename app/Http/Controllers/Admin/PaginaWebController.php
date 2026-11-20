@@ -6,7 +6,6 @@ namespace App\Http\Controllers\Admin;
 
 use App\Actions\ActualizarBloquesPagina;
 use App\Actions\PublicarPagina;
-use App\Enums\TipoBloque;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\SolicitudActualizarBloquesPagina;
 use App\Http\Resources\Admin\RecursoPaginaWeb;
@@ -16,23 +15,10 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Validation\Rule;
 
 final class PaginaWebController extends Controller
 {
     private const PESO_MAXIMO_IMAGEN_KB = 5120;
-
-    /**
-     * `portada` se muestra a pantalla completa (hasta 21:9 en escritorio
-     * grande, sección 6.1 de la skill de diseño) con `object-cover`: una
-     * foto de baja resolución se ve pixelada porque el navegador la
-     * estira para llenar ese espacio. Sin librería de imágenes en el
-     * proyecto (hosting compartido) no hay forma de corregirla después
-     * de subida, así que se exige la resolución mínima en el origen.
-     */
-    private const ANCHO_MINIMO_PORTADA = 1600;
-
-    private const ALTO_MINIMO_PORTADA = 900;
 
     public function show(Negocio $negocio): JsonResponse
     {
@@ -72,14 +58,8 @@ final class PaginaWebController extends Controller
 
     public function subirImagen(Request $request): JsonResponse
     {
-        $reglasImagen = ['required', 'image', 'max:'.self::PESO_MAXIMO_IMAGEN_KB];
-
-        if ($request->string('tipo_bloque')->toString() === TipoBloque::Portada->value) {
-            $reglasImagen[] = Rule::dimensions()->minWidth(self::ANCHO_MINIMO_PORTADA)->minHeight(self::ALTO_MINIMO_PORTADA);
-        }
-
-        $request->validate(['imagen' => $reglasImagen], [
-            'imagen.dimensions' => 'La foto debe tener al menos 1600×900 píxeles para que no se vea pixelada en pantallas grandes.',
+        $request->validate([
+            'imagen' => ['required', 'image', 'max:'.self::PESO_MAXIMO_IMAGEN_KB],
         ]);
 
         $ruta = $request->file('imagen')->store('paginas', 'public');
