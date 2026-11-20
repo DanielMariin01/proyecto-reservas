@@ -61,6 +61,25 @@ test('al crear una cita se notifica al cliente, al profesional y al dueno', func
     Notification::assertSentTo($profesional->usuario, AvisoDeCitaNuevaParaNegocio::class);
 });
 
+test('si el dueno es tambien el profesional de la cita, le llega una sola vez (no duplicado)', function (): void {
+    Notification::fake();
+    $negocio = Negocio::factory()->create();
+    $duenoYProfesional = crearUsuarioConRol($negocio, RolNegocio::Dueno);
+    $profesional = Profesional::factory()->create(['negocio_id' => $negocio->id, 'usuario_id' => $duenoYProfesional->id]);
+    $servicio = Servicio::factory()->create(['negocio_id' => $negocio->id]);
+    $cliente = Cliente::factory()->create(['negocio_id' => $negocio->id]);
+    $cita = Cita::factory()->create([
+        'negocio_id' => $negocio->id,
+        'profesional_id' => $profesional->id,
+        'servicio_id' => $servicio->id,
+        'cliente_id' => $cliente->id,
+    ]);
+
+    CitaCreada::dispatch($cita);
+
+    Notification::assertSentToTimes($duenoYProfesional, AvisoDeCitaNuevaParaNegocio::class, 1);
+});
+
 test('no envia correo al cliente si no dejo correo', function (): void {
     Notification::fake();
     ['cita' => $cita, 'cliente' => $cliente] = negocioConCitaRecienCreada();

@@ -22,6 +22,10 @@ Schedule::command('citas:enviar-resumen-diario-profesionales')->dailyAt('07:00')
 
 // Hosting compartido sin procesos permanentes (CLAUDE.md): en vez de un
 // `queue:work` que corra indefinidamente, el cron dispara schedule:run
-// cada minuto y esto procesa lo que haya en cola hasta por 55 segundos,
-// para que el correo de confirmación llegue en menos de 1 minuto (CU-01).
+// cada minuto y esto procesa lo que haya en cola hasta por 55 segundos.
+// Medido en producción (20 nov 2026): el correo de confirmación llega
+// entre segundos y ~1 minuto después de reservar, casi 2 minutos en el
+// peor caso (job creado justo después de un tick, tiene que esperar al
+// siguiente) - es el límite físico de no tener un worker permanente, no
+// una garantía estricta de <1 minuto (CU-01).
 Schedule::command('queue:work --stop-when-empty --max-time=55')->everyMinute()->withoutOverlapping();
