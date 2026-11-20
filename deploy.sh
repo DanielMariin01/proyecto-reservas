@@ -179,8 +179,17 @@ php artisan config:cache
 php artisan route:cache
 php artisan event:cache
 
-echo "-> storage:link (se ignora si ya existe)"
-php artisan storage:link || true
+echo "-> storage:link (por shell, no por artisan)"
+# En este hosting (Hostinger) tanto symlink() como exec() estan deshabilitados
+# a nivel de PHP, asi que "php artisan storage:link" no sirve: si el enlace ya
+# existe, Laravel lo borra para "recrearlo" y despues revienta al intentar
+# crear el nuevo (symlink()/exec() indisponibles) - probado en vivo, deja la
+# app sin public/storage. El enlace en si no esta restringido a nivel de
+# shell, asi que lo creamos directo aqui, solo si todavia no existe, para no
+# tocar un enlace ya bueno de un despliegue anterior.
+if [ ! -L "$REMOTE_APP_PATH/public/storage" ]; then
+    ln -s "$REMOTE_APP_PATH/storage/app/public" "$REMOTE_APP_PATH/public/storage"
+fi
 
 echo "-> reiniciar colas (que el proximo queue:work del cron use el codigo nuevo)"
 php artisan queue:restart
