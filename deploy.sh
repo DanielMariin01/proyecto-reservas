@@ -180,7 +180,17 @@ php artisan route:cache
 php artisan event:cache
 
 echo "-> storage:link (se ignora si ya existe)"
-php artisan storage:link || true
+if ! php artisan storage:link 2>/dev/null; then
+    # En hosting compartido (ej. Hostinger) symlink() suele estar deshabilitado
+    # a nivel de PHP, asi que storage:link falla silenciosamente. El enlace en
+    # si no esta restringido a nivel de shell, asi que lo creamos directo aqui
+    # como respaldo - solo si todavia no existe, para no romper un enlace ya
+    # bueno de un despliegue anterior.
+    if [ ! -L "$REMOTE_APP_PATH/public/storage" ]; then
+        echo "   php artisan storage:link fallo (probable symlink() deshabilitado) - creando el enlace por shell"
+        ln -s "$REMOTE_APP_PATH/storage/app/public" "$REMOTE_APP_PATH/public/storage"
+    fi
+fi
 
 echo "-> reiniciar colas (que el proximo queue:work del cron use el codigo nuevo)"
 php artisan queue:restart
