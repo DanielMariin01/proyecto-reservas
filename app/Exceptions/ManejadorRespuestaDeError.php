@@ -45,16 +45,22 @@ final class ManejadorRespuestaDeError
         $mensaje = self::MENSAJES_POR_ESTADO[$estado] ?? self::MENSAJE_POR_DEFECTO;
         $codigoReferencia = $this->generarCodigo->ejecutar($this->contexto->idPeticion());
 
+        // Las cabeceras propias de la excepción (ej. Retry-After y
+        // X-RateLimit-* de un 429 por throttle) no se copian solas al
+        // armar una respuesta nueva - sin esto, el frontend no tiene cómo
+        // saber cuánto esperar.
+        $cabeceras = $excepcion instanceof HttpExceptionInterface ? $excepcion->getHeaders() : [];
+
         if ($peticion->is('api/*') || $peticion->expectsJson()) {
             return response()->json([
                 'mensaje' => "{$mensaje} Código de referencia: {$codigoReferencia}.",
                 'codigoReferencia' => $codigoReferencia,
-            ], $estado);
+            ], $estado, $cabeceras);
         }
 
         return response()->view('error-generico', [
             'mensaje' => $mensaje,
             'codigoReferencia' => $codigoReferencia,
-        ], $estado);
+        ], $estado, $cabeceras);
     }
 }

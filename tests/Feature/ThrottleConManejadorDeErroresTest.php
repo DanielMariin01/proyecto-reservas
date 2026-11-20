@@ -31,3 +31,18 @@ test('un 429 por exceder el limite de intentos responde con el mensaje amigable,
     expect($respuesta->json('mensaje'))->not->toContain('Exception');
     expect($respuesta->json('mensaje'))->not->toContain('.php');
 });
+
+test('el 429 trae la cabecera Retry-After para que el frontend sepa cuanto esperar', function (): void {
+    config(['app.debug' => false]);
+    $negocio = Negocio::factory()->create();
+
+    for ($intento = 0; $intento < 5; $intento++) {
+        $this->postJson("/api/publico/{$negocio->slug}/reservas", []);
+    }
+
+    $respuesta = $this->postJson("/api/publico/{$negocio->slug}/reservas", []);
+
+    $respuesta->assertStatus(429);
+    $respuesta->assertHeader('Retry-After');
+    expect((int) $respuesta->headers->get('Retry-After'))->toBeGreaterThan(0);
+});
