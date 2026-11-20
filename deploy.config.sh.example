@@ -1,0 +1,37 @@
+#!/bin/sh
+# Copia este archivo a deploy.config.sh (ese si esta en .gitignore, nunca
+# se sube al repo) y rellena los valores reales de tu hosting. deploy.sh
+# lo carga automaticamente.
+
+# Host configurado en tu ~/.ssh/config (recomendado, ver el bloque de
+# ejemplo en el comentario de abajo), o directo "usuario@host" si no usas
+# un alias de SSH.
+SSH_HOST="agenda-marintech"
+
+# Puerto SSH, si Hostinger te dio uno distinto del 22 (revisalo en hPanel
+# > Avanzado > Acceso SSH). Dejalo vacio si usas el alias de ~/.ssh/config
+# y ya tiene el puerto configurado ahi.
+SSH_PORT=""
+
+# Ruta absoluta en el servidor donde clonaste el proyecto (el Laravel
+# completo, HERMANO de public_html, no dentro de ella - ver runbook
+# seccion 1). Ejemplo real: /home/u123456789/domains/agenda.marintech.site/app
+REMOTE_APP_PATH="/home/CAMBIAR/domains/agenda.marintech.site/app"
+
+# Rama que se despliega.
+DEPLOY_BRANCH="main"
+
+# URL publica para el smoke check final (la ruta /estado ya existe en el
+# proyecto, pensada justo para esto).
+HEALTH_CHECK_URL="https://agenda.marintech.site/estado"
+
+# ---------------------------------------------------------------------------
+# Ejemplo de bloque para ~/.ssh/config (recomendado en vez de usuario@host
+# sueltos, y evita tener que recordar el puerto cada vez):
+#
+#   Host agenda-marintech
+#       HostName agenda.marintech.site
+#       User u123456789
+#       Port 65002
+#       IdentityFile ~/.ssh/id_ed25519
+# ---------------------------------------------------------------------------
